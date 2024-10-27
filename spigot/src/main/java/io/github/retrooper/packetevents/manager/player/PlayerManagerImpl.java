@@ -54,7 +54,7 @@ public class PlayerManagerImpl implements PlayerManager {
             if (ProtocolSupportUtil.isAvailable()) {
                 protocolVersion = ProtocolSupportUtil.getProtocolVersion(user.getAddress());
                 PacketEvents.getAPI().getLogManager().debug("Requested ProtocolSupport for user " + user.getName() + "'s protocol version. Protocol version: " + protocolVersion);
-            } else if (ViaVersionUtil.isAvailable()) {
+            } else if (!PacketEvents.getAPI().getSettings().bypassViaVersion() && ViaVersionUtil.isAvailable()) {
                 protocolVersion = ViaVersionUtil.getProtocolVersion(player);
                 PacketEvents.getAPI().getLogManager().debug("Requested ViaVersion for " + player.getName() + "'s protocol version. Protocol version: " + protocolVersion);
 

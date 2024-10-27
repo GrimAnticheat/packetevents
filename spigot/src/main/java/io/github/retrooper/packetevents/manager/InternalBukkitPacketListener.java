@@ -22,7 +22,7 @@ public class InternalBukkitPacketListener extends com.github.retrooper.packeteve
             ConnectionState state = packet.getNextConnectionState();
 
             String feature;
-            if (ViaVersionUtil.isAvailable()) {
+            if (!PacketEvents.getAPI().getSettings().bypassViaVersion() && ViaVersionUtil.isAvailable()) {
                 clientVersion = ClientVersion.getById(ViaVersionUtil.getProtocolVersion(user));
                 feature = "ViaVersion";
             } else if (ProtocolSupportUtil.isAvailable()) {

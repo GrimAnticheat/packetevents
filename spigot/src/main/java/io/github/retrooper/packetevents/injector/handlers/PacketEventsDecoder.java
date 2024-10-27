@@ -54,7 +54,7 @@ public class PacketEventsDecoder extends MessageToMessageDecoder<ByteBuf> {
     }
 
     public void read(ChannelHandlerContext ctx, ByteBuf input, List<Object> out) throws Exception {
-        PacketEventsImplHelper.handleServerBoundPacket(ctx.channel(), user, player, input, true);
+        PacketEventsImplHelper.handleServerBoundPacket(ctx.channel(), user, player, input, !PacketEvents.getAPI().getSettings().bypassViaVersion());
         out.add(ByteBufHelper.retain(input));
     }
 

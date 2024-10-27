@@ -228,6 +228,6 @@ public class SpigotChannelInjector implements ChannelInjector {
 
     @Override
     public boolean isProxy() {
-        return false;
+        return PacketEvents.getAPI().getSettings().bypassViaVersion();
     }
 }

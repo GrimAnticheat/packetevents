@@ -40,6 +40,7 @@ public class PacketEventsSettings {
     private boolean fullStackTraceEnabled = false;
     private boolean kickOnPacketExceptionEnabled = true;
     private boolean kickIfTerminated = true;
+    private boolean bypassViaVersion = false;
     private Function<String, InputStream> resourceProvider = path -> PacketEventsSettings.class
             .getClassLoader()
             .getResourceAsStream(path);
@@ -165,6 +166,15 @@ public class PacketEventsSettings {
         return this;
     }
 
+    public PacketEventsSettings bypassViaVersion(boolean bypassViaVersion) {
+        this.bypassViaVersion = bypassViaVersion;
+        return this;
+    }
+
+    public boolean bypassViaVersion() {
+        return bypassViaVersion;
+    }
+
     /**
      * Should the packet listeners be read only?
      *
@@ -191,7 +201,6 @@ public class PacketEventsSettings {
     public boolean shouldDownsampleColors() {
         return downsampleColors;
     }
-
 
     /**
      * Should we collect server data anonymously and report to bStats?
