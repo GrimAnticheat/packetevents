@@ -141,10 +141,9 @@ public class SpigotPacketEventsBuilder {
                         getUpdateChecker().handleUpdateCheck();
                     }
 
-                    // Seems to throw an error due to not existing in shaded? need to investigate
-//                    Metrics metrics = new Metrics(plugin, 11327);
+                    Metrics metrics = new Metrics(plugin, 11327);
                     //Just to have an idea of which versions of packetevents people use
-//                    metrics.addCustomChart(new SimplePie("packetevents_version", () -> getVersion().toStringWithoutSnapshot()));
+                    metrics.addCustomChart(new SimplePie("packetevents_version", () -> getVersion().toStringWithoutSnapshot()));
                     Bukkit.getPluginManager().registerEvents(new InternalBukkitListener(plugin), plugin);
 
                     if (lateBind) {
