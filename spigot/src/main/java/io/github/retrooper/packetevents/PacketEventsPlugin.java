@@ -46,7 +46,7 @@ public class PacketEventsPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         //Register your listeners
-        PacketEvents.getAPI().getSettings().debug(false).checkForUpdates(true).timeStampMode(TimeStampMode.MILLIS).reEncodeByDefault(false).bypassViaVersion(true);
+        PacketEvents.getAPI().getSettings().debug(false).checkForUpdates(true).timeStampMode(TimeStampMode.MILLIS).reEncodeByDefault(false);
         PacketEvents.getAPI().init();
 
         SimplePacketListenerAbstract listener = new SimplePacketListenerAbstract(PacketListenerPriority.HIGH) {
@@ -103,7 +103,7 @@ public class PacketEventsPlugin extends JavaPlugin {
                 PacketEvents.getAPI().getLogManager().debug("User: (host-name) " + event.getUser().getAddress().getHostString() + " disconnected...");
             }
         };
-        PacketEvents.getAPI().getEventManager().registerListener(listener);
+//        PacketEvents.getAPI().getEventManager().registerListener(listener);
     }
 
     @Override
