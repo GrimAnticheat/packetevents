@@ -101,7 +101,7 @@ public class ProtocolManagerImpl implements ProtocolManager {
         if (ChannelHelper.isOpen(channel)) {
             List<String> handlerNames = ChannelHelper.pipelineHandlerNames(channel);
             //Account for ViaVersion
-            if (handlerNames.contains("via-encoder")) {
+            if (!PacketEvents.getAPI().getSettings().bypassViaVersion() && handlerNames.contains("via-encoder")) {
                 ChannelHelper.fireChannelReadInContext(channel, "via-decoder", byteBuf);
             }
             //Account for ProtocolSupport
