@@ -108,9 +108,11 @@ public class PacketEventsDecoder extends MessageToMessageDecoder<ByteBuf> {
             return;
         }
 
-        // Via changes the order of handlers in this event, so we must respond to Via changing their stuff
-        ServerConnectionInitializer.relocateHandlers(ctx.channel(), this, user);
+        if (!PacketEvents.getAPI().getSettings().bypassViaVersion()) {
+            // Via changes the order of handlers in this event, so we must respond to Via changing their stuff
+            ServerConnectionInitializer.relocateHandlers(ctx.channel(), this, user);
+        }
+
         super.userEventTriggered(ctx, event);
     }
-
 }

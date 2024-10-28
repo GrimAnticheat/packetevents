@@ -21,6 +21,7 @@ package io.github.retrooper.packetevents;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.*;
 import com.github.retrooper.packetevents.event.simple.*;
+import com.github.retrooper.packetevents.netty.channel.ChannelHelper;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
 import com.github.retrooper.packetevents.util.TimeStampMode;
@@ -45,7 +46,7 @@ public class PacketEventsPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         //Register your listeners
-        PacketEvents.getAPI().getSettings().debug(false).checkForUpdates(true).timeStampMode(TimeStampMode.MILLIS).reEncodeByDefault(true).bypassViaVersion(true);
+        PacketEvents.getAPI().getSettings().debug(false).checkForUpdates(true).timeStampMode(TimeStampMode.MILLIS).reEncodeByDefault(false).bypassViaVersion(true);
         PacketEvents.getAPI().init();
 
         SimplePacketListenerAbstract listener = new SimplePacketListenerAbstract(PacketListenerPriority.HIGH) {
@@ -55,11 +56,6 @@ public class PacketEventsPlugin extends JavaPlugin {
 
             @Override
             public void onPacketConfigReceive(PacketConfigReceiveEvent event) {
-                if (event.getPacketType() == PacketType.Configuration.Client.CLIENT_SETTINGS) {
-                    Bukkit.broadcastMessage("version is: " + event.getServerVersion() + "< " + event.getClientVersion());
-                    WrapperConfigClientSettings wrapper = new WrapperConfigClientSettings(event);
-                    Bukkit.broadcastMessage("Hello!");
-                }
             }
 
             @Override

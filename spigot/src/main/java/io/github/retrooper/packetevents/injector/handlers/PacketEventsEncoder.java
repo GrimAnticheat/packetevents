@@ -25,6 +25,7 @@ import com.github.retrooper.packetevents.exception.InvalidDisconnectPacketSend;
 import com.github.retrooper.packetevents.exception.PacketProcessException;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.ExceptionUtil;
 import com.github.retrooper.packetevents.util.PacketEventsImplHelper;
@@ -190,6 +191,11 @@ public class PacketEventsEncoder extends MessageToMessageEncoder<ByteBuf> {
         handledCompression = true;
         int peEncoderIndex = ctx.pipeline().names().indexOf(PacketEvents.ENCODER_NAME);
         if (peEncoderIndex == -1) return false;
+
+        if (PacketEvents.getAPI().getSettings().bypassViaVersion() && user.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_7_10)) {
+            return false;
+        }
+
         if (compressIndex > peEncoderIndex) {
             //We are ahead of the decompression handler (they are added dynamically) so let us relocate.
             //But first we need to compress the data and re-compress it after we do all our processing to avoid issues.

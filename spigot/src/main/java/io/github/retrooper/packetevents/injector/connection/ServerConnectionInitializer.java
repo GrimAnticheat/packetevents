@@ -29,6 +29,7 @@ import com.github.retrooper.packetevents.util.PacketEventsImplHelper;
 import com.github.retrooper.packetevents.wrapper.common.client.WrapperCommonClientSettings;
 import io.github.retrooper.packetevents.injector.handlers.PacketEventsDecoder;
 import io.github.retrooper.packetevents.injector.handlers.PacketEventsEncoder;
+import io.github.retrooper.packetevents.injector.handlers.PacketEventsHandlerMonitor;
 import io.github.retrooper.packetevents.util.viaversion.ViaVersionUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -112,6 +113,7 @@ public class ServerConnectionInitializer {
                 encoder = new PacketEventsEncoder(user);
                 decoder = new PacketEventsDecoder(user);
             }
+
             // We are targeting the encoder and decoder since we don't want to target specific plugins
             // (ProtocolSupport has changed its handler name in the past)
             // I don't like the hacks required for compression but that's on vanilla, we can't fix it.
@@ -121,7 +123,13 @@ public class ServerConnectionInitializer {
             ctx.pipeline().addBefore(decoderName, PacketEvents.DECODER_NAME, decoder);
             String encoderName = ctx.pipeline().names().contains("outbound_config") ? "outbound_config" : bypassVia ? "via-encoder" : "encoder";
             ctx.pipeline().addBefore(encoderName, PacketEvents.ENCODER_NAME, encoder);
-            Bukkit.broadcastMessage("pipelines: " + ctx.pipeline().names());
+
+            if (bypassVia) {
+                String monitorName = PacketEvents.DECODER_NAME + "-monitor";
+                if (!decoder.hasBeenRelocated) {
+                    ctx.pipeline().addAfter("via-decoder", monitorName, new PacketEventsHandlerMonitor(user));
+                }
+            }
         } catch (NoSuchElementException ex) {
             String handlers = ChannelHelper.pipelineHandlerNamesAsString(ctx);
             throw new IllegalStateException("PacketEvents failed to add a decoder to the netty pipeline. Pipeline handlers: " + handlers, ex);
