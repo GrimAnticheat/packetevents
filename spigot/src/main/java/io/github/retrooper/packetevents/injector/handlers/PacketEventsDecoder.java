@@ -60,17 +60,14 @@ public class PacketEventsDecoder extends MessageToMessageDecoder<ByteBuf> {
 
     public void read(ChannelHandlerContext ctx, ByteBuf input, List<Object> out) throws Exception {
         try {
-            Object buffer = null;
-            boolean takeInput = true;
             // We still call preVia listeners if ViaVersion is not available
             if (!preViaVersion && PacketEvents.getAPI().getSettings().isPreViaInjection() && !ViaVersionUtil.isAvailable()) {
-                buffer = PacketEventsImplHelper.handleServerBoundPacket(ctx.channel(), user, player, input, preViaVersion);
-                takeInput = false;
+                PacketEventsImplHelper.handleServerBoundPacket(ctx.channel(), user, player, input, preViaVersion);
             }
 
-            buffer = PacketEventsImplHelper.handleServerBoundPacket(ctx.channel(), user, player, takeInput ? input : buffer, !preViaVersion);
+            PacketEventsImplHelper.handleServerBoundPacket(ctx.channel(), user, player, input, !preViaVersion);
 
-            out.add(ByteBufHelper.retain(buffer));
+            out.add(ByteBufHelper.retain(input));
         } catch (Throwable e) {
             throw new PacketProcessException(e);
         }
@@ -115,6 +112,7 @@ public class PacketEventsDecoder extends MessageToMessageDecoder<ByteBuf> {
 
             if (user != null) {
                 PacketEvents.getAPI().getLogManager().warn("Disconnected " + user.getProfile().getName() + " due to invalid packet!");
+                cause.printStackTrace();
             }
         }
     }

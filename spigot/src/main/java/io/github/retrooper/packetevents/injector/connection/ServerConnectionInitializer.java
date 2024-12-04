@@ -124,6 +124,7 @@ public class ServerConnectionInitializer {
                 ctx.pipeline()
                         .addBefore("via-encoder", encoderName, encoder)
                         .addBefore("via-decoder", decoderName, decoder);
+            } else {
                 // We are targeting the encoder and decoder since we don't want to target specific plugins
                 // (ProtocolSupport has changed its handler name in the past)
                 // I don't like the hacks required for compression but that's on vanilla, we can't fix it.
