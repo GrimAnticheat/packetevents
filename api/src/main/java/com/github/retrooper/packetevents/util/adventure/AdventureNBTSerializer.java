@@ -68,6 +68,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -153,7 +154,7 @@ public class AdventureNBTSerializer implements ComponentSerializer<Component, Co
         String selector = reader.readUTF("selector", Function.identity());
         String keybind = reader.readUTF("keybind", Function.identity());
         String nbt = reader.readUTF("nbt", Function.identity());
-        Boolean nbtInterpret = reader.readBoolean("interpret", Function.identity());
+        boolean nbtInterpret = Optional.ofNullable(reader.readBoolean("interpret", Function.identity())).orElse(false);
         BlockNBTComponent.Pos nbtBlock = reader.readUTF("block", BlockNBTComponent.Pos::fromString);
         String nbtEntity = reader.readUTF("entity", Function.identity());
         Key nbtStorage = reader.readUTF("storage", Key::key);
