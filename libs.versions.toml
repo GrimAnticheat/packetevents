@@ -1,5 +1,5 @@
 [versions]
-adventure = "4.18.0-SNAPSHOT" # FIXME bump to release when released
+adventure = "4.17.0" # FIXME adventure v4.18.0
 examination = "1.3.0"
 netty = "4.1.72.Final"
 jetbrains-annotations = "23.0.0"

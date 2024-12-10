@@ -53,7 +53,6 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.DataComponentValue;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.ShadowColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -331,10 +330,11 @@ public class AdventureNBTSerializer implements ComponentSerializer<Component, Co
             if (color != null) style.color(color);
         });
         if (BackwardCompatUtil.IS_4_18_0_OR_NEWER) {
-            reader.useUTF("shadow_color", value -> {
-                ShadowColor color = ShadowColor.fromHexString(value);
-                if (color != null) style.shadowColor(color);
-            });
+            // FIXME adventure v4.18.0
+            // reader.useUTF("shadow_color", value -> {
+            //     ShadowColor color = ShadowColor.fromHexString(value);
+            //     if (color != null) style.shadowColor(color);
+            // });
         }
 
         for (String decorationKey : TextDecoration.NAMES.keys()) {
@@ -412,8 +412,9 @@ public class AdventureNBTSerializer implements ComponentSerializer<Component, Co
         if (color != null) writer.writeUTF("color", this.serializeColor(color));
 
         if (BackwardCompatUtil.IS_4_18_0_OR_NEWER) {
-            ShadowColor shadowColor = style.shadowColor();
-            if (shadowColor != null) writer.writeUTF("shadow_color", shadowColor.asHexString());
+            // FIXME adventure v4.18.0
+            // ShadowColor shadowColor = style.shadowColor();
+            // if (shadowColor != null) writer.writeUTF("shadow_color", shadowColor.asHexString());
         }
 
         for (TextDecoration decoration : TextDecoration.NAMES.values()) {

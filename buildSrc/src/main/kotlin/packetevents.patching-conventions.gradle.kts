@@ -8,12 +8,6 @@ version = rootProject.version
 description = rootProject.description
 
 repositories {
-    // FIXME remove when adventure releases 4.18.0
-    maven("https://repo.booky.dev/releases/") {
-        content {
-            includeGroup("net.kyori")
-        }
-    }
     mavenCentral()
     maven("https://oss.sonatype.org/content/groups/public/")
 }

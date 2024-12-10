@@ -77,8 +77,9 @@ public final class BackwardCompatUtil {
         boolean is4_18_0OrNewer = false;
         try {
             // shadow color support was added in 4.18.0
-            Style.empty().shadowColor();
-            is4_18_0OrNewer = true;
+            // FIXME adventure v4.18.0
+            // Style.empty().shadowColor();
+            // is4_18_0OrNewer = true;
         } catch (Throwable ignored) {
         }
         IS_4_18_0_OR_NEWER = is4_18_0OrNewer;
