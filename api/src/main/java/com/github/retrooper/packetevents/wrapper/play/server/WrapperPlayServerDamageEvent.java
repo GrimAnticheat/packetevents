@@ -27,11 +27,12 @@ import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import org.jetbrains.annotations.Nullable;
 
 public class WrapperPlayServerDamageEvent extends PacketWrapper<WrapperPlayServerDamageEvent> {
+
     private int entityId;
     private DamageType sourceType;
     private int sourceCauseId;
     private int sourceDirectId;
-    @Nullable private Vector3d sourcePosition;
+    private @Nullable Vector3d sourcePosition;
 
     public WrapperPlayServerDamageEvent(PacketSendEvent event) {
         super(event);
@@ -46,30 +47,22 @@ public class WrapperPlayServerDamageEvent extends PacketWrapper<WrapperPlayServe
         this.sourcePosition = sourcePosition;
     }
 
-
     @Override
     public void read() {
         entityId = readVarInt();
-        int sourceTypeId = readVarInt();
-        sourceType = DamageTypes.getById(serverVersion.toClientVersion(), sourceTypeId);
+        sourceType = readMappedEntity(DamageTypes.getRegistry());
         sourceCauseId = readVarInt();
         sourceDirectId = readVarInt();
-
-        sourcePosition = readOptional(wrapper ->
-                new Vector3d(wrapper.readDouble(), wrapper.readDouble(), wrapper.readDouble()));
+        sourcePosition = readOptional(Vector3d::read);
     }
 
     @Override
     public void write() {
         writeVarInt(entityId);
-        writeVarInt(sourceType.getId(serverVersion.toClientVersion()));
+        writeMappedEntity(sourceType);
         writeVarInt(sourceCauseId);
         writeVarInt(sourceDirectId);
-        writeOptional(sourcePosition, (wrapper, position) -> {
-            wrapper.writeDouble(position.getX());
-            wrapper.writeDouble(position.getY());
-            wrapper.writeDouble(position.getZ());
-        });
+        writeOptional(sourcePosition, Vector3d::write);
     }
 
     @Override
