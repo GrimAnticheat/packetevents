@@ -1131,10 +1131,15 @@
     "32:15": {}
   },
   "tall_grass": {
-    "31:1": {},
     "175:2": {
       "half": "lower"
+    },
+    "175:10": {
+      "half": "upper"
     }
+  },
+  "short_grass": {
+    "31:1": {}
   },
   "fern": {
     "31:2": {}
@@ -7826,16 +7831,25 @@
   "lilac": {
     "175:1": {
       "half": "lower"
+    },
+    "175:9": {
+      "half": "upper"
     }
   },
   "large_fern": {
     "175:3": {
       "half": "lower"
+    },
+    "175:11": {
+      "half": "upper"
     }
   },
   "rose_bush": {
     "175:4": {
       "half": "lower"
+    },
+    "175:12": {
+      "half": "upper"
     }
   },
   "peony": {
@@ -7843,18 +7857,6 @@
       "half": "lower"
     },
     "175:8": {
-      "half": "upper"
-    },
-    "175:9": {
-      "half": "upper"
-    },
-    "175:10": {
-      "half": "upper"
-    },
-    "175:11": {
-      "half": "upper"
-    },
-    "175:12": {
       "half": "upper"
     },
     "175:13": {

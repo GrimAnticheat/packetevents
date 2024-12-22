@@ -64,6 +64,10 @@ public interface IJukeboxSong extends MappedEntity, CopyableEntity<IJukeboxSong>
     }
 
     static IJukeboxSong read(PacketWrapper<?> wrapper) {
+        return wrapper.readMappedEntityOrDirect(JukeboxSongs.getRegistry(), IJukeboxSong::readDirect);
+    }
+
+    static IJukeboxSong readDirect(PacketWrapper<?> wrapper) {
         Sound sound = Sound.read(wrapper);
         Component description = wrapper.readComponent();
         float lengthInSeconds = wrapper.readFloat();
@@ -73,6 +77,10 @@ public interface IJukeboxSong extends MappedEntity, CopyableEntity<IJukeboxSong>
     }
 
     static void write(PacketWrapper<?> wrapper, IJukeboxSong song) {
+        wrapper.writeMappedEntityOrDirect(song, IJukeboxSong::writeDirect);
+    }
+
+    static void writeDirect(PacketWrapper<?> wrapper, IJukeboxSong song) {
         Sound.write(wrapper, song.getSound());
         wrapper.writeComponent(song.getDescription());
         wrapper.writeFloat(song.getLengthInSeconds());
