@@ -50,9 +50,9 @@ public class InternalBukkitListener implements Listener {
             //Check if it is a fake connection...
             if (!FakeChannelUtil.isFakeChannel(channel) && (!PacketEvents.getAPI().isTerminated() || PacketEvents.getAPI().getSettings().isKickIfTerminated())) {
                 //Kick them, if they are not a fake player.
-                FoliaScheduler.getRegionScheduler().runDelayed(plugin, player.getLocation(), (o) -> {
+                FoliaScheduler.getEntityScheduler().runDelayed(player, plugin, (o) -> {
                     player.kickPlayer("PacketEvents 2.0 failed to inject");
-                }, 0);
+                }, null, 0);
             }
             return;
         }

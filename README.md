@@ -35,7 +35,7 @@
 <i>Here are some projects that we are heavily inspired by, thus we have integrated</i>\
 <i>small portions of their code into our work.</i>
 
-[Protocol Documentation for the Minecraft Java Edition](https://wiki.vg/Protocol)\
+[Protocol Documentation for the Minecraft Java Edition](https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Protocol)\
 [ViaVersion](https://github.com/ViaVersion/ViaVersion)\
 [ProtocolSupport](https://github.com/ProtocolSupport/ProtocolSupport)\
 [adventure](https://github.com/KyoriPowered/adventure)\
