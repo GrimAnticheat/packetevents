@@ -172,6 +172,10 @@ public class User implements IRegistryHolder {
         PacketEvents.getAPI().getProtocolManager().writePacket(channel, wrapper);
     }
 
+    public void writePacketSilently(PacketWrapper<?> wrapper) {
+        PacketEvents.getAPI().getProtocolManager().writePacketSilently(channel, wrapper);
+    }
+
     public void flushPackets() {
         ChannelHelper.flush(channel);
     }
