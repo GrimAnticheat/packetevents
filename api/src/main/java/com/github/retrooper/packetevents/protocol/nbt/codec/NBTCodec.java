@@ -161,7 +161,7 @@ public class NBTCodec {
                 return DefaultNBTSerializer.INSTANCE.deserializeTag(
                         limiter, new ByteBufInputStream(byteBuf), named);
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new IllegalStateException(e);
             }
         }
         else {
@@ -180,7 +180,6 @@ public class NBTCodec {
                 throw new IllegalStateException(ex);
             }
         }
-        return null;
     }
 
     public static void writeNBTToBuffer(Object byteBuf, ServerVersion serverVersion, NBTCompound tag) {
