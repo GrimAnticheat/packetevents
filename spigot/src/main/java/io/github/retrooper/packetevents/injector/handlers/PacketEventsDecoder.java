@@ -82,13 +82,17 @@ public class PacketEventsDecoder extends MessageToMessageDecoder<ByteBuf> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        // If we didn't cause the exception, let the server handle it.
         if (!ExceptionUtil.isException(cause, PacketProcessException.class)) {
             super.exceptionCaught(ctx, cause);
             return;
         }
 
         if (!SpigotReflectionUtil.isMinecraftServerInstanceDebugging()) {
-            if (user != null && user.getDecoderState() != ConnectionState.HANDSHAKING) {
+            boolean debug = PacketEvents.getAPI().getSettings().isDebugEnabled()
+                            || SpigotReflectionUtil.isMinecraftServerInstanceDebugging();
+            // We log exceptions only if the server is in debug mode or the player is fully connected to the server.
+            if (debug || (user != null && user.getDecoderState() == ConnectionState.HANDSHAKING)) {
                 if (PacketEvents.getAPI().getSettings().isFullStackTraceEnabled()) {
                     PacketEvents.getAPI().getLogger().log(Level.WARNING, cause, () -> "An error occurred while processing a packet from " + user.getProfile().getName() + " (preVia: " + preViaVersion + ")");
                 } else {
