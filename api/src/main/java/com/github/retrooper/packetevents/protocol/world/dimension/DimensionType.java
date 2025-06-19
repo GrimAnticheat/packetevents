@@ -29,14 +29,17 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTDouble;
 import com.github.retrooper.packetevents.protocol.nbt.NBTFloat;
 import com.github.retrooper.packetevents.protocol.nbt.NBTInt;
 import com.github.retrooper.packetevents.protocol.nbt.NBTLong;
+import com.github.retrooper.packetevents.protocol.nbt.NBTNumber;
 import com.github.retrooper.packetevents.protocol.nbt.NBTString;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.util.mappings.TypesBuilderData;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.OptionalLong;
 
+@NullMarked
 public interface DimensionType extends MappedEntity, CopyableEntity<DimensionType>, DeepComparableEntity {
 
     OptionalLong getFixedTime();
@@ -83,6 +86,11 @@ public interface DimensionType extends MappedEntity, CopyableEntity<DimensionTyp
 
     float getAmbientLight();
 
+    /**
+     * Added with 1.21.6
+     */
+    @Nullable Integer getCloudHeight();
+
     // monster settings
 
     boolean isPiglinSafe();
@@ -121,6 +129,7 @@ public interface DimensionType extends MappedEntity, CopyableEntity<DimensionTyp
         int minY = 0;
         int height = 256;
         ResourceLocation effectsLocation = null;
+        Integer cloudHeight = null;
         NBT monsterSpawnLightLevel = null;
         int monsterSpawnBlockLightLimit = 0;
         if (version.isNewerThanOrEquals(ClientVersion.V_1_16_2)) {
@@ -132,6 +141,10 @@ public interface DimensionType extends MappedEntity, CopyableEntity<DimensionTyp
                 if (version.isNewerThanOrEquals(ClientVersion.V_1_19)) {
                     monsterSpawnLightLevel = compound.getTagOrThrow("monster_spawn_light_level");
                     monsterSpawnBlockLightLimit = compound.getNumberTagOrThrow("monster_spawn_block_light_limit").getAsInt();
+                    if (version.isNewerThanOrEquals(ClientVersion.V_1_21_6)) {
+                        NBTNumber cloudHeightTag = compound.getNumberTagOrNull("cloud_height");
+                        cloudHeight = cloudHeightTag != null ? cloudHeightTag.getAsInt() : null;
+                    }
                 }
             }
         } else {
@@ -140,7 +153,7 @@ public interface DimensionType extends MappedEntity, CopyableEntity<DimensionTyp
 
         return new StaticDimensionType(data, fixedTime, hasSkylight, hasCeiling, ultrawarm, natural, coordinateScale,
                 bedWorking, respawnAnchorWorking, minY, height, logicalHeight, infiniburnTag, effectsLocation,
-                ambientLight, piglinSafe, hasRaids, monsterSpawnLightLevel, monsterSpawnBlockLightLimit);
+                ambientLight, cloudHeight, piglinSafe, hasRaids, monsterSpawnLightLevel, monsterSpawnBlockLightLimit);
     }
 
     static NBT encode(DimensionType dimensionType, ClientVersion version) {
@@ -168,6 +181,11 @@ public interface DimensionType extends MappedEntity, CopyableEntity<DimensionTyp
                 if (version.isNewerThanOrEquals(ClientVersion.V_1_19)) {
                     compound.setTag("monster_spawn_light_level", dimensionType.getMonsterSpawnLightLevel());
                     compound.setTag("monster_spawn_block_light_limit", new NBTInt(dimensionType.getMonsterSpawnBlockLightLimit()));
+                    if (version.isNewerThanOrEquals(ClientVersion.V_1_21_6)) {
+                        if (dimensionType.getCloudHeight() != null) {
+                            compound.setTag("cloud_height", new NBTInt(dimensionType.getCloudHeight()));
+                        }
+                    }
                 }
             }
         } else {

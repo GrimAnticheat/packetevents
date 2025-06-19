@@ -56,7 +56,8 @@ public class ChunkReader_v1_18 implements ChunkReader {
         for (int i = 0; i < chunkSize; ++i) {
             chunks[i] = Chunk_v1_18.read(wrapper);
         }
-        if (wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_5)
+        if (wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_21_6)
+                && wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_5)
                 // viaversion doesn't add this zero-byte-prefix; only skip it if we are missing bytes
                 && ByteBufHelper.readerIndex(wrapper.buffer) - ri < arrayLength) {
             ByteBufHelper.skipBytes(wrapper.buffer, getMojangZeroByteSuffixLength(chunks));

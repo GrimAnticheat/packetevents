@@ -107,6 +107,11 @@ public class ItemStack {
         this.registryHolder = registryHolder;
     }
 
+    public static ItemStack decode(NBT nbt, PacketWrapper<?> wrapper) {
+        return decode(nbt, wrapper.getServerVersion().toClientVersion());
+    }
+
+    @Deprecated
     public static ItemStack decode(NBT nbt, ClientVersion version) {
         if (nbt instanceof NBTString) {
             ResourceLocation itemName = new ResourceLocation(((NBTString) nbt).getValue());
@@ -131,6 +136,11 @@ public class ItemStack {
         return builder.build();
     }
 
+    public static NBT encode(PacketWrapper<?> wrapper, ItemStack itemStack) {
+        return encodeForParticle(itemStack, wrapper.getServerVersion().toClientVersion());
+    }
+
+    @Deprecated
     public static NBT encodeForParticle(ItemStack itemStack, ClientVersion version) {
         if (version.isNewerThanOrEquals(ClientVersion.V_1_20_5)) {
             boolean simple = itemStack.isEmpty()

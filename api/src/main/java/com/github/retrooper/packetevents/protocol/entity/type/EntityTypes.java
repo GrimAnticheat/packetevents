@@ -297,6 +297,11 @@ public final class EntityTypes {
     public static final EntityType LINGERING_POTION = define("lingering_potion", POTION);
 
     /**
+     * Added with 1.21.6
+     */
+    public static final EntityType HAPPY_GHAST = define("happy_ghast", ABSTRACT_ANIMAL);
+
+    /**
      * Returns an immutable view of the entity types.
      *
      * @return Entity Types

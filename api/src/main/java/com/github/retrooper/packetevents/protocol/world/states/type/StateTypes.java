@@ -1211,6 +1211,11 @@ public final class StateTypes {
     public static StateType WILDFLOWERS = StateTypes.builder().name("WILDFLOWERS").blastResistance(0.0f).hardness(0.0f).isBlocking(false).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.PLANT).build();
     public static StateType LEAF_LITTER = StateTypes.builder().name("LEAF_LITTER").blastResistance(0.0f).hardness(0.0f).isBlocking(false).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.REPLACEABLE_PLANT).build();
     public static StateType FIREFLY_BUSH = StateTypes.builder().name("FIREFLY_BUSH").blastResistance(0.0f).hardness(0.0f).isBlocking(false).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.PLANT).build();
+
+    /**
+     * Added with 1.21.6
+     */
+    public static StateType DRIED_GHAST = StateTypes.builder().name("DRIED_GHAST").blastResistance(0.0f).hardness(0.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.STONE).build();
     // </editor-fold>
 
     static {

@@ -45,7 +45,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(net.minecraft.network.Connection.class)
 public class ConnectionMixin {
 
-    @Shadow public Channel channel;
     // doesn't account for mods like ViaFabric
     @Unique
     private static final ClientVersion CLIENT_VERSION =
@@ -77,7 +76,7 @@ public class ConnectionMixin {
         Channel channel = pipeline.channel();
         User user = new User(channel, ConnectionState.HANDSHAKING,
                 CLIENT_VERSION, new UserProfile(null, null));
-        PacketEvents.getAPI().getProtocolManager().setUser(channel.pipeline(), user);
+        PacketEvents.getAPI().getProtocolManager().setUser(channel, user);
 
         UserConnectEvent connectEvent = new UserConnectEvent(user);
         PacketEvents.getAPI().getEventManager().callEvent(connectEvent);

@@ -41,6 +41,7 @@ import com.github.retrooper.packetevents.protocol.packettype.clientbound.Clientb
 import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_21;
 import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_21_2;
 import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_21_5;
+import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_21_6;
 import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_7_10;
 import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_8;
 import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_9;
@@ -49,8 +50,10 @@ import com.github.retrooper.packetevents.protocol.packettype.config.clientbound.
 import com.github.retrooper.packetevents.protocol.packettype.config.clientbound.ClientboundConfigPacketType_1_20_3;
 import com.github.retrooper.packetevents.protocol.packettype.config.clientbound.ClientboundConfigPacketType_1_20_5;
 import com.github.retrooper.packetevents.protocol.packettype.config.clientbound.ClientboundConfigPacketType_1_21;
+import com.github.retrooper.packetevents.protocol.packettype.config.clientbound.ClientboundConfigPacketType_1_21_6;
 import com.github.retrooper.packetevents.protocol.packettype.config.serverbound.ServerboundConfigPacketType_1_20_2;
 import com.github.retrooper.packetevents.protocol.packettype.config.serverbound.ServerboundConfigPacketType_1_20_5;
+import com.github.retrooper.packetevents.protocol.packettype.config.serverbound.ServerboundConfigPacketType_1_21_6;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_12;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_12_1;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_13;
@@ -69,6 +72,7 @@ import com.github.retrooper.packetevents.protocol.packettype.serverbound.Serverb
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_21_2;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_21_4;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_21_5;
+import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_21_6;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_7_10;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_8;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_9;
@@ -77,17 +81,20 @@ import com.github.retrooper.packetevents.util.VersionMapper;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientConfigurationEndAck;
 import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientCookieResponse;
+import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientCustomClickAction;
 import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientKeepAlive;
 import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientPluginMessage;
 import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientPong;
 import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientResourcePackStatus;
 import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientSelectKnownPacks;
 import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientSettings;
+import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerClearDialog;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerConfigurationEnd;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerCookieRequest;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerCustomReportDetails;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerDisconnect;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerKeepAlive;
+import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerPing;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerPluginMessage;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerRegistryData;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerResetChat;
@@ -95,6 +102,7 @@ import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperCon
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerResourcePackSend;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerSelectKnownPacks;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerServerLinks;
+import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerShowDialog;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerStoreCookie;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerTransfer;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerUpdateEnabledFeatures;
@@ -112,6 +120,7 @@ import com.github.retrooper.packetevents.wrapper.login.server.WrapperLoginServer
 import com.github.retrooper.packetevents.wrapper.login.server.WrapperLoginServerSetCompression;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientAdvancementTab;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientAnimation;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientChangeGameMode;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientChatAck;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientChatCommand;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientChatCommandUnsigned;
@@ -128,6 +137,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCo
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCookieResponse;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCraftRecipeRequest;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCreativeInventoryAction;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCustomClickAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientDebugPing;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientDebugSampleSubscription;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEditBook;
@@ -220,7 +230,8 @@ public final class PacketType {
             ClientVersion.V_1_20_5,
             ClientVersion.V_1_21,
             ClientVersion.V_1_21_2,
-            ClientVersion.V_1_21_5);
+            ClientVersion.V_1_21_5,
+            ClientVersion.V_1_21_6);
 
     //TODO UPDATE Update packet type mappings (serverbound pt. 1)
     private static final VersionMapper SERVERBOUND_PLAY_VERSION_MAPPER = new VersionMapper(
@@ -244,18 +255,21 @@ public final class PacketType {
             ClientVersion.V_1_20_5,
             ClientVersion.V_1_21_2,
             ClientVersion.V_1_21_4,
-            ClientVersion.V_1_21_5);
+            ClientVersion.V_1_21_5,
+            ClientVersion.V_1_21_6);
 
     // TODO UPDATE Update packet type mappings (config clientbound pt. 1)
     private static final VersionMapper CLIENTBOUND_CONFIG_VERSION_MAPPER = new VersionMapper(
             ClientVersion.V_1_20_2,
             ClientVersion.V_1_20_3,
             ClientVersion.V_1_20_5,
-            ClientVersion.V_1_21);
+            ClientVersion.V_1_21,
+            ClientVersion.V_1_21_6);
     // TODO UPDATE Update packet type mappings (config serverbound pt. 1)
     private static final VersionMapper SERVERBOUND_CONFIG_VERSION_MAPPER = new VersionMapper(
             ClientVersion.V_1_20_2,
-            ClientVersion.V_1_20_5);
+            ClientVersion.V_1_20_5,
+            ClientVersion.V_1_21_6);
 
     public static void prepare() {
         PacketType.Play.Client.load();
@@ -587,7 +601,9 @@ public final class PacketType {
         }
     }
 
-    // Added in 1.20.2
+    /**
+     * Added with 1.20.2
+     */
     public static class Configuration {
 
         public enum Client implements PacketTypeCommon, ServerBoundPacket {
@@ -599,9 +615,19 @@ public final class PacketType {
             PONG(WrapperConfigClientPong.class),
             RESOURCE_PACK_STATUS(WrapperConfigClientResourcePackStatus.class),
 
-            // Added in 1.20.5
+            /**
+             * Added with 1.20.5
+             */
             COOKIE_RESPONSE(WrapperConfigClientCookieResponse.class),
+            /**
+             * Added with 1.20.5
+             */
             SELECT_KNOWN_PACKS(WrapperConfigClientSelectKnownPacks.class),
+
+            /**
+             * Added with 1.21.6
+             */
+            CUSTOM_CLICK_ACTION(WrapperConfigClientCustomClickAction.class),
             ;
 
             private static int INDEX = 0;
@@ -624,6 +650,7 @@ public final class PacketType {
                 INDEX = 0;
                 loadPacketIds(ServerboundConfigPacketType_1_20_2.values());
                 loadPacketIds(ServerboundConfigPacketType_1_20_5.values());
+                loadPacketIds(ServerboundConfigPacketType_1_21_6.values());
                 // TODO UPDATE Update packet type mappings (config serverbound pt. 2)
             }
 
@@ -678,25 +705,55 @@ public final class PacketType {
             DISCONNECT(WrapperConfigServerDisconnect.class),
             CONFIGURATION_END(WrapperConfigServerConfigurationEnd.class),
             KEEP_ALIVE(WrapperConfigServerKeepAlive.class),
-            PING(null),
+            PING(WrapperConfigServerPing.class),
             REGISTRY_DATA(WrapperConfigServerRegistryData.class),
             RESOURCE_PACK_SEND(WrapperConfigServerResourcePackSend.class),
             UPDATE_ENABLED_FEATURES(WrapperConfigServerUpdateEnabledFeatures.class),
             UPDATE_TAGS(null),
 
-            // Added in 1.20.3
+            /**
+             * Added with 1.20.3
+             */
             RESOURCE_PACK_REMOVE(WrapperConfigServerResourcePackRemove.class),
 
-            // Added in 1.20.5
+            /**
+             * Added with 1.20.5
+             */
             COOKIE_REQUEST(WrapperConfigServerCookieRequest.class),
+            /**
+             * Added with 1.20.5
+             */
             RESET_CHAT(WrapperConfigServerResetChat.class),
+            /**
+             * Added with 1.20.5
+             */
             STORE_COOKIE(WrapperConfigServerStoreCookie.class),
+            /**
+             * Added with 1.20.5
+             */
             TRANSFER(WrapperConfigServerTransfer.class),
+            /**
+             * Added with 1.20.5
+             */
             SELECT_KNOWN_PACKS(WrapperConfigServerSelectKnownPacks.class),
 
-            // added in 1.21
+            /**
+             * Added with 1.21
+             */
             CUSTOM_REPORT_DETAILS(WrapperConfigServerCustomReportDetails.class),
+            /**
+             * Added with 1.21
+             */
             SERVER_LINKS(WrapperConfigServerServerLinks.class),
+
+            /**
+             * Added with 1.21.6
+             */
+            CLEAR_DIALOG(WrapperConfigServerClearDialog.class),
+            /**
+             * Added with 1.21.6
+             */
+            SHOW_DIALOG(WrapperConfigServerShowDialog.class),
             ;
 
             private static int INDEX = 0;
@@ -721,6 +778,7 @@ public final class PacketType {
                 loadPacketIds(ClientboundConfigPacketType_1_20_3.values());
                 loadPacketIds(ClientboundConfigPacketType_1_20_5.values());
                 loadPacketIds(ClientboundConfigPacketType_1_21.values());
+                loadPacketIds(ClientboundConfigPacketType_1_21_6.values());
                 // TODO UPDATE Update packet type mappings (config clientbound pt. 2)
             }
 
@@ -916,6 +974,15 @@ public final class PacketType {
              * Added with 1.21.5
              */
             TEST_INSTANCE_BLOCK_ACTION(WrapperPlayClientTestInstanceBlockAction.class),
+
+            /**
+             * Added with 1.21.6
+             */
+            CHANGE_GAME_MODE(WrapperPlayClientChangeGameMode.class),
+            /**
+             * Added with 1.21.6
+             */
+            CUSTOM_CLICK_ACTION(WrapperPlayClientCustomClickAction.class),
             ;
 
             private static int INDEX = 0;
@@ -980,6 +1047,7 @@ public final class PacketType {
                 loadPacketIds(ServerboundPacketType_1_21_2.values());
                 loadPacketIds(ServerboundPacketType_1_21_4.values());
                 loadPacketIds(ServerboundPacketType_1_21_5.values());
+                loadPacketIds(ServerboundPacketType_1_21_6.values());
                 //TODO UPDATE Update packet type mappings (serverbound pt. 2)
             }
 
@@ -1130,63 +1198,172 @@ public final class PacketType {
             TAGS(WrapperPlayServerTags.class),
             CHAT_MESSAGE(WrapperPlayServerChatMessage.class),
 
-            // Added in 1.19
+            /**
+             * Added with 1.19
+             */
             ACKNOWLEDGE_BLOCK_CHANGES(WrapperPlayServerAcknowledgeBlockChanges.class),
+            /**
+             * Added with 1.19
+             */
             SERVER_DATA(WrapperPlayServerServerData.class),
+            /**
+             * Added with 1.19
+             */
             SYSTEM_CHAT_MESSAGE(WrapperPlayServerSystemChatMessage.class),
 
-            // Added in 1.19.1
+            /**
+             * Added with 1.19.1
+             */
             DELETE_CHAT(WrapperPlayServerDeleteChat.class),
+            /**
+             * Added with 1.19.1
+             */
             CUSTOM_CHAT_COMPLETIONS(WrapperPlayServerCustomChatCompletions.class),
 
-            // Added in 1.19.3
+            /**
+             * Added with 1.19.3
+             */
             DISGUISED_CHAT(WrapperPlayServerDisguisedChat.class),
+            /**
+             * Added with 1.19.3
+             */
             PLAYER_INFO_REMOVE(WrapperPlayServerPlayerInfoRemove.class),
+            /**
+             * Added with 1.19.3
+             */
             PLAYER_INFO_UPDATE(WrapperPlayServerPlayerInfoUpdate.class),
 
-            // Added in 1.19.4
+            /**
+             * Added with 1.19.4
+             */
             DAMAGE_EVENT(WrapperPlayServerDamageEvent.class),
+            /**
+             * Added with 1.19.4
+             */
             HURT_ANIMATION(WrapperPlayServerHurtAnimation.class),
+            /**
+             * Added with 1.19.4
+             */
             BUNDLE(WrapperPlayServerBundle.class),
+            /**
+             * Added with 1.19.4
+             */
             CHUNK_BIOMES(null),
 
-            // Added in 1.20.2
+            /**
+             * Added with 1.20.2
+             */
             CHUNK_BATCH_END(WrapperPlayServerChunkBatchEnd.class),
+            /**
+             * Added with 1.20.2
+             */
             CHUNK_BATCH_BEGIN(WrapperPlayServerChunkBatchBegin.class),
+            /**
+             * Added with 1.20.2
+             */
             DEBUG_PONG(WrapperPlayServerDebugPong.class),
+            /**
+             * Added with 1.20.2
+             */
             CONFIGURATION_START(WrapperPlayServerConfigurationStart.class),
 
-            // Added in 1.20.3
+            /**
+             * Added with 1.20.3
+             */
             RESET_SCORE(WrapperPlayServerResetScore.class),
+            /**
+             * Added with 1.20.3
+             */
             RESOURCE_PACK_REMOVE(WrapperPlayServerResourcePackRemove.class),
+            /**
+             * Added with 1.20.3
+             */
             TICKING_STATE(WrapperPlayServerTickingState.class),
+            /**
+             * Added with 1.20.3
+             */
             TICKING_STEP(WrapperPlayServerTickingStep.class),
 
-            // Added in 1.20.5
+            /**
+             * Added with 1.20.5
+             */
             COOKIE_REQUEST(WrapperPlayServerCookieRequest.class),
+            /**
+             * Added with 1.20.5
+             */
             DEBUG_SAMPLE(WrapperPlayServerDebugSample.class),
+            /**
+             * Added with 1.20.5
+             */
             STORE_COOKIE(WrapperPlayServerStoreCookie.class),
+            /**
+             * Added with 1.20.5
+             */
             TRANSFER(WrapperPlayServerTransfer.class),
+            /**
+             * Added with 1.20.5
+             */
             PROJECTILE_POWER(WrapperPlayServerProjectilePower.class),
 
-            // added in 1.21
+            /**
+             * Added with 1.21
+             */
             CUSTOM_REPORT_DETAILS(WrapperPlayServerCustomReportDetails.class),
+            /**
+             * Added with 1.21
+             */
             SERVER_LINKS(WrapperPlayServerServerLinks.class),
 
-            // added in 1.21.2
+            /**
+             * Added with 1.21.2
+             */
             MOVE_MINECART(WrapperPlayServerMoveMinecart.class),
+            /**
+             * Added with 1.21.2
+             */
             SET_CURSOR_ITEM(WrapperPlayServerSetCursorItem.class),
+            /**
+             * Added with 1.21.2
+             */
             SET_PLAYER_INVENTORY(WrapperPlayServerSetPlayerInventory.class),
+            /**
+             * Added with 1.21.2
+             */
             ENTITY_POSITION_SYNC(WrapperPlayServerEntityPositionSync.class),
+            /**
+             * Added with 1.21.2
+             */
             PLAYER_ROTATION(WrapperPlayServerPlayerRotation.class),
+            /**
+             * Added with 1.21.2
+             */
             RECIPE_BOOK_ADD(WrapperPlayServerRecipeBookAdd.class),
+            /**
+             * Added with 1.21.2
+             */
             RECIPE_BOOK_REMOVE(WrapperPlayServerRecipeBookRemove.class),
+            /**
+             * Added with 1.21.2
+             */
             RECIPE_BOOK_SETTINGS(WrapperPlayServerRecipeBookSettings.class),
 
             /**
              * Added with 1.21.5
              */
             TEST_INSTANCE_BLOCK_STATUS(WrapperPlayServerTestInstanceBlockStatus.class),
+
+            /**
+             * Added with 1.21.6
+             */
+            WAYPOINT(WrapperPlayServerWaypoint.class),
+            /**
+             * Added with 1.21.6
+             */
+            CLEAR_DIALOG(WrapperPlayServerClearDialog.class),
+            /**
+             * Added with 1.21.6
+             */
+            SHOW_DIALOG(WrapperPlayServerShowDialog.class),
             ;
 
             private static int INDEX = 0;
@@ -1267,6 +1444,7 @@ public final class PacketType {
                 loadPacketIds(ClientboundPacketType_1_21.values());
                 loadPacketIds(ClientboundPacketType_1_21_2.values());
                 loadPacketIds(ClientboundPacketType_1_21_5.values());
+                loadPacketIds(ClientboundPacketType_1_21_6.values());
                 //TODO UPDATE Update packet type mappings (clientbound pt. 2)
             }
         }

@@ -2,6 +2,7 @@ package com.github.retrooper.packetevents.test;
 
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.item.enchantment.type.EnchantmentTypes;
+import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.world.biome.Biomes;
 import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class MappingIntegrityTest extends BaseDummyAPITest {
 
@@ -51,6 +53,13 @@ public class MappingIntegrityTest extends BaseDummyAPITest {
         assertEquals(57, StateTypes.DIAMOND_BLOCK.getMapped().getId(ClientVersion.V_1_8));
         assertEquals(1, StateTypes.STONE.getMapped().getId(ClientVersion.V_1_20_5));
         assertEquals(1059, StateTypes.HEAVY_CORE.getMapped().getId(ClientVersion.V_1_20_5));
+    }
+
+    @Test
+    @DisplayName("Test item type mapping")
+    public void testItemTypeMapping() {
+        assertNotNull(ItemTypes.getByName("minecraft:piglin_head"));
+        assertNotNull(ItemTypes.getByName("piglin_head"));
     }
 
     @Test

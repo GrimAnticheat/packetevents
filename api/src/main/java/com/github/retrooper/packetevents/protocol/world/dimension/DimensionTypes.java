@@ -24,9 +24,11 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTString;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.util.mappings.VersionedRegistry;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.OptionalLong;
 
+@NullMarked
 public final class DimensionTypes {
 
     private static final VersionedRegistry<DimensionType> REGISTRY = new VersionedRegistry<>("dimension_type");
@@ -50,7 +52,7 @@ public final class DimensionTypes {
         return new StaticDimensionType(data, OptionalLong.empty(), true, false,
                 false, true, 1d, true, false,
                 POST118_MIN_Y, POST118_HEIGHT, POST118_HEIGHT, "#minecraft:infiniburn_overworld",
-                ResourceLocation.minecraft("overworld"), 0f, false,
+                ResourceLocation.minecraft("overworld"), 0f, 192, false,
                 true, monsterSpawnLightLevel, 0) {
             @Override
             public int getMinY(ClientVersion version) {
@@ -78,7 +80,7 @@ public final class DimensionTypes {
         return new StaticDimensionType(data, OptionalLong.empty(), true, true,
                 false, true, 1d, true, false,
                 POST118_MIN_Y, POST118_HEIGHT, POST118_HEIGHT, "#minecraft:infiniburn_overworld",
-                ResourceLocation.minecraft("overworld"), 0f, false,
+                ResourceLocation.minecraft("overworld"), 0f, 192, false,
                 true, monsterSpawnLightLevel, 0) {
             @Override
             public int getMinY(ClientVersion version) {
@@ -106,8 +108,8 @@ public final class DimensionTypes {
         return new StaticDimensionType(data, OptionalLong.of(6000L), false, false,
                 false, false, 1d, false, false,
                 0, 256, 256, "#minecraft:infiniburn_end",
-                ResourceLocation.minecraft("the_end"), 0f, false, true,
-                monsterSpawnLightLevel, 0);
+                ResourceLocation.minecraft("the_end"), 0f, null,
+                false, true, monsterSpawnLightLevel, 0);
     });
 
     public static final DimensionType THE_NETHER = REGISTRY.define("the_nether",
@@ -115,8 +117,8 @@ public final class DimensionTypes {
                     true, true, false, 8d, false,
                     true, 0, 256, 128,
                     "#minecraft:infiniburn_nether", ResourceLocation.minecraft("the_nether"),
-                    0.1f, true, false, new NBTInt(7),
-                    15));
+                    0.1f, null, true, false,
+                    new NBTInt(7), 15));
 
     static {
         REGISTRY.unloadMappings();

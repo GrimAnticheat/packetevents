@@ -23,9 +23,11 @@ import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.util.mappings.VersionedRegistry;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Collection;
 
+@NullMarked
 public final class Sounds {
 
     private static final VersionedRegistry<Sound> REGISTRY = new VersionedRegistry<>("sound_event");
@@ -1118,7 +1120,15 @@ public final class Sounds {
     public static final Sound BLOCK_LAVA_AMBIENT = define("block.lava.ambient");
     public static final Sound BLOCK_LAVA_EXTINGUISH = define("block.lava.extinguish");
     public static final Sound BLOCK_LAVA_POP = define("block.lava.pop");
+    /**
+     * Removed with 1.21.6
+     */
+    @ApiStatus.Obsolete
     public static final Sound ENTITY_LEASH_KNOT_BREAK = define("entity.leash_knot.break");
+    /**
+     * Removed with 1.21.6
+     */
+    @ApiStatus.Obsolete
     public static final Sound ENTITY_LEASH_KNOT_PLACE = define("entity.leash_knot.place");
     public static final Sound BLOCK_LEVER_CLICK = define("block.lever.click");
     public static final Sound ENTITY_LIGHTNING_BOLT_IMPACT = define("entity.lightning_bolt.impact");
@@ -1476,6 +1486,10 @@ public final class Sounds {
     public static final Sound BLOCK_POWDER_SNOW_HIT = define("block.powder_snow.hit");
     public static final Sound BLOCK_POWDER_SNOW_PLACE = define("block.powder_snow.place");
     public static final Sound BLOCK_POWDER_SNOW_STEP = define("block.powder_snow.step");
+    /**
+     * Removed with 1.21.6
+     */
+    @ApiStatus.Obsolete
     public static final Sound ENTITY_PUFFER_FISH_AMBIENT = define("entity.puffer_fish.ambient");
     public static final Sound ENTITY_PUFFER_FISH_BLOW_OUT = define("entity.puffer_fish.blow_out");
     public static final Sound ENTITY_PUFFER_FISH_BLOW_UP = define("entity.puffer_fish.blow_up");
@@ -2065,8 +2079,9 @@ public final class Sounds {
      */
     public static final Sound BLOCK_SAND_IDLE = define("block.sand.idle");
     /**
-     * Added with 1.21.5
+     * Added with 1.21.5, removed with 1.21.6
      */
+    @ApiStatus.Obsolete
     public static final Sound BLOCK_SAND_WIND = define("block.sand.wind");
     /**
      * Added with 1.21.5
@@ -2212,6 +2227,123 @@ public final class Sounds {
      * Added with 1.21.5
      */
     public static final Sound ENTITY_WOLF_CUTE_WHINE = define("entity.wolf_cute.whine");
+
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound BLOCK_DRIED_GHAST_BREAK = define("block.dried_ghast.break");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound BLOCK_DRIED_GHAST_STEP = define("block.dried_ghast.step");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound BLOCK_DRIED_GHAST_FALL = define("block.dried_ghast.fall");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound BLOCK_DRIED_GHAST_AMBIENT = define("block.dried_ghast.ambient");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound BLOCK_DRIED_GHAST_AMBIENT_WATER = define("block.dried_ghast.ambient_water");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound BLOCK_DRIED_GHAST_PLACE = define("block.dried_ghast.place");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound BLOCK_DRIED_GHAST_PLACE_IN_WATER = define("block.dried_ghast.place_in_water");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound BLOCK_DRIED_GHAST_TRANSITION = define("block.dried_ghast.transition");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound BLOCK_DRY_GRASS_AMBIENT = define("block.dry_grass.ambient");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ENTITY_GHASTLING_AMBIENT = define("entity.ghastling.ambient");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ENTITY_GHASTLING_DEATH = define("entity.ghastling.death");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ENTITY_GHASTLING_HURT = define("entity.ghastling.hurt");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ENTITY_GHASTLING_SPAWN = define("entity.ghastling.spawn");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ENTITY_HAPPY_GHAST_AMBIENT = define("entity.happy_ghast.ambient");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ENTITY_HAPPY_GHAST_DEATH = define("entity.happy_ghast.death");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ENTITY_HAPPY_GHAST_HURT = define("entity.happy_ghast.hurt");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ENTITY_HAPPY_GHAST_RIDING = define("entity.happy_ghast.riding");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ENTITY_HAPPY_GHAST_EQUIP = define("entity.happy_ghast.equip");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ENTITY_HAPPY_GHAST_UNEQUIP = define("entity.happy_ghast.unequip");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ENTITY_HAPPY_GHAST_HARNESS_GOGGLES_UP = define("entity.happy_ghast.harness_goggles_up");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ENTITY_HAPPY_GHAST_HARNESS_GOGGLES_DOWN = define("entity.happy_ghast.harness_goggles_down");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ITEM_HORSE_ARMOR_UNEQUIP = define("item.horse_armor.unequip");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ITEM_LEAD_UNTIED = define("item.lead.untied");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ITEM_LEAD_TIED = define("item.lead.tied");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ITEM_LEAD_BREAK = define("item.lead.break");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ITEM_LLAMA_CARPET_UNEQUIP = define("item.llama_carpet.unequip");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound MUSIC_DISC_TEARS = define("music_disc.tears");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ITEM_SHEARS_SNIP = define("item.shears.snip");
+    /**
+     * Added with 1.21.6
+     */
+    public static final Sound ITEM_SADDLE_UNEQUIP = define("item.saddle.unequip");
 
     /**
      * Returns an immutable view of the sounds.

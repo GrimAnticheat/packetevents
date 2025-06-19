@@ -65,6 +65,16 @@ public class Color implements RGBLike {
         wrapper.writeInt(color.asRGB());
     }
 
+    public static Color readShort(PacketWrapper<?> wrapper) {
+        return new Color(wrapper.readUnsignedByte(), wrapper.readUnsignedByte(), wrapper.readUnsignedByte());
+    }
+
+    public static void writeShort(PacketWrapper<?> wrapper, Color color) {
+        wrapper.writeByte(color.red);
+        wrapper.writeByte(color.green);
+        wrapper.writeByte(color.blue);
+    }
+
     public static Color decode(NBT nbt, ClientVersion version) {
         if (nbt instanceof NBTNumber) {
             return new Color(((NBTNumber) nbt).getAsInt());

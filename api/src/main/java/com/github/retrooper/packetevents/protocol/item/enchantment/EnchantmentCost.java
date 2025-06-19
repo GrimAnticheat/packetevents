@@ -22,6 +22,7 @@ import com.github.retrooper.packetevents.protocol.nbt.NBT;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTInt;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 
 import java.util.Objects;
 
@@ -35,14 +36,24 @@ public final class EnchantmentCost {
         this.perLevelAboveFirst = perLevelAboveFirst;
     }
 
+    @Deprecated
     public static EnchantmentCost decode(NBT nbt, ClientVersion version) {
+        return decode(nbt, PacketWrapper.createDummyWrapper(version));
+    }
+
+    public static EnchantmentCost decode(NBT nbt, PacketWrapper<?> wrapper) {
         NBTCompound compound = (NBTCompound) nbt;
         int base = compound.getNumberTagOrThrow("base").getAsInt();
         int perLevelAboveFirst = compound.getNumberTagOrThrow("per_level_above_first").getAsInt();
         return new EnchantmentCost(base, perLevelAboveFirst);
     }
 
+    @Deprecated
     public static NBT encode(EnchantmentCost cost, ClientVersion version) {
+        return encode(PacketWrapper.createDummyWrapper(version), cost);
+    }
+
+    public static NBT encode(PacketWrapper<?> wrapper, EnchantmentCost cost) {
         NBTCompound compound = new NBTCompound();
         compound.setTag("base", new NBTInt(cost.base));
         compound.setTag("per_level_above_first", new NBTInt(cost.perLevelAboveFirst));

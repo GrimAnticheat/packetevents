@@ -206,6 +206,10 @@ public class PacketWrapper<T extends PacketWrapper<T>> {
         this.packetTypeData = new PacketTypeData(packetType, id);
     }
 
+    public static PacketWrapper<?> createDummyWrapper(ClientVersion version) {
+        return new PacketWrapper<>(version, version.toServerVersion(), -2);
+    }
+
     public static PacketWrapper<?> createUniversalPacketWrapper(Object byteBuf) {
         return createUniversalPacketWrapper(byteBuf, PacketEvents.getAPI().getServerManager().getVersion());
     }
@@ -579,7 +583,7 @@ public class PacketWrapper<T extends PacketWrapper<T>> {
     }
 
     public AdventureSerializer getSerializers() {
-        return AdventureSerializer.serializer(this.serverVersion.toClientVersion());
+        return AdventureSerializer.serializer(this);
     }
 
     @Deprecated
@@ -594,7 +598,7 @@ public class PacketWrapper<T extends PacketWrapper<T>> {
     }
 
     public Component readComponentAsNBT() {
-        return this.getSerializers().fromNbtTag(this.readNBTRaw());
+        return this.getSerializers().fromNbtTag(this.readNBTRaw(), this);
     }
 
     public Component readComponentAsJSON() {
@@ -611,7 +615,7 @@ public class PacketWrapper<T extends PacketWrapper<T>> {
     }
 
     public void writeComponentAsNBT(Component component) {
-        this.writeNBTRaw(this.getSerializers().asNbtTag(component));
+        this.writeNBTRaw(this.getSerializers().asNbtTag(component, this));
     }
 
     public void writeComponentAsJSON(Component component) {
@@ -620,11 +624,11 @@ public class PacketWrapper<T extends PacketWrapper<T>> {
     }
 
     public Style readStyle() {
-        return this.getSerializers().nbt().deserializeStyle(this.readNBT());
+        return this.getSerializers().nbt().deserializeStyle(this.readNBT(), this);
     }
 
     public void writeStyle(Style style) {
-        this.writeNBT(this.getSerializers().nbt().serializeStyle(style));
+        this.writeNBT(this.getSerializers().nbt().serializeStyle(style, this));
     }
 
     public ResourceLocation readIdentifier(int maxLen) {
@@ -1415,6 +1419,10 @@ public class PacketWrapper<T extends PacketWrapper<T>> {
         return entity;
     }
 
+    public <Z extends MappedEntity> IRegistry<Z> replaceRegistry(IRegistry<Z> registry) {
+        return this.getRegistryHolder().getRegistryOr(registry, this.serverVersion.toClientVersion());
+    }
+
     public IRegistryHolder getRegistryHolder() {
         // workaround to make packet wrappers work without user context on spigot/fabric servers
         // this will not work for bungee or velocity, as we need to have some reference to get
@@ -1509,6 +1517,36 @@ public class PacketWrapper<T extends PacketWrapper<T>> {
 
     public void writeNullableVarInt(@Nullable Integer i) {
         this.writeVarInt(i == null ? 0 : i + 1);
+    }
+
+    public <Z> Z readLengthPrefixed(int maxLength, Reader<Z> reader) {
+        int length = this.readVarInt();
+        if (length > maxLength) {
+            throw new RuntimeException("Buffer size " + length + " is larger than allowed limit of " + maxLength);
+        }
+        Object prevBuffer = this.buffer;
+        try {
+            // temporarily replace wrapped buffer with slice
+            this.buffer = ByteBufHelper.readSlice(prevBuffer, length);
+            return reader.apply(this);
+        } finally {
+            this.buffer = prevBuffer;
+        }
+    }
+
+    public <Z> void writeLengthPrefixed(Z value, Writer<Z> writer) {
+        Object payloadBuffer = ByteBufHelper.allocateNewBuffer(this.buffer);
+        Object prevBuffer = this.buffer;
+        try {
+            // temporarily replace wrapped buffer with payload buffer
+            this.buffer = payloadBuffer;
+            writer.accept(this, value);
+        } finally {
+            this.buffer = prevBuffer;
+        }
+        // write length to real buffer copy payload afterwards
+        this.writeVarInt(ByteBufHelper.readableBytes(payloadBuffer));
+        ByteBufHelper.writeBytes(prevBuffer, payloadBuffer);
     }
 
     @FunctionalInterface

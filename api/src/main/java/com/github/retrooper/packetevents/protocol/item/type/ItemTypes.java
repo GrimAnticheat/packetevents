@@ -1477,6 +1477,83 @@ public final class ItemTypes {
     public static final ItemType BROWN_EGG = builder("brown_egg").setMaxAmount(16).build();
 
     /**
+     * Added with 1.21.6
+     */
+    public static final ItemType DRIED_GHAST = builder("dried_ghast").setMaxAmount(64).setPlacedType(StateTypes.DRIED_GHAST).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType WHITE_HARNESS = builder("white_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType ORANGE_HARNESS = builder("orange_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType MAGENTA_HARNESS = builder("magenta_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType LIGHT_BLUE_HARNESS = builder("light_blue_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType YELLOW_HARNESS = builder("yellow_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType LIME_HARNESS = builder("lime_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType PINK_HARNESS = builder("pink_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType GRAY_HARNESS = builder("gray_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType LIGHT_GRAY_HARNESS = builder("light_gray_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType CYAN_HARNESS = builder("cyan_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType PURPLE_HARNESS = builder("purple_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType BLUE_HARNESS = builder("blue_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType BROWN_HARNESS = builder("brown_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType GREEN_HARNESS = builder("green_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType RED_HARNESS = builder("red_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType BLACK_HARNESS = builder("black_harness").setMaxAmount(1).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType HAPPY_GHAST_SPAWN_EGG = builder("happy_ghast_spawn_egg").setMaxAmount(64).build();
+    /**
+     * Added with 1.21.6
+     */
+    public static final ItemType MUSIC_DISC_TEARS = builder("music_disc_tears").setMaxAmount(1).setAttributes(ItemAttribute.MUSIC_DISC).build();
+
+    /**
      * @deprecated Burning furnace shows up as a missing texture, removed in 1.9
      */
     @Deprecated
@@ -1603,7 +1680,7 @@ public final class ItemTypes {
         // all versions where base components were changed TODO UPDATE
         ClientVersion[] versions = new ClientVersion[]{
                 ClientVersion.V_1_20_5, ClientVersion.V_1_21, ClientVersion.V_1_21_2,
-                ClientVersion.V_1_21_4, ClientVersion.V_1_21_5,
+                ClientVersion.V_1_21_4, ClientVersion.V_1_21_5, ClientVersion.V_1_21_6,
         };
         for (ClientVersion version : versions) {
             parseAllComponents(version);

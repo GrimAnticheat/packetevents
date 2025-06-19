@@ -72,7 +72,7 @@ public class WrappedBlockState {
             ClientVersion.V_1_16, ClientVersion.V_1_16_2, ClientVersion.V_1_17, ClientVersion.V_1_19,
             ClientVersion.V_1_19_3, ClientVersion.V_1_19_4, ClientVersion.V_1_20, ClientVersion.V_1_20_2,
             ClientVersion.V_1_20_3, ClientVersion.V_1_20_5, ClientVersion.V_1_21_2, ClientVersion.V_1_21_4,
-            ClientVersion.V_1_21_5,
+            ClientVersion.V_1_21_5, ClientVersion.V_1_21_6,
     };
     private static final byte[] MAPPING_INDEXES;
     private static final ClientVersion[] MAPPING_VERSIONS;
@@ -1499,6 +1499,22 @@ public class WrappedBlockState {
     public void setMap(boolean map) {
         this.checkIfCloneNeeded();
         this.data.put(StateValue.MAP, map);
+        this.checkIsStillValid();
+    }
+
+    /**
+     * Added with 1.21.6
+     */
+    public int getHydration() {
+        return (int) this.data.get(StateValue.HYDRATION);
+    }
+
+    /**
+     * Added with 1.21.6
+     */
+    public void setHydration(int hydration) {
+        this.checkIfCloneNeeded();
+        this.data.put(StateValue.HYDRATION, hydration);
         this.checkIsStillValid();
     }
 

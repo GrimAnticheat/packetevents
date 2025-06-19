@@ -21,6 +21,8 @@ package com.github.retrooper.packetevents.util.mappings;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.chat.ChatType;
 import com.github.retrooper.packetevents.protocol.chat.ChatTypes;
+import com.github.retrooper.packetevents.protocol.dialog.Dialog;
+import com.github.retrooper.packetevents.protocol.dialog.Dialogs;
 import com.github.retrooper.packetevents.protocol.entity.cat.CatVariant;
 import com.github.retrooper.packetevents.protocol.entity.cat.CatVariants;
 import com.github.retrooper.packetevents.protocol.entity.chicken.ChickenVariant;
@@ -65,6 +67,7 @@ import com.github.retrooper.packetevents.protocol.world.dimension.DimensionTypes
 import com.github.retrooper.packetevents.protocol.world.painting.PaintingVariant;
 import com.github.retrooper.packetevents.protocol.world.painting.PaintingVariants;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerRegistryData.RegistryElement;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -88,9 +91,9 @@ public final class SynchronizedRegistriesHandler {
         Stream.of(
                 new RegistryEntry<>(Biomes.getRegistry(), Biome::decode),
                 new RegistryEntry<>(ChatTypes.getRegistry(), ChatType::decode),
-                new RegistryEntry<>(TrimPatterns.getRegistry(), TrimPattern::decode),
-                new RegistryEntry<>(TrimMaterials.getRegistry(), TrimMaterial::decode),
-                new RegistryEntry<>(WolfVariants.getRegistry(), WolfVariant::decode),
+                new RegistryEntry<>(TrimPatterns.getRegistry(), (NbtEntryDecoder<TrimPattern>) TrimPattern::decode),
+                new RegistryEntry<>(TrimMaterials.getRegistry(), (NbtEntryDecoder<TrimMaterial>) TrimMaterial::decode),
+                new RegistryEntry<>(WolfVariants.getRegistry(), (NbtEntryDecoder<WolfVariant>) WolfVariant::decode),
                 new RegistryEntry<>(WolfSoundVariants.getRegistry(), WolfSoundVariant::decode),
                 new RegistryEntry<>(PigVariants.getRegistry(), PigVariant::decode),
                 new RegistryEntry<>(FrogVariants.getRegistry(), FrogVariant::decode),
@@ -101,9 +104,10 @@ public final class SynchronizedRegistriesHandler {
                 new RegistryEntry<>(DimensionTypes.getRegistry(), DimensionType::decode),
                 new RegistryEntry<>(DamageTypes.getRegistry(), DamageType::decode),
                 new RegistryEntry<>(BannerPatterns.getRegistry(), BannerPattern::decode),
-                new RegistryEntry<>(EnchantmentTypes.getRegistry(), EnchantmentType::decode),
-                new RegistryEntry<>(JukeboxSongs.getRegistry(), IJukeboxSong::decode),
-                new RegistryEntry<>(Instruments.getRegistry(), Instrument::decode)
+                new RegistryEntry<>(EnchantmentTypes.getRegistry(), (NbtEntryDecoder<EnchantmentType>) EnchantmentType::decode),
+                new RegistryEntry<>(JukeboxSongs.getRegistry(), (NbtEntryDecoder<IJukeboxSong>) IJukeboxSong::decode),
+                new RegistryEntry<>(Instruments.getRegistry(), (NbtEntryDecoder<Instrument>) Instrument::decode),
+                new RegistryEntry<>(Dialogs.getRegistry(), Dialog::decodeDirect)
         ).forEach(entry -> REGISTRY_KEYS.put(entry.getRegistryKey(), entry));
     }
 
@@ -115,16 +119,17 @@ public final class SynchronizedRegistriesHandler {
     }
 
     public static void handleRegistry(
-            User user, ClientVersion version,
+            User user, PacketWrapper<?> wrapper,
             ResourceLocation registryName,
             List<RegistryElement> elements
     ) {
-        Object cacheKey = PacketEvents.getAPI().getServerManager().getRegistryCacheKey(user, version);
-        handleRegistry(user, version, registryName, elements, cacheKey);
+        Object cacheKey = PacketEvents.getAPI().getServerManager().getRegistryCacheKey(
+                user, wrapper.getServerVersion().toClientVersion());
+        handleRegistry(user, wrapper, registryName, elements, cacheKey);
     }
 
     public static void handleRegistry(
-            User user, ClientVersion version,
+            User user, PacketWrapper<?> wrapper,
             ResourceLocation registryName,
             List<RegistryElement> elements,
             Object cacheKey
@@ -135,31 +140,32 @@ public final class SynchronizedRegistriesHandler {
         }
         SimpleRegistry<?> syncedRegistry;
         if (FORCE_PER_USER_REGISTRIES || cacheKey == null) {
-            syncedRegistry = registryData.createFromElements(elements, version); // no caching
+            syncedRegistry = registryData.createFromElements(elements, wrapper); // no caching
         } else {
             syncedRegistry = registryData.computeSyncedRegistry(cacheKey, () ->
-                    registryData.createFromElements(elements, version));
+                    registryData.createFromElements(elements, wrapper));
         }
         user.putRegistry(syncedRegistry);
         // do some resolving stuff for registry entries which may
         // reference the same registry they are in
         for (MappedEntity entry : syncedRegistry.getEntries()) {
             if (entry instanceof ResolvableEntity) {
-                ((ResolvableEntity) entry).doResolve(user, version);
+                ((ResolvableEntity) entry).doResolve(wrapper);
             }
         }
     }
 
     public static void handleLegacyRegistries(
-            User user, ClientVersion version,
+            User user, PacketWrapper<?> wrapper,
             NBTCompound registryData
     ) {
-        Object cacheKey = PacketEvents.getAPI().getServerManager().getRegistryCacheKey(user, version);
+        Object cacheKey = PacketEvents.getAPI().getServerManager().getRegistryCacheKey(
+                user, wrapper.getServerVersion().toClientVersion());
         for (NBT tag : registryData.getTags().values()) {
             //On 1.16 they send an NBTList for dimension.
             if (tag instanceof NBTList) {
                 NBTList<NBTCompound> list = (NBTList<NBTCompound>) tag;
-                handleRegistry(user, version, DimensionTypes.getRegistry().getRegistryKey(),
+                handleRegistry(user, wrapper, DimensionTypes.getRegistry().getRegistryKey(),
                         RegistryElement.convertNbt(list), cacheKey);
 
             }
@@ -172,7 +178,7 @@ public final class SynchronizedRegistriesHandler {
                 NBTList<NBTCompound> nbtElements = compound.getCompoundListTagOrNull("value");
                 if (nbtElements != null) {
                     // store registry elements
-                    handleRegistry(user, version, registryName,
+                    handleRegistry(user, wrapper, registryName,
                             RegistryElement.convertNbt(nbtElements), cacheKey);
                 }
             }
@@ -181,9 +187,21 @@ public final class SynchronizedRegistriesHandler {
 
     @ApiStatus.Internal
     @FunctionalInterface
-    public interface NbtEntryDecoder<T> {
+    public interface LegacyNbtEntryDecoder<T> {
 
         T decode(NBT nbt, ClientVersion version, @Nullable TypesBuilderData data);
+
+        default NbtEntryDecoder<T> upgrade() {
+            return (nbt, wrapper, data) ->
+                    this.decode(nbt, wrapper.getServerVersion().toClientVersion(), data);
+        }
+    }
+
+    @ApiStatus.Internal
+    @FunctionalInterface
+    public interface NbtEntryDecoder<T> {
+
+        T decode(NBT nbt, PacketWrapper<?> version, @Nullable TypesBuilderData data);
     }
 
     @ApiStatus.Internal
@@ -197,6 +215,13 @@ public final class SynchronizedRegistriesHandler {
         // the key to this cache depends on the platform - it may be a constant value for bukkit servers
         // or some backend server related value for proxy servers
         private final Map<Object, SimpleRegistry<T>> syncedRegistries = new ConcurrentHashMap<>(2);
+
+        public RegistryEntry(
+                IRegistry<T> baseRegistry,
+                LegacyNbtEntryDecoder<T> decoder
+        ) {
+            this(baseRegistry, decoder.upgrade());
+        }
 
         public RegistryEntry(
                 IRegistry<T> baseRegistry,
@@ -219,7 +244,7 @@ public final class SynchronizedRegistriesHandler {
         private void handleElement(
                 SimpleRegistry<T> registry,
                 RegistryElement element,
-                int id, ClientVersion version
+                int id, PacketWrapper<?> wrapper
         ) {
             ResourceLocation elementName = element.getId();
             T baseEntry = this.baseRegistry.getByName(elementName);
@@ -230,7 +255,7 @@ public final class SynchronizedRegistriesHandler {
 
             if (element.getData() != null) {
                 // data was provided, use registry element sent over network
-                T value = this.decoder.decode(element.getData(), version, data);
+                T value = this.decoder.decode(element.getData(), wrapper, data);
                 if (!value.deepEquals(copiedBaseEntry)) {
                     // only define decoded value if it doesn't match the base
                     // registry value this ensures we don't save everything twice,
@@ -262,11 +287,11 @@ public final class SynchronizedRegistriesHandler {
                     + elementName + " for " + this.getRegistryKey());
         }
 
-        public SimpleRegistry<T> createFromElements(List<RegistryElement> elements, ClientVersion version) {
+        public SimpleRegistry<T> createFromElements(List<RegistryElement> elements, PacketWrapper<?> wrapper) {
             SimpleRegistry<T> registry = new SimpleRegistry<>(this.getRegistryKey());
             for (int id = 0; id < elements.size(); id++) {
                 RegistryElement element = elements.get(id);
-                this.handleElement(registry, element, id, version);
+                this.handleElement(registry, element, id, wrapper);
             }
             return registry;
         }

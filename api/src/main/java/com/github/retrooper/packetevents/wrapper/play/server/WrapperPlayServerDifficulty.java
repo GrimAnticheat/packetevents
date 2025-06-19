@@ -41,7 +41,11 @@ public class WrapperPlayServerDifficulty extends PacketWrapper<WrapperPlayServer
 
     @Override
     public void read() {
-        difficulty = Difficulty.getById(readUnsignedByte());
+        if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_6)) {
+            this.difficulty = this.readEnum(Difficulty.class);
+        } else {
+            this.difficulty = Difficulty.getById(this.readUnsignedByte());
+        }
         if (serverVersion.isNewerThanOrEquals(ServerVersion.V_1_14)) {
             locked = readBoolean();
         }
@@ -50,7 +54,11 @@ public class WrapperPlayServerDifficulty extends PacketWrapper<WrapperPlayServer
 
     @Override
     public void write() {
-        writeByte(difficulty.getId());
+        if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_6)) {
+            this.writeEnum(this.difficulty);
+        } else {
+            this.writeByte(this.difficulty.getId());
+        }
         if (serverVersion.isNewerThanOrEquals(ServerVersion.V_1_14)) {
             writeBoolean(locked);
         }

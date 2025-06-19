@@ -25,6 +25,7 @@ import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.util.mappings.MappingHelper;
 import com.github.retrooper.packetevents.util.mappings.VersionedRegistry;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,12 +65,13 @@ public final class EnchantmentTypes {
 
     @ApiStatus.Internal
     public static EnchantmentType define(String key) {
+        PacketWrapper<?> wrapper = PacketWrapper.createDummyWrapper(ClientVersion.getLatest());
         return REGISTRY.define(key, data -> {
             NBTCompound dataTag = ENCHANTMENT_DATA.get(data.getName());
             if (dataTag == null) {
                 throw new IllegalArgumentException("Can't define enchantment " + data.getName() + ", no data found");
             }
-            return EnchantmentType.decode(dataTag, ClientVersion.getLatest(), data);
+            return EnchantmentType.decode(dataTag, wrapper, data);
         });
     }
 

@@ -188,6 +188,22 @@ public final class Attributes {
             null, 10d, 0d, 2048d);
 
     /**
+     * Added with 1.21.6
+     */
+    public static final Attribute CAMERA_DISTANCE = define("camera_distance",
+            null, 4d, 0d, 32d);
+    /**
+     * Added with 1.21.6
+     */
+    public static final Attribute WAYPOINT_TRANSMIT_RANGE = define("waypoint_transmit_range",
+            null, 0d, 0d, 60_000_000d);
+    /**
+     * Added with 1.21.6
+     */
+    public static final Attribute WAYPOINT_RECEIVE_RANGE = define("waypoint_receive_range",
+            null, 0d, 0d, 60_000_000d);
+
+    /**
      * This attribute has been renamed in 1.20.5 to {@link #JUMP_STRENGTH}
      */
     @ApiStatus.Obsolete

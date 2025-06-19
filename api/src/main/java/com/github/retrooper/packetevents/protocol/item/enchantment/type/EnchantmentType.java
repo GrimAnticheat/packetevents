@@ -30,8 +30,8 @@ import com.github.retrooper.packetevents.protocol.mapper.MappedEntitySet;
 import com.github.retrooper.packetevents.protocol.nbt.NBT;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
-import com.github.retrooper.packetevents.util.adventure.AdventureSerializer;
 import com.github.retrooper.packetevents.util.mappings.TypesBuilderData;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullMarked;
@@ -51,28 +51,39 @@ public interface EnchantmentType extends MappedEntity, CopyableEntity<Enchantmen
 
     StaticComponentMap getEffects();
 
+    @Deprecated
     static EnchantmentType decode(NBT nbt, ClientVersion version, @Nullable TypesBuilderData data) {
+        return decode(nbt, PacketWrapper.createDummyWrapper(version), data);
+    }
+
+    static EnchantmentType decode(NBT nbt, PacketWrapper<?> wrapper, @Nullable TypesBuilderData data) {
         NBTCompound compound = (NBTCompound) nbt;
-        Component description = AdventureSerializer.serializer(version).fromNbtTag(compound.getTagOrThrow("description"));
-        EnchantmentDefinition definition = EnchantmentDefinition.decode(compound, version);
+        Component description = compound.getOrThrow("description", wrapper.getSerializers(), wrapper);
+        EnchantmentDefinition definition = EnchantmentDefinition.decode(compound, wrapper);
         MappedEntityRefSet<EnchantmentType> exclusiveSet = Optional.ofNullable(compound.getTagOrNull("exclusive_set"))
-                .map(tag -> MappedEntitySet.<EnchantmentType>decodeRefSet(tag, version))
+                .map(tag -> MappedEntitySet.<EnchantmentType>decodeRefSet(tag, wrapper))
                 .orElseGet(MappedEntitySet::createEmpty);
         StaticComponentMap effects = Optional.ofNullable(compound.getTagOrNull("effects"))
-                .map(tag -> IComponentMap.decode(tag, version,
+                .map(tag -> IComponentMap.decode(tag, wrapper,
                         EnchantEffectComponentTypes.getRegistry()))
                 .orElse(StaticComponentMap.EMPTY);
         return new StaticEnchantmentType(data, description, definition, exclusiveSet, effects);
     }
 
+    @Deprecated
     static NBT encode(EnchantmentType type, ClientVersion version) {
-        NBTCompound compound = (NBTCompound) EnchantmentDefinition.encode(type.getDefinition(), version);
-        compound.setTag("description", AdventureSerializer.serializer(version).asNbtTag(type.getDescription()));
+        return encode(type, PacketWrapper.createDummyWrapper(version));
+    }
+
+    static NBT encode(EnchantmentType type, PacketWrapper<?> wrapper) {
+        NBTCompound compound = new NBTCompound();
+        EnchantmentDefinition.encode(compound, wrapper, type.getDefinition());
+        compound.set("description", type.getDescription(), wrapper.getSerializers(), wrapper);
         if (!type.getExclusiveRefSet().isEmpty()) {
-            compound.setTag("exclusive_set", MappedEntitySet.encodeRefSet(type.getExclusiveRefSet(), version));
+            compound.set("exclusive_set", type.getExclusiveRefSet(), MappedEntitySet::encodeRefSet, wrapper);
         }
         if (!type.getEffects().isEmpty()) {
-            compound.setTag("effects", IComponentMap.encode(type.getEffects(), version));
+            compound.set("effects", type.getEffects(), IComponentMap::encode, wrapper);
         }
         return compound;
     }

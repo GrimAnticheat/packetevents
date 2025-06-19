@@ -20,6 +20,7 @@ package com.github.retrooper.packetevents.protocol.mapper;
 
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.util.mappings.IRegistryHolder;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NullMarked;
 
@@ -31,5 +32,5 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public interface ResolvableEntity {
 
-    void doResolve(IRegistryHolder registryHolder, ClientVersion version);
+    void doResolve(PacketWrapper<?> wrapper);
 }

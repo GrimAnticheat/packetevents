@@ -25,10 +25,9 @@ import com.github.retrooper.packetevents.protocol.mapper.AbstractMappedEntity;
 import com.github.retrooper.packetevents.protocol.mapper.MappedEntityRefSet;
 import com.github.retrooper.packetevents.protocol.mapper.MappedEntitySet;
 import com.github.retrooper.packetevents.protocol.mapper.ResolvableEntity;
-import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.util.mappings.GlobalRegistryHolder;
-import com.github.retrooper.packetevents.util.mappings.IRegistryHolder;
 import com.github.retrooper.packetevents.util.mappings.TypesBuilderData;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -70,8 +69,8 @@ public class StaticEnchantmentType extends AbstractMappedEntity implements Encha
     }
 
     @Override
-    public void doResolve(IRegistryHolder registryHolder, ClientVersion version) {
-        this.exclusiveSet = this.exclusiveSetRef.resolve(version, registryHolder, EnchantmentTypes.getRegistry());
+    public void doResolve(PacketWrapper<?> wrapper) {
+        this.exclusiveSet = this.exclusiveSetRef.resolve(wrapper, EnchantmentTypes.getRegistry());
     }
 
     @Override

@@ -82,6 +82,12 @@ public final class JukeboxSongs {
             73, 11);
 
     /**
+     * Added with 1.21.6
+     */
+    public static final IJukeboxSong TEARS = define("tears", Sounds.MUSIC_DISC_TEARS,
+            175, 10);
+
+    /**
      * Returns an immutable view of the jukebox songs.
      *
      * @return Jukebox Songs

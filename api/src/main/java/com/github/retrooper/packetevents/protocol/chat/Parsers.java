@@ -27,6 +27,7 @@ import com.github.retrooper.packetevents.util.mappings.VersionedRegistry;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,9 +37,10 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+@NullMarked
 public final class Parsers {
 
-    private static final VersionedRegistry<Parser> REGISTRY = new VersionedRegistry<>("argument_type");
+    private static final VersionedRegistry<Parser> REGISTRY = new VersionedRegistry<>("command_argument_type");
 
     private Parsers() {
     }
@@ -217,6 +219,15 @@ public final class Parsers {
             wrapper -> Collections.singletonList(wrapper.readIdentifier()),
             (wrapper, value) -> wrapper.writeIdentifier((ResourceLocation) value.get(0))
     );
+
+    /**
+     * Added with 1.21.6
+     */
+    public static final Parser HEX_COLOR = define("hex_color", null, null);
+    /**
+     * Added with 1.21.6
+     */
+    public static final Parser DIALOG = define("dialog", null, null);
 
     static {
         REGISTRY.unloadMappings();

@@ -95,6 +95,9 @@ public class PacketEventsEncoder extends MessageToMessageEncoder<ByteBuf> {
         // We must restore the old promise (in case we are stacking promises such as sending packets on send event)
         // If the old promise was successful, set it to null to avoid memory leaks.
         ChannelPromise oldPromise = this.promise != null && !this.promise.isSuccess() ? this.promise : null;
+        if (promise.isVoid()) {
+            promise = ctx.newPromise();
+        }
         promise.addListener(p -> this.promise = oldPromise);
 
         this.promise = promise;

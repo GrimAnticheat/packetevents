@@ -116,8 +116,14 @@ public class MappedEntitySet<T extends MappedEntity> implements MappedEntityRefS
         }
     }
 
+    @Deprecated
     public static <Z extends MappedEntity> MappedEntitySet<Z> decode(
             NBT nbt, ClientVersion version, IRegistry<Z> registry) {
+        return decode(nbt, PacketWrapper.createDummyWrapper(version), registry);
+    }
+
+    public static <Z extends MappedEntity> MappedEntitySet<Z> decode(
+            NBT nbt, PacketWrapper<?> wrapper, IRegistry<Z> registry) {
         List<Z> list;
         if (nbt instanceof NBTString) {
             String singleEntry = ((NBTString) nbt).getValue();
@@ -143,7 +149,12 @@ public class MappedEntitySet<T extends MappedEntity> implements MappedEntityRefS
         return new MappedEntitySet<>(list);
     }
 
+    @Deprecated
     public static <Z extends MappedEntity> NBT encode(MappedEntitySet<Z> set, ClientVersion version) {
+        return encodeRefSet(PacketWrapper.createDummyWrapper(version), set);
+    }
+
+    public static <Z extends MappedEntity> NBT encode(PacketWrapper<?> wrapper, MappedEntitySet<Z> set) {
         if (set.tagKey != null) {
             return new NBTString("#" + set.tagKey);
         }
@@ -156,6 +167,11 @@ public class MappedEntitySet<T extends MappedEntity> implements MappedEntityRefS
         return listTag;
     }
 
+    public static <Z extends MappedEntity> MappedEntityRefSet<Z> decodeRefSet(NBT nbt, PacketWrapper<?> wrapper) {
+        return decodeRefSet(nbt, wrapper.getServerVersion().toClientVersion());
+    }
+
+    @Deprecated
     public static <Z extends MappedEntity> MappedEntityRefSet<Z> decodeRefSet(NBT nbt, ClientVersion version) {
         List<String> list;
         if (nbt instanceof NBTString) {
@@ -179,6 +195,11 @@ public class MappedEntitySet<T extends MappedEntity> implements MappedEntityRefS
         return new NameRefSetImpl<>(list);
     }
 
+    public static <Z extends MappedEntity> NBT encodeRefSet(PacketWrapper<?> wrapper, MappedEntityRefSet<Z> refSet) {
+        return encodeRefSet(refSet, wrapper.getServerVersion().toClientVersion());
+    }
+
+    @Deprecated
     public static <Z extends MappedEntity> NBT encodeRefSet(MappedEntityRefSet<Z> refSet, ClientVersion version) {
         if (refSet instanceof NameRefSetImpl<?>) {
             NameRefSetImpl<?> nameRefSet = (NameRefSetImpl<?>) refSet;

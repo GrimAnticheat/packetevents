@@ -18,11 +18,17 @@
 
 package com.github.retrooper.packetevents.protocol.nbt;
 
+import com.github.retrooper.packetevents.protocol.util.NbtDecoder;
+import com.github.retrooper.packetevents.protocol.util.NbtEncoder;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -106,6 +112,20 @@ public class NBTCompound extends NBT {
 
     public @Nullable NBTCompound getCompoundTagOrNull(String key) {
         return getTagOfTypeOrNull(key, NBTCompound.class);
+    }
+
+    public Number getNumberTagValueOrThrow(String key) {
+        return this.getNumberTagOrThrow(key).getAsNumber();
+    }
+
+    public @Nullable Number getNumberTagValueOrNull(String key) {
+        return this.getNumberTagValueOrDefault(key, null);
+    }
+
+    @Contract("_, !null -> !null")
+    public @Nullable Number getNumberTagValueOrDefault(String key, @Nullable Number number) {
+        NBTNumber tag = this.getNumberTagOrNull(key);
+        return tag != null ? tag.getAsNumber() : number;
     }
 
     public NBTNumber getNumberTagOrThrow(String key) {
@@ -207,9 +227,92 @@ public class NBTCompound extends NBT {
     }
 
     public boolean getBoolean(String string) {
+        return this.getBooleanOr(string, false);
+    }
+
+    public boolean getBooleanOr(String string, boolean defaultValue) {
         NBTNumber nbtByte = this.getTagOfTypeOrNull(string, NBTNumber.class);
-        // Empty byte tags are considered 0
-        return nbtByte != null && nbtByte.getAsByte() != 0;
+        return nbtByte != null ? nbtByte.getAsByte() != 0 : defaultValue;
+    }
+
+    @Contract("_, _, !null, _ -> !null")
+    public <T> @Nullable T getOr(String key, NbtDecoder<T> decoder, @Nullable T def, PacketWrapper<?> wrapper) {
+        NBT tag = this.getTagOrNull(key);
+        return tag != null ? decoder.decode(tag, wrapper) : def;
+    }
+
+    public <T> @Nullable T getOrNull(String key, NbtDecoder<T> decoder, PacketWrapper<?> wrapper) {
+        return this.getOr(key, decoder, null, wrapper);
+    }
+
+    public <T> T getOrThrow(String key, NbtDecoder<T> decoder, PacketWrapper<?> wrapper) {
+        return decoder.decode(this.getTagOrThrow(key), wrapper);
+    }
+
+    @Contract("_, _, !null, _ -> !null")
+    public <T> @Nullable List<T> getListOr(String key, NbtDecoder<T> decoder, @Nullable List<T> def, PacketWrapper<?> wrapper) {
+        NBT tag = this.getTagOrNull(key);
+        if (tag instanceof NBTList) {
+            // entries in list format
+            List<? extends NBT> tags = ((NBTList<?>) tag).getTags();
+            List<T> list = new ArrayList<>(tags.size());
+            for (NBT element : tags) {
+                list.add(decoder.decode(element, wrapper));
+            }
+            return list;
+        } else if (tag != null) {
+            // single entry
+            List<T> list = new ArrayList<>(1);
+            list.add(decoder.decode(tag, wrapper));
+            return list;
+        } else {
+            // null, return default
+            return def;
+        }
+    }
+
+    public <T> @Nullable List<T> getListOrNull(String key, NbtDecoder<T> decoder, PacketWrapper<?> wrapper) {
+        return this.getListOr(key, decoder, null, wrapper);
+    }
+
+    public <T> List<T> getListOrEmpty(String key, NbtDecoder<T> decoder, PacketWrapper<?> wrapper) {
+        return this.getListOr(key, decoder, Collections.emptyList(), wrapper);
+    }
+
+    public <T> List<T> getListOrThrow(String key, NbtDecoder<T> decoder, PacketWrapper<?> wrapper) {
+        List<T> list = this.getListOrNull(key, decoder, wrapper);
+        if (list == null) {
+            throw new IllegalStateException(MessageFormat.format("NBT {0} does not exist", key));
+        }
+        return null;
+    }
+
+    public <T> void set(String key, T value, NbtEncoder<T> encoder, PacketWrapper<?> wrapper) {
+        this.setTag(key, encoder.encode(wrapper, value));
+    }
+
+    public <T> void setList(String key, List<T> value, NbtEncoder<T> encoder, PacketWrapper<?> wrapper) {
+        if (value.isEmpty()) {
+            this.setTag(key, new NBTList<>(NBTType.END, 0));
+        } else {
+            // determine list type using first value in list
+            NBT firstVal = encoder.encode(wrapper, value.get(0));
+            NBTList<?> list = new NBTList<>(firstVal.getType(), value.size());
+            list.addTagUnsafe(firstVal);
+            // add remaining list entries
+            for (int i = 1; i < value.size(); i++) {
+                list.addTagUnsafe(encoder.encode(wrapper, value.get(i)));
+            }
+            this.setTag(key, list);
+        }
+    }
+
+    public <T> void setCompactList(String key, List<T> value, NbtEncoder<T> encoder, PacketWrapper<?> wrapper) {
+        if (value.size() == 1) {
+            this.set(key, value.get(0), encoder, wrapper);
+        } else {
+            this.setList(key, value, encoder, wrapper);
+        }
     }
 
     @Override
