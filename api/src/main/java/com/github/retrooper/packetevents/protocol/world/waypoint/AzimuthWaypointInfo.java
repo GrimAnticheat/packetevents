@@ -43,7 +43,7 @@ public final class AzimuthWaypointInfo implements WaypointInfo {
 
     @Override
     public Type getType() {
-        return Type.VEC3I;
+        return Type.AZIMUTH;
     }
 
     public float getAngle() {

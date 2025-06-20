@@ -47,7 +47,7 @@ public final class ChunkWaypointInfo implements WaypointInfo {
 
     @Override
     public Type getType() {
-        return Type.VEC3I;
+        return Type.CHUNK;
     }
 
     public int getChunkX() {
