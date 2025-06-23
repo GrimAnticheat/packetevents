@@ -69,7 +69,7 @@ public final class ItemStackSerialization {
         ClientVersion version = wrapper.getServerVersion().toClientVersion();
         ItemType type = ItemTypes.getRegistry().getByIdOrThrow(version, typeId);
         int amount = wrapper.readByte();
-        int legacyData = v1_13_2 ? -1 : wrapper.readShort();
+        int legacyData = version.isOlderThan(ClientVersion.V_1_13) ? wrapper.readShort() : -1;
         NBTCompound nbt = wrapper.readNBT();
         return ItemStack.builder().type(type).amount(amount)
                 .nbt(nbt).legacyData(legacyData)
@@ -85,7 +85,9 @@ public final class ItemStackSerialization {
             wrapper.writeShort(typeId);
             if (typeId != -1) {
                 wrapper.writeByte(stack.getAmount());
-                wrapper.writeShort(stack.getLegacyData());
+                if (wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_13)) {
+                    wrapper.writeShort(stack.getLegacyData());
+                }
                 wrapper.writeNBT(stack.getNBT());
             }
         } else if (stack.isEmpty()) {

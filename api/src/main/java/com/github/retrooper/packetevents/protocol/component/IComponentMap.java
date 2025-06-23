@@ -22,14 +22,22 @@ import com.github.retrooper.packetevents.protocol.nbt.NBT;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.util.mappings.IRegistry;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Map;
 import java.util.Optional;
 
+@NullMarked
 public interface IComponentMap {
 
+    static StaticComponentMap decode(NBT nbt, PacketWrapper<?> wrapper, IRegistry<? extends ComponentType<?>> registry) {
+        return decode(nbt, wrapper.getServerVersion().toClientVersion(), registry);
+    }
+
+    @Deprecated
     @SuppressWarnings("unchecked") // safe in this case
     static StaticComponentMap decode(NBT nbt, ClientVersion version, IRegistry<? extends ComponentType<?>> registry) {
         NBTCompound compound = (NBTCompound) nbt;
@@ -45,6 +53,11 @@ public interface IComponentMap {
         return components.build();
     }
 
+    static NBT encode(PacketWrapper<?> wrapper, StaticComponentMap components) {
+        return encode(components, wrapper.getServerVersion().toClientVersion());
+    }
+
+    @Deprecated
     @SuppressWarnings("unchecked") // safe in this case
     static NBT encode(StaticComponentMap components, ClientVersion version) {
         NBTCompound compound = new NBTCompound();

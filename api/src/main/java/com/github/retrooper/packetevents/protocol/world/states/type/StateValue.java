@@ -162,6 +162,10 @@ public enum StateValue {
      * Added with 1.21.5
      */
     MAP("map", boolean.class, Boolean::parseBoolean),
+    /**
+     * Added with 1.21.6
+     */
+    HYDRATION("hydration", int.class, Integer::parseInt)
     ;
 
     public static final Index<String, StateValue> NAME_INDEX = Index.create(

@@ -1,7 +1,7 @@
 import java.io.ByteArrayOutputStream
 
 // TODO UPDATE
-val fullVersion = "2.8.0"
+val fullVersion = "2.9.0"
 val snapshot = true
 
 group = "ac.grim.packetevents"

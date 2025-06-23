@@ -22,19 +22,24 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.nbt.NBT;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.stats.Statistics;
+import com.github.retrooper.packetevents.protocol.util.NbtDecoder;
+import com.github.retrooper.packetevents.protocol.util.NbtEncoder;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.google.gson.JsonElement;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.json.JSONOptions;
 import net.kyori.adventure.text.serializer.json.legacyimpl.NBTLegacyHoverEventSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.EnumMap;
 import java.util.Map;
 
-public final class AdventureSerializer {
+@NullMarked
+public final class AdventureSerializer implements NbtEncoder<Component>, NbtDecoder<Component> {
 
     private static final Map<ClientVersion, AdventureSerializer> SERIALIZERS = new EnumMap<>(ClientVersion.class);
 
@@ -45,6 +50,10 @@ public final class AdventureSerializer {
 
     private AdventureSerializer(ClientVersion version) {
         this.version = version;
+    }
+
+    public static AdventureSerializer serializer(PacketWrapper<?> wrapper) {
+        return serializer(wrapper.getServerVersion().toClientVersion());
     }
 
     public static AdventureSerializer serializer(ClientVersion version) {
@@ -154,7 +163,7 @@ public final class AdventureSerializer {
     }
 
     /**
-     * @deprecated use {@link #fromNbtTag(NBT)} instead
+     * @deprecated use {@link #fromNbtTag(NBT, PacketWrapper)} instead
      */
     @Deprecated
     public static Component fromNbt(NBT tag) {
@@ -162,7 +171,7 @@ public final class AdventureSerializer {
     }
 
     /**
-     * @deprecated use {@link #asNbtTag(Component)} instead
+     * @deprecated use {@link #asNbtTag(Component, PacketWrapper)} instead
      */
     @Deprecated
     public static NBT toNbt(Component component) {
@@ -185,20 +194,32 @@ public final class AdventureSerializer {
         return this.gson().serializeOrNull(component);
     }
 
-    public Component fromJsonTree(JsonElement json) {
+    @Contract("!null -> !null")
+    public @Nullable Component fromJsonTree(@Nullable JsonElement json) {
         return json != null ? this.gson().deserializeFromTree(json) : null;
     }
 
-    public JsonElement asJsonTree(Component component) {
+    @Contract("!null -> !null")
+    public @Nullable JsonElement asJsonTree(@Nullable Component component) {
         return component != null ? this.gson().serializeToTree(component) : null;
     }
 
+    @Deprecated
     public Component fromNbtTag(NBT tag) {
-        return this.nbt().deserializeOrNull(tag);
+        return this.fromNbtTag(tag, PacketWrapper.createDummyWrapper(this.version));
     }
 
+    public Component fromNbtTag(NBT tag, PacketWrapper<?> wrapper) {
+        return this.nbt().deserializeOrNull(tag, wrapper);
+    }
+
+    @Deprecated
     public NBT asNbtTag(Component component) {
-        return this.nbt().serializeOrNull(component);
+        return this.asNbtTag(component, PacketWrapper.createDummyWrapper(this.version));
+    }
+
+    public NBT asNbtTag(Component component, PacketWrapper<?> wrapper) {
+        return this.nbt().serializeOrNull(component, wrapper);
     }
 
     public GsonComponentSerializer gson() {
@@ -249,5 +270,15 @@ public final class AdventureSerializer {
             this.nbt = new AdventureNBTSerializer(this.version, downsample);
         }
         return this.nbt;
+    }
+
+    @Override
+    public Component decode(NBT nbt, PacketWrapper<?> wrapper) {
+        return this.nbt().deserialize(nbt, wrapper);
+    }
+
+    @Override
+    public NBT encode(PacketWrapper<?> wrapper, Component value) {
+        return this.nbt().serialize(value, wrapper);
     }
 }

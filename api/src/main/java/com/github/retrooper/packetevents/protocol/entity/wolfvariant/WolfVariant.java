@@ -87,14 +87,19 @@ public interface WolfVariant extends MappedEntity, CopyableEntity<WolfVariant>, 
         MappedEntitySet.write(wrapper, variant.getBiomes());
     }
 
+    @Deprecated
     static WolfVariant decode(NBT nbt, ClientVersion version, @Nullable TypesBuilderData data) {
+        return decode(nbt, PacketWrapper.createDummyWrapper(version), data);
+    }
+
+    static WolfVariant decode(NBT nbt, PacketWrapper<?> wrapper, @Nullable TypesBuilderData data) {
         NBTCompound compound = (NBTCompound) nbt;
-        if (version.isOlderThan(ClientVersion.V_1_21_5)) {
+        if (wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_21_5)) {
             ResourceLocation wildTexture = new ResourceLocation(compound.getStringTagValueOrThrow("wild_texture"));
             ResourceLocation tameTexture = new ResourceLocation(compound.getStringTagValueOrThrow("tame_texture"));
             ResourceLocation angryTexture = new ResourceLocation(compound.getStringTagValueOrThrow("angry_texture"));
-            MappedEntitySet<Biome> biomes = MappedEntitySet.decode(
-                    compound.getTagOrThrow("biomes"), version, Biomes.getRegistry());
+            MappedEntitySet<Biome> biomes = compound.getOrThrow("biomes", (tag, ew) ->
+                    MappedEntitySet.decode(tag, ew, Biomes.getRegistry()), wrapper);
             return new StaticWolfVariant(data, wildTexture, tameTexture, angryTexture, biomes);
         }
         NBTCompound assets = compound.getCompoundTagOrThrow("assets");
@@ -105,13 +110,18 @@ public interface WolfVariant extends MappedEntity, CopyableEntity<WolfVariant>, 
                 angryTexture, MappedEntitySet.createEmpty());
     }
 
+    @Deprecated
     static NBT encode(WolfVariant variant, ClientVersion version) {
+        return encode(PacketWrapper.createDummyWrapper(version), variant);
+    }
+
+    static NBT encode(PacketWrapper<?> wrapper, WolfVariant variant) {
         NBTCompound compound = new NBTCompound();
-        if (version.isOlderThan(ClientVersion.V_1_21_5)) {
+        if (wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_21_5)) {
             compound.setTag("wild_texture", new NBTString(variant.getWildTexture().toString()));
             compound.setTag("tame_texture", new NBTString(variant.getTameTexture().toString()));
             compound.setTag("angry_texture", new NBTString(variant.getAngryTexture().toString()));
-            compound.setTag("biomes", MappedEntitySet.encode(variant.getBiomes(), version));
+            compound.set("biomes", variant.getBiomes(), MappedEntitySet::encode, wrapper);
         } else {
             NBTCompound assets = new NBTCompound();
             assets.setTag("wild", new NBTString(variant.getWildTexture().toString()));

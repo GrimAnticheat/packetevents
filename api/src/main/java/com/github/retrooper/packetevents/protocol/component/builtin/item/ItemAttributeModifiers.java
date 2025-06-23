@@ -20,8 +20,10 @@ package com.github.retrooper.packetevents.protocol.component.builtin.item;
 
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.attribute.Attribute;
+import com.github.retrooper.packetevents.protocol.attribute.AttributeDisplay;
 import com.github.retrooper.packetevents.protocol.attribute.AttributeOperation;
 import com.github.retrooper.packetevents.protocol.attribute.Attributes;
+import com.github.retrooper.packetevents.protocol.attribute.DefaultAttributeDisplay;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes.PropertyModifier;
@@ -133,24 +135,39 @@ public class ItemAttributeModifiers {
         private Attribute attribute;
         private Modifier modifier;
         private EquipmentSlotGroup slotGroup;
+        private AttributeDisplay display;
 
+        @ApiStatus.Obsolete
         public ModifierEntry(Attribute attribute, Modifier modifier, EquipmentSlotGroup slotGroup) {
+            this(attribute, modifier, slotGroup, DefaultAttributeDisplay.INSTANCE);
+        }
+
+        public ModifierEntry(
+                Attribute attribute, Modifier modifier,
+                EquipmentSlotGroup slotGroup, AttributeDisplay display
+        ) {
             this.attribute = attribute;
             this.modifier = modifier;
             this.slotGroup = slotGroup;
+            this.display = display;
         }
 
         public static ModifierEntry read(PacketWrapper<?> wrapper) {
             Attribute attribute = wrapper.readMappedEntity(Attributes::getById);
             Modifier modifier = Modifier.read(wrapper);
             EquipmentSlotGroup slot = wrapper.readEnum(EquipmentSlotGroup.values());
-            return new ModifierEntry(attribute, modifier, slot);
+            AttributeDisplay display = wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_6)
+                    ? AttributeDisplay.read(wrapper) : DefaultAttributeDisplay.INSTANCE;
+            return new ModifierEntry(attribute, modifier, slot, display);
         }
 
         public static void write(PacketWrapper<?> wrapper, ModifierEntry entry) {
             wrapper.writeMappedEntity(entry.attribute);
             Modifier.write(wrapper, entry.modifier);
             wrapper.writeEnum(entry.slotGroup);
+            if (wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_6)) {
+                AttributeDisplay.write(wrapper, entry.display);
+            }
         }
 
         public Attribute getAttribute() {

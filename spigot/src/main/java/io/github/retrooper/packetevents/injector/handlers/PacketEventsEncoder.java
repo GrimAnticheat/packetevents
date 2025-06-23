@@ -50,6 +50,21 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class PacketEventsEncoder extends MessageToMessageEncoder<ByteBuf> {
+
+    private static final boolean NETTY_4_1_0;
+
+    static {
+        // ancient Minecraft versions don't support this api
+        // https://howoldisminecraft188.today/
+        boolean netty410 = false;
+        try {
+            ChannelPromise.class.getDeclaredMethod("unvoid");
+            netty410 = true;
+        } catch (NoSuchMethodException ignored) {
+        }
+        NETTY_4_1_0 = netty410;
+    }
+
     public User user;
     public Player player;
     private boolean handledCompression = COMPRESSION_ENABLED_EVENT != null;
@@ -108,6 +123,11 @@ public class PacketEventsEncoder extends MessageToMessageEncoder<ByteBuf> {
         // We must restore the old promise (in case we are stacking promises such as sending packets on send event)
         // If the old promise was successful, set it to null to avoid memory leaks.
         ChannelPromise oldPromise = this.promise != null && !this.promise.isSuccess() ? this.promise : null;
+        if (NETTY_4_1_0) {
+            // "unvoid" will just make sure we can actually add listeners to this promise...
+            // since 1.21.6, mojang will give us void promises as they don't care about the result
+            promise = promise.unvoid();
+        }
         promise.addListener(p -> this.promise = oldPromise);
 
         this.promise = promise;

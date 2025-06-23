@@ -107,6 +107,11 @@ public class ItemStack {
         this.registryHolder = registryHolder;
     }
 
+    public static ItemStack decode(NBT nbt, PacketWrapper<?> wrapper) {
+        return decode(nbt, wrapper.getServerVersion().toClientVersion());
+    }
+
+    @Deprecated
     public static ItemStack decode(NBT nbt, ClientVersion version) {
         if (nbt instanceof NBTString) {
             ResourceLocation itemName = new ResourceLocation(((NBTString) nbt).getValue());
@@ -131,6 +136,11 @@ public class ItemStack {
         return builder.build();
     }
 
+    public static NBT encode(PacketWrapper<?> wrapper, ItemStack itemStack) {
+        return encodeForParticle(itemStack, wrapper.getServerVersion().toClientVersion());
+    }
+
+    @Deprecated
     public static NBT encodeForParticle(ItemStack itemStack, ClientVersion version) {
         if (version.isNewerThanOrEquals(ClientVersion.V_1_20_5)) {
             boolean simple = itemStack.isEmpty()
@@ -184,17 +194,21 @@ public class ItemStack {
         if (this.version.isNewerThanOrEquals(ClientVersion.V_1_20_5)) {
             int value = this.getComponentOr(DAMAGE, 0);
             return MathUtil.clamp(value, 0, this.getMaxDamage());
-        } else {
+        } else if (this.version.isNewerThanOrEquals(ClientVersion.V_1_13)) {
             NBTNumber damage = this.nbt != null ? this.nbt.getNumberTagOrNull("Damage") : null;
             return damage == null ? 0 : damage.getAsInt();
+        } else {
+            return Math.max(0, this.legacyData);
         }
     }
 
     public void setDamageValue(int damage) {
         if (this.version.isNewerThanOrEquals(ClientVersion.V_1_20_5)) {
             this.setComponent(DAMAGE, MathUtil.clamp(damage, 0, this.getMaxDamage()));
-        } else {
+        } else if (this.version.isNewerThanOrEquals(ClientVersion.V_1_13)) {
             this.getOrCreateTag().setTag("Damage", new NBTInt(Math.max(0, damage)));
+        } else {
+            this.legacyData = Math.max(0, damage);
         }
     }
 
@@ -579,13 +593,12 @@ public class ItemStack {
     }
 
     public boolean isEmpty() {
-        if (this.version.isNewerThanOrEquals(ClientVersion.V_1_13)) {
-            return this.type == ItemTypes.AIR || this.amount <= 0;
-        } else if (this.version.isNewerThanOrEquals(ClientVersion.V_1_11)) {
-            return this.type == ItemTypes.AIR || this.amount <= 0
-                    || this.legacyData < (short) (1 << 15) || this.legacyData > (1 << 16);
+        boolean baseEmpty = this.type == ItemTypes.AIR || this.amount <= 0;
+        if (this.version.isOlderThanOrEquals(ClientVersion.V_1_12_2)) {
+            return baseEmpty || this.legacyData < Short.MIN_VALUE || this.legacyData > (1 << 16);
+        } else {
+            return baseEmpty;
         }
-        return this.amount <= 0;
     }
 
     public ClientVersion getVersion() {

@@ -28,6 +28,20 @@ import java.util.Optional;
 
 public class Node {
 
+    public static final byte TYPE_MASK = 0b11;
+    public static final byte TYPE_ROOT = 0b00;
+    public static final byte TYPE_LITERAL = 0b01;
+    public static final byte TYPE_ARGUMENT = 0b10;
+
+    public static final byte FLAG_MASK = ~TYPE_MASK;
+    public static final byte FLAG_EXECUTABLE = 0b000100;
+    public static final byte FLAG_REDIRECT = 0b001000;
+    public static final byte FLAG_CUSTOM_SUGGESTIONS = 0b010000;
+    /**
+     * Added with 1.21.6
+     */
+    public static final byte FLAG_RESTRICTED = 0b100000;
+
     private byte flags;
     private List<Integer> children;
     private int redirectNodeIndex;

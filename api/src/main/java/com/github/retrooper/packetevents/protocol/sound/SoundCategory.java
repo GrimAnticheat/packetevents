@@ -19,6 +19,7 @@
 package com.github.retrooper.packetevents.protocol.sound;
 
 public enum SoundCategory {
+
     MASTER,
     MUSIC,
     RECORD,
@@ -28,7 +29,12 @@ public enum SoundCategory {
     NEUTRAL,
     PLAYER,
     AMBIENT,
-    VOICE;
+    VOICE,
+    /**
+     * Added with 1.21.6
+     */
+    UI,
+    ;
 
     private static final SoundCategory[] VALUES = values();
 

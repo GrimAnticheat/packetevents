@@ -18,18 +18,29 @@
 
 package com.github.retrooper.packetevents.resources;
 
+import com.github.retrooper.packetevents.protocol.nbt.NBT;
+import com.github.retrooper.packetevents.protocol.nbt.NBTString;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Objects;
 
-public class ResourceLocation {
+@NullMarked
+public class ResourceLocation implements Keyed {
 
     public static final String VANILLA_NAMESPACE = "minecraft";
 
     protected final String namespace;
     protected final String key;
+
+    public ResourceLocation(Key key) {
+        this(key.namespace(), key.value());
+    }
 
     public ResourceLocation(String namespace, String key) {
         this.namespace = namespace;
@@ -57,6 +68,30 @@ public class ResourceLocation {
         wrapper.writeIdentifier(resourceLocation);
     }
 
+    public static ResourceLocation decode(NBT nbt, PacketWrapper<?> wrapper) {
+        return new ResourceLocation(((NBTString) nbt).getValue());
+    }
+
+    public static NBT encode(PacketWrapper<?> wrapper, ResourceLocation resourceLocation) {
+        return new NBTString(resourceLocation.toString());
+    }
+
+    public static String getNamespace(String location) {
+        int namespaceIdx = location.indexOf(':');
+        if (namespaceIdx > 0) {
+            return location.substring(0, namespaceIdx);
+        }
+        return VANILLA_NAMESPACE;
+    }
+
+    public static String getPath(String location) {
+        int namespaceIdx = location.indexOf(':');
+        if (namespaceIdx != -1) {
+            return location.substring(namespaceIdx + 1);
+        }
+        return location;
+    }
+
     @Contract("null -> null; !null -> !null")
     public static @Nullable String normString(@Nullable String location) {
         if (location == null) {
@@ -72,6 +107,11 @@ public class ResourceLocation {
             // treat prepending delimiter as no namespace
             return VANILLA_NAMESPACE + location;
         }
+    }
+
+    @Override
+    public Key key() {
+        return Key.key(this.namespace, this.key);
     }
 
     public String getNamespace() {

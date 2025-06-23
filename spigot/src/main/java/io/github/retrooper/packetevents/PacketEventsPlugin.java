@@ -71,7 +71,7 @@ public class PacketEventsPlugin extends JavaPlugin {
                         event.getUser().sendPacket(blockChange);
                     }
                 }
-            }   
+            }
 
             @Override
             public void onPacketPlaySend(PacketPlaySendEvent event) {
@@ -98,7 +98,7 @@ public class PacketEventsPlugin extends JavaPlugin {
                 PacketEvents.getAPI().getLogManager().debug("User: (host-name) " + event.getUser().getAddress().getHostString() + " disconnected...");
             }
         };
-//        PacketEvents.getAPI().getEventManager().registerListener(listener);
+        // PacketEvents.getAPI().getEventManager().registerListener(listener);
     }
 
     @Override

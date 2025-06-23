@@ -72,7 +72,12 @@ public class ChatTypeDecoration {
         wrapper.writeStyle(decoration.style);
     }
 
+    @Deprecated
     public static ChatTypeDecoration decode(NBT nbt, ClientVersion version) {
+        return decode(nbt, PacketWrapper.createDummyWrapper(version));
+    }
+
+    public static ChatTypeDecoration decode(NBT nbt, PacketWrapper<?> wrapper) {
         NBTCompound compound = (NBTCompound) nbt;
         String translationKey = compound.getStringTagValueOrThrow("translation_key");
         NBT paramsTag = compound.getTagOrThrow("parameters");
@@ -90,11 +95,16 @@ public class ChatTypeDecoration {
         }
         NBTCompound styleTag = compound.getCompoundTagOrNull("style");
         Style style = styleTag == null ? empty() :
-                AdventureSerializer.serializer(version).nbt().deserializeStyle(styleTag);
+                wrapper.getSerializers().nbt().deserializeStyle(styleTag, wrapper);
         return new ChatTypeDecoration(translationKey, params, style);
     }
 
+    @Deprecated
     public static NBT encode(ChatTypeDecoration decoration, ClientVersion version) {
+        return encode(decoration, PacketWrapper.createDummyWrapper(version));
+    }
+
+    public static NBT encode(ChatTypeDecoration decoration, PacketWrapper<?> wrapper) {
         NBTList<NBTString> paramsTag = NBTList.createStringList();
         for (Parameter param : decoration.parameters) {
             paramsTag.addTag(new NBTString(param.getId()));
@@ -104,8 +114,8 @@ public class ChatTypeDecoration {
         compound.setTag("translation_key", new NBTString(decoration.translationKey));
         compound.setTag("parameters", paramsTag);
         if (!decoration.style.isEmpty()) {
-            compound.setTag("style", AdventureSerializer.serializer(version)
-                    .nbt().serializeStyle(decoration.style));
+            compound.setTag("style", wrapper.getSerializers()
+                    .nbt().serializeStyle(decoration.style, wrapper));
         }
         return compound;
     }

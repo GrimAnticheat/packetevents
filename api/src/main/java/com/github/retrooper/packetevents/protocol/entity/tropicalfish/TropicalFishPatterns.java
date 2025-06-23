@@ -18,8 +18,12 @@
 
 package com.github.retrooper.packetevents.protocol.entity.tropicalfish;
 
+import com.github.retrooper.packetevents.util.mappings.TypesBuilderData;
 import com.github.retrooper.packetevents.util.mappings.VersionedRegistry;
 import org.jetbrains.annotations.ApiStatus;
+
+import java.util.Collection;
+import java.util.function.Function;
 
 public final class TropicalFishPatterns {
 
@@ -30,26 +34,31 @@ public final class TropicalFishPatterns {
     }
 
     @ApiStatus.Internal
-    public static TropicalFishPattern define(String name) {
-        return REGISTRY.define(name, StaticTropicalFishPattern::new);
+    public static TropicalFishPattern define(String name, TropicalFishPattern.Base base) {
+        return REGISTRY.define(name, (Function<TypesBuilderData, TropicalFishPattern>)
+                typesBuilderData -> new StaticTropicalFishPattern(typesBuilderData, base));
     }
 
     public static VersionedRegistry<TropicalFishPattern> getRegistry() {
         return REGISTRY;
     }
 
-    public static final TropicalFishPattern KOB = define("kob");
-    public static final TropicalFishPattern SUNSTREAK = define("sunstreak");
-    public static final TropicalFishPattern SNOOPER = define("snooper");
-    public static final TropicalFishPattern DASHER = define("dasher");
-    public static final TropicalFishPattern BRINELY = define("brinely");
-    public static final TropicalFishPattern SPOTTY = define("spotty");
-    public static final TropicalFishPattern FLOPPER = define("flopper");
-    public static final TropicalFishPattern STRIPEY = define("stripey");
-    public static final TropicalFishPattern GLITTER = define("glitter");
-    public static final TropicalFishPattern BLOCKFISH = define("blockfish");
-    public static final TropicalFishPattern BETTY = define("betty");
-    public static final TropicalFishPattern CLAYFISH = define("clayfish");
+    public static final TropicalFishPattern KOB = define("kob", TropicalFishPattern.Base.SMALL);
+    public static final TropicalFishPattern SUNSTREAK = define("sunstreak", TropicalFishPattern.Base.SMALL);
+    public static final TropicalFishPattern SNOOPER = define("snooper", TropicalFishPattern.Base.SMALL);
+    public static final TropicalFishPattern DASHER = define("dasher", TropicalFishPattern.Base.SMALL);
+    public static final TropicalFishPattern BRINELY = define("brinely", TropicalFishPattern.Base.SMALL);
+    public static final TropicalFishPattern SPOTTY = define("spotty", TropicalFishPattern.Base.SMALL);
+    public static final TropicalFishPattern FLOPPER = define("flopper", TropicalFishPattern.Base.LARGE);
+    public static final TropicalFishPattern STRIPEY = define("stripey", TropicalFishPattern.Base.LARGE);
+    public static final TropicalFishPattern GLITTER = define("glitter", TropicalFishPattern.Base.LARGE);
+    public static final TropicalFishPattern BLOCKFISH = define("blockfish", TropicalFishPattern.Base.LARGE);
+    public static final TropicalFishPattern BETTY = define("betty", TropicalFishPattern.Base.LARGE);
+    public static final TropicalFishPattern CLAYFISH = define("clayfish", TropicalFishPattern.Base.LARGE);
+
+    public static Collection<TropicalFishPattern> values() {
+        return REGISTRY.getEntries();
+    }
 
     static {
         REGISTRY.unloadMappings();

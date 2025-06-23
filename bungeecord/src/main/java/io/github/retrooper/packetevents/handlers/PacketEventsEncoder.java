@@ -23,6 +23,7 @@ import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.EventCreationUtil;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import io.github.retrooper.packetevents.injector.CustomPipelineUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
@@ -57,13 +58,23 @@ public class PacketEventsEncoder extends ChannelOutboundHandlerAdapter {
         PacketEvents.getAPI().getEventManager().callEvent(packetSendEvent, () -> buffer.readerIndex(readerIndex));
         if (!packetSendEvent.isCancelled()) {
             if (packetSendEvent.getLastUsedWrapper() != null) {
-                ByteBufHelper.clear(packetSendEvent.getByteBuf());
+                ByteBuf newBuffer;
+                if (buffer.maxCapacity() != Integer.MAX_VALUE) {
+                    // we are working with a limited buffer, allocate a completely new buffer to be safe
+                    newBuffer = buffer.alloc().buffer(buffer.capacity());
+                    packetSendEvent.setByteBuf(newBuffer);
+                    packetSendEvent.getLastUsedWrapper().buffer = newBuffer;
+                    buffer.release();
+                } else {
+                    newBuffer = buffer.clear();
+                }
                 packetSendEvent.getLastUsedWrapper().writeVarInt(packetSendEvent.getPacketId());
                 packetSendEvent.getLastUsedWrapper().write();
+                ctx.write(newBuffer, promise);
             } else {
                 buffer.readerIndex(firstReaderIndex);
+                ctx.write(buffer, promise);
             }
-            ctx.write(buffer, promise);
         } else {
             ReferenceCountUtil.release(packetSendEvent.getByteBuf());
         }

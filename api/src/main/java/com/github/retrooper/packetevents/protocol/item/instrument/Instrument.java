@@ -28,7 +28,6 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTFloat;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.sound.Sound;
 import com.github.retrooper.packetevents.util.MathUtil;
-import com.github.retrooper.packetevents.util.adventure.AdventureSerializer;
 import com.github.retrooper.packetevents.util.mappings.TypesBuilderData;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import net.kyori.adventure.text.Component;
@@ -82,21 +81,31 @@ public interface Instrument extends MappedEntity, CopyableEntity<Instrument>, De
         }
     }
 
+    @Deprecated
     static Instrument decode(NBT nbt, ClientVersion version, @Nullable TypesBuilderData data) {
+        return decode(nbt, PacketWrapper.createDummyWrapper(version), data);
+    }
+
+    static Instrument decode(NBT nbt, PacketWrapper<?> wrapper, @Nullable TypesBuilderData data) {
         NBTCompound compound = (NBTCompound) nbt;
-        Sound sound = Sound.decode(compound.getTagOrThrow("sound_event"), version);
+        Sound sound = compound.getOrThrow("sound_event", Sound::decode, wrapper);
         float useSeconds = compound.getNumberTagOrThrow("use_duration").getAsFloat();
         float range = compound.getNumberTagOrThrow("range").getAsFloat();
-        Component description = AdventureSerializer.serializer(version).fromNbtTag(compound.getTagOrThrow("description"));
+        Component description = compound.getOrThrow("description", wrapper.getSerializers(), wrapper);
         return new StaticInstrument(data, sound, useSeconds, range, description);
     }
 
+    @Deprecated
     static NBT encode(Instrument instrument, ClientVersion version) {
+        return encode(PacketWrapper.createDummyWrapper(version), instrument);
+    }
+
+    static NBT encode(PacketWrapper<?> wrapper, Instrument instrument) {
         NBTCompound compound = new NBTCompound();
-        compound.setTag("sound_event", Sound.encode(instrument.getSound(), version));
+        compound.set("sound_event", instrument.getSound(), Sound::encode, wrapper);
         compound.setTag("use_duration", new NBTFloat(instrument.getUseSeconds()));
         compound.setTag("range", new NBTFloat(instrument.getRange()));
-        compound.setTag("description", AdventureSerializer.serializer(version).asNbtTag(instrument.getDescription()));
+        compound.set("description", instrument.getDescription(), wrapper.getSerializers(), wrapper);
         return compound;
     }
 }

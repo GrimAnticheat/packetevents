@@ -30,7 +30,6 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTString;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
-import com.github.retrooper.packetevents.util.adventure.AdventureSerializer;
 import com.github.retrooper.packetevents.util.mappings.TypesBuilderData;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import net.kyori.adventure.text.Component;
@@ -77,24 +76,34 @@ public interface TrimPattern extends MappedEntity, CopyableEntity<TrimPattern>, 
         wrapper.writeBoolean(pattern.isDecal());
     }
 
+    @Deprecated
     static TrimPattern decode(NBT nbt, ClientVersion version, @Nullable TypesBuilderData data) {
+        return decode(nbt, PacketWrapper.createDummyWrapper(version), data);
+    }
+
+    static TrimPattern decode(NBT nbt, PacketWrapper<?> wrapper, @Nullable TypesBuilderData data) {
         NBTCompound compound = (NBTCompound) nbt;
         ResourceLocation assetId = new ResourceLocation(compound.getStringTagValueOrThrow("asset_id"));
-        ItemType templateItem = version.isNewerThanOrEquals(ClientVersion.V_1_21_5) ? null :
+        ItemType templateItem = wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_5) ? null :
                 ItemTypes.getByName(compound.getStringTagValueOrThrow("template_item"));
-        Component description = AdventureSerializer.serializer(version).fromNbtTag(compound.getTagOrThrow("description"));
-        boolean decal = version.isNewerThanOrEquals(ClientVersion.V_1_20_2) && compound.getBoolean("decal");
+        Component description = compound.getOrThrow("description", wrapper.getSerializers(), wrapper);
+        boolean decal = wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_20_2) && compound.getBoolean("decal");
         return new StaticTrimPattern(data, assetId, templateItem, description, decal);
     }
 
+    @Deprecated
     static NBT encode(TrimPattern pattern, ClientVersion version) {
+        return encode(PacketWrapper.createDummyWrapper(version), pattern);
+    }
+
+    static NBT encode(PacketWrapper<?> wrapper, TrimPattern pattern) {
         NBTCompound compound = new NBTCompound();
         compound.setTag("asset_id", new NBTString(pattern.getAssetId().toString()));
-        if (version.isOlderThan(ClientVersion.V_1_21_5)) {
+        if (wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_21_5)) {
             compound.setTag("template_item", new NBTString(pattern.getTemplateItem().getName().toString()));
         }
-        compound.setTag("description", AdventureSerializer.serializer(version).asNbtTag(pattern.getDescription()));
-        if (version.isNewerThanOrEquals(ClientVersion.V_1_20_2)) {
+        compound.set("description", pattern.getDescription(), wrapper.getSerializers(), wrapper);
+        if (wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_20_2)) {
             compound.setTag("decal", new NBTByte(pattern.isDecal()));
         }
         return compound;

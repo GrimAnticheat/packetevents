@@ -29,7 +29,7 @@ public enum Direction {
     NORTH(0, Axis.Y, new Vector3i(0 , 0, -1)),
     SOUTH(1, Axis.Y, new Vector3i(0 ,0 ,1)),
     WEST(2, Axis.X, new Vector3i(-1, 0 ,0)),
-    EAST(3, Axis.X, new Vector3i(-1, 0, 0));
+    EAST(3, Axis.X, new Vector3i(1, 0, 0));
 
     private final int horizontalIndex;
     private final Axis axis;

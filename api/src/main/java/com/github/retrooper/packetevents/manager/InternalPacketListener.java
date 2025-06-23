@@ -86,12 +86,11 @@ public class InternalPacketListener extends PacketListenerAbstract {
             WrapperConfigServerRegistryData packet = new WrapperConfigServerRegistryData(event);
 
             if (packet.getElements() != null) { // 1.20.2 to 1.20.5
-                SynchronizedRegistriesHandler.handleRegistry(user, packet.getServerVersion().toClientVersion(),
+                SynchronizedRegistriesHandler.handleRegistry(user, packet,
                         packet.getRegistryKey(), packet.getElements());
             }
             if (packet.getRegistryData() != null) { // since 1.20.5
-                SynchronizedRegistriesHandler.handleLegacyRegistries(user, packet.getServerVersion()
-                        .toClientVersion(), packet.getRegistryData());
+                SynchronizedRegistriesHandler.handleLegacyRegistries(user, packet, packet.getRegistryData());
             }
         }
 
@@ -101,7 +100,7 @@ public class InternalPacketListener extends PacketListenerAbstract {
             user.setEntityId(joinGame.getEntityId());
 
             if (joinGame.getDimensionCodec() != null) { // 1.16 to 1.20.1
-                SynchronizedRegistriesHandler.handleLegacyRegistries(user, joinGame.getServerVersion().toClientVersion(),
+                SynchronizedRegistriesHandler.handleLegacyRegistries(user, joinGame,
                         joinGame.getDimensionCodec());
             }
 

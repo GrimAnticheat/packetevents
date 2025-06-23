@@ -24,9 +24,15 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 public class StaticTropicalFishPattern extends AbstractMappedEntity implements TropicalFishPattern {
-
+    private final Base base;
     @ApiStatus.Internal
-    public StaticTropicalFishPattern(@Nullable TypesBuilderData data) {
+    public StaticTropicalFishPattern(@Nullable TypesBuilderData data, Base base) {
         super(data);
+        this.base = base;
+    }
+
+    @Override
+    public Base getBase() {
+        return base;
     }
 }

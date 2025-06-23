@@ -28,6 +28,8 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTInt;
 import com.github.retrooper.packetevents.protocol.nbt.NBTList;
 import com.github.retrooper.packetevents.protocol.nbt.NBTString;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +39,7 @@ import java.util.Optional;
 
 import static com.github.retrooper.packetevents.util.adventure.AdventureIndexUtil.indexValueOrThrow;
 
+@NullMarked
 public final class EnchantmentDefinition {
 
     private final MappedEntitySet<ItemType> supportedItems;
@@ -65,16 +68,21 @@ public final class EnchantmentDefinition {
         this.slots = slots;
     }
 
+    @Deprecated
     public static EnchantmentDefinition decode(NBT nbt, ClientVersion version) {
+        return decode(nbt, PacketWrapper.createDummyWrapper(version));
+    }
+
+    public static EnchantmentDefinition decode(NBT nbt, PacketWrapper<?> wrapper) {
         NBTCompound compound = (NBTCompound) nbt;
-        MappedEntitySet<ItemType> supportedItems = MappedEntitySet.decode(
-                compound.getTagOrThrow("supported_items"), version, ItemTypes.getRegistry());
-        Optional<MappedEntitySet<ItemType>> primaryItems = Optional.ofNullable(compound.getTagOrNull("primary_items"))
-                .map(items -> MappedEntitySet.decode(items, version, ItemTypes.getRegistry()));
+        MappedEntitySet<ItemType> supportedItems = compound.getOrThrow("supported_items", (tag, ew) ->
+                MappedEntitySet.decode(tag, ew, ItemTypes.getRegistry()), wrapper);
+        Optional<MappedEntitySet<ItemType>> primaryItems = Optional.ofNullable(compound.getOrNull("primary_items",
+                (tag, ew) -> MappedEntitySet.decode(tag, ew, ItemTypes.getRegistry()), wrapper));
         int weight = compound.getNumberTagOrThrow("weight").getAsInt();
         int maxLevel = compound.getNumberTagOrThrow("max_level").getAsInt();
-        EnchantmentCost minCost = EnchantmentCost.decode(compound.getTagOrThrow("min_cost"), version);
-        EnchantmentCost maxCost = EnchantmentCost.decode(compound.getTagOrThrow("max_cost"), version);
+        EnchantmentCost minCost = compound.getOrThrow("min_cost", EnchantmentCost::decode, wrapper);
+        EnchantmentCost maxCost = compound.getOrThrow("max_cost", EnchantmentCost::decode, wrapper);
         int anvilCost = compound.getNumberTagOrThrow("anvil_cost").getAsInt();
 
         NBT slotsTag = compound.getTagOrThrow("slots");
@@ -96,24 +104,32 @@ public final class EnchantmentDefinition {
                 maxLevel, minCost, maxCost, anvilCost, slots);
     }
 
+    @Deprecated
     public static NBT encode(EnchantmentDefinition definition, ClientVersion version) {
+        return encode(PacketWrapper.createDummyWrapper(version), definition);
+    }
+
+    public static NBT encode(PacketWrapper<?> wrapper, EnchantmentDefinition definition) {
+        NBTCompound compound = new NBTCompound();
+        encode(compound, wrapper, definition);
+        return compound;
+    }
+
+    public static void encode(NBTCompound compound, PacketWrapper<?> wrapper, EnchantmentDefinition definition) {
         NBTList<NBTString> slotsTag = NBTList.createStringList();
         for (EquipmentSlotGroup slot : definition.slots) {
             slotsTag.addTag(new NBTString(slot.getId()));
         }
 
-        NBTCompound compound = new NBTCompound();
-        compound.setTag("supported_items", MappedEntitySet.encode(
-                definition.supportedItems, version));
-        definition.primaryItems.ifPresent(set -> compound.setTag(
-                "primary_items", MappedEntitySet.encode(set, version)));
+        compound.set("supported_items", definition.supportedItems, MappedEntitySet::encode, wrapper);
+        definition.primaryItems.ifPresent(set -> compound.set(
+                "primary_items", set, MappedEntitySet::encode, wrapper));
         compound.setTag("weight", new NBTInt(definition.weight));
         compound.setTag("max_level", new NBTInt(definition.maxLevel));
-        compound.setTag("min_cost", EnchantmentCost.encode(definition.minCost, version));
-        compound.setTag("max_cost", EnchantmentCost.encode(definition.maxCost, version));
+        compound.set("min_cost", definition.minCost, EnchantmentCost::encode, wrapper);
+        compound.set("max_cost", definition.maxCost, EnchantmentCost::encode, wrapper);
         compound.setTag("anvil_cost", new NBTInt(definition.anvilCost));
         compound.setTag("slots", slotsTag);
-        return compound;
     }
 
     public MappedEntitySet<ItemType> getSupportedItems() {

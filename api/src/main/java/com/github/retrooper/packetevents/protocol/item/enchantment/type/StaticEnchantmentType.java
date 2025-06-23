@@ -18,22 +18,30 @@
 
 package com.github.retrooper.packetevents.protocol.item.enchantment.type;
 
+import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.component.StaticComponentMap;
 import com.github.retrooper.packetevents.protocol.item.enchantment.EnchantmentDefinition;
 import com.github.retrooper.packetevents.protocol.mapper.AbstractMappedEntity;
+import com.github.retrooper.packetevents.protocol.mapper.MappedEntityRefSet;
 import com.github.retrooper.packetevents.protocol.mapper.MappedEntitySet;
+import com.github.retrooper.packetevents.protocol.mapper.ResolvableEntity;
+import com.github.retrooper.packetevents.util.mappings.GlobalRegistryHolder;
 import com.github.retrooper.packetevents.util.mappings.TypesBuilderData;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Objects;
 
-public class StaticEnchantmentType extends AbstractMappedEntity implements EnchantmentType {
+@NullMarked
+public class StaticEnchantmentType extends AbstractMappedEntity implements EnchantmentType, ResolvableEntity {
 
     private final Component description;
     private final EnchantmentDefinition definition;
-    private final MappedEntitySet<EnchantmentType> exclusiveSet;
+    private final MappedEntityRefSet<EnchantmentType> exclusiveSetRef;
+    private @Nullable MappedEntitySet<EnchantmentType> exclusiveSet;
     private final StaticComponentMap effects;
 
     public StaticEnchantmentType(
@@ -50,20 +58,27 @@ public class StaticEnchantmentType extends AbstractMappedEntity implements Encha
             @Nullable TypesBuilderData data,
             Component description,
             EnchantmentDefinition definition,
-            MappedEntitySet<EnchantmentType> exclusiveSet,
+            MappedEntityRefSet<EnchantmentType> exclusiveSet,
             StaticComponentMap effects
     ) {
         super(data);
         this.description = description;
         this.definition = definition;
-        this.exclusiveSet = exclusiveSet;
+        this.exclusiveSetRef = exclusiveSet;
         this.effects = effects;
     }
 
     @Override
+    public void doResolve(PacketWrapper<?> wrapper) {
+        this.exclusiveSet = this.exclusiveSetRef.resolve(wrapper, EnchantmentTypes.getRegistry());
+    }
+
+    @Override
     public EnchantmentType copy(@Nullable TypesBuilderData newData) {
-        return new StaticEnchantmentType(newData, this.description,
-                this.definition, this.exclusiveSet, this.effects);
+        StaticEnchantmentType type = new StaticEnchantmentType(newData, this.description,
+                this.definition, this.exclusiveSetRef, this.effects);
+        type.exclusiveSet = this.exclusiveSet;
+        return type;
     }
 
     @Override
@@ -78,7 +93,20 @@ public class StaticEnchantmentType extends AbstractMappedEntity implements Encha
 
     @Override
     public MappedEntitySet<EnchantmentType> getExclusiveSet() {
+        if (this.exclusiveSet == null) {
+            // this shouldn't need to be called normally
+            this.exclusiveSet = this.exclusiveSetRef.resolve(
+                    PacketEvents.getAPI().getServerManager().getVersion().toClientVersion(),
+                    GlobalRegistryHolder.INSTANCE,
+                    EnchantmentTypes.getRegistry()
+            );
+        }
         return this.exclusiveSet;
+    }
+
+    @Override
+    public MappedEntityRefSet<EnchantmentType> getExclusiveRefSet() {
+        return this.exclusiveSetRef;
     }
 
     @Override
@@ -94,17 +122,17 @@ public class StaticEnchantmentType extends AbstractMappedEntity implements Encha
         StaticEnchantmentType that = (StaticEnchantmentType) obj;
         if (!this.description.equals(that.description)) return false;
         if (!this.definition.equals(that.definition)) return false;
-        if (!this.exclusiveSet.equals(that.exclusiveSet)) return false;
+        if (!this.exclusiveSetRef.equals(that.exclusiveSetRef)) return false;
         return this.effects.equals(that.effects);
     }
 
     @Override
     public int deepHashCode() {
-        return Objects.hash(super.hashCode(), this.description, this.definition, this.exclusiveSet, this.effects);
+        return Objects.hash(super.hashCode(), this.description, this.definition, this.exclusiveSetRef, this.effects);
     }
 
     @Override
     public String toString() {
-        return "StaticEnchantmentType{description=" + this.description + ", definition=" + this.definition + ", exclusiveSet=" + this.exclusiveSet + ", effects=" + this.effects + "}";
+        return "StaticEnchantmentType{description=" + this.description + ", definition=" + this.definition + ", exclusiveSetRef=" + this.exclusiveSetRef + ", effects=" + this.effects + "}";
     }
 }

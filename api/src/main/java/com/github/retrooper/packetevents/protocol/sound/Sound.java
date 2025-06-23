@@ -57,7 +57,12 @@ public interface Sound extends MappedEntity {
         wrapper.writeOptional(sound.getRange(), PacketWrapper::writeFloat);
     }
 
+    @Deprecated
     static Sound decode(NBT nbt, ClientVersion version) {
+        return decode(nbt, PacketWrapper.createDummyWrapper(version));
+    }
+
+    static Sound decode(NBT nbt, PacketWrapper<?> wrapper) {
         if (nbt instanceof NBTString) {
             return Sounds.getByNameOrCreate(((NBTString) nbt).getValue());
         }
@@ -68,7 +73,12 @@ public interface Sound extends MappedEntity {
         return new StaticSound(soundId, range);
     }
 
+    @Deprecated
     static NBT encode(Sound sound, ClientVersion version) {
+        return encode(PacketWrapper.createDummyWrapper(version), sound);
+    }
+
+    static NBT encode(PacketWrapper<?> wrapper, Sound sound) {
         if (sound.isRegistered()) {
             return new NBTString(sound.getName().toString());
         }
