@@ -20,10 +20,8 @@ package io.github.retrooper.packetevents.injector.handlers;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
-import com.github.retrooper.packetevents.exception.CancelPacketException;
 import com.github.retrooper.packetevents.exception.InvalidDisconnectPacketSend;
 import com.github.retrooper.packetevents.exception.PacketProcessException;
-import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.User;
@@ -39,17 +37,17 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.MessageToMessageEncoder;
+import io.netty.util.ReferenceCountUtil;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
-public class PacketEventsEncoder extends MessageToMessageEncoder<ByteBuf> {
+public class PacketEventsEncoder extends ChannelOutboundHandlerAdapter {
 
     private static final boolean NETTY_4_1_0;
 
@@ -70,7 +68,7 @@ public class PacketEventsEncoder extends MessageToMessageEncoder<ByteBuf> {
     private boolean handledCompression = COMPRESSION_ENABLED_EVENT != null;
     private ChannelPromise promise;
     public static final Object COMPRESSION_ENABLED_EVENT = paperCompressionEnabledEvent();
-    private boolean preVia;
+    private final boolean preVia;
 
     public PacketEventsEncoder(User user, boolean preVia) {
         this.user = user;
@@ -83,27 +81,6 @@ public class PacketEventsEncoder extends MessageToMessageEncoder<ByteBuf> {
         handledCompression = ((PacketEventsEncoder) encoder).handledCompression;
         promise = ((PacketEventsEncoder) encoder).promise;
         preVia = ((PacketEventsEncoder) encoder).preVia;
-    }
-
-    @Override
-    protected void encode(ChannelHandlerContext ctx, ByteBuf byteBuf, List<Object> list) throws Exception {
-        boolean needsRecompression = !handledCompression && handleCompression(ctx, byteBuf);
-        handleClientBoundPacket(ctx.channel(), user, player, byteBuf, this.promise, preVia);
-
-        // We still call preVia listeners if ViaVersion is not available
-        if (!preVia && PacketEvents.getAPI().getSettings().isPreViaInjection() && !ViaVersionUtil.isAvailable())
-            handleClientBoundPacket(ctx.channel(), user, player, byteBuf, this.promise, !preVia);
-
-        if (needsRecompression) {
-            compress(ctx, byteBuf);
-        }
-
-        // So apparently, this is how ViaVersion hacks around bungeecord not supporting sending empty packets
-        if (!ByteBufHelper.isReadable(byteBuf)) {
-            throw CancelPacketException.INSTANCE;
-        }
-
-        list.add(byteBuf.retain());
     }
 
     private @Nullable PacketSendEvent handleClientBoundPacket(Channel channel, User user, Object player, ByteBuf buffer, ChannelPromise promise, boolean preVia) throws Exception {
@@ -129,18 +106,33 @@ public class PacketEventsEncoder extends MessageToMessageEncoder<ByteBuf> {
             promise = promise.unvoid();
         }
         promise.addListener(p -> this.promise = oldPromise);
-
         this.promise = promise;
-        super.write(ctx, msg, promise);
-    }
 
+        if (msg instanceof ByteBuf) {
+            boolean needsRecompression = !this.handledCompression && this.handleCompression(ctx, (ByteBuf) msg);
+            this.handleClientBoundPacket(ctx.channel(), this.user, this.player, (ByteBuf) msg, this.promise, preVia);
+
+            // We still call preVia listeners if ViaVersion is not available
+            if (!preVia && PacketEvents.getAPI().getSettings().isPreViaInjection() && !ViaVersionUtil.isAvailable())
+                handleClientBoundPacket(ctx.channel(), user, player, (ByteBuf) msg, this.promise, true);
+
+            // check if the packet got cancelled
+            if (!((ByteBuf) msg).isReadable()) {
+                ReferenceCountUtil.release(msg);
+                promise.trySuccess(); // TODO how to properly handle this?
+                return; // abort handling
+            }
+
+            if (needsRecompression) {
+                this.compress(ctx, (ByteBuf) msg);
+            }
+        }
+
+        ctx.write(msg, promise);
+    }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        // This is a terrible hack (to support bungee), I think we should use something other than a MessageToMessageEncoder
-        if (ExceptionUtil.isException(cause, CancelPacketException.class)) {
-            return;
-        }
         // Ignore how mojang sends DISCONNECT packets in the wrong state
         if (ExceptionUtil.isException(cause, InvalidDisconnectPacketSend.class)) {
             return;
