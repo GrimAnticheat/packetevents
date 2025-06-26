@@ -39,7 +39,7 @@ public interface NBTLimiter {
     }
 
     static NBTLimiter forBuffer(final @NotNull Object byteBuf) {
-        return forBuffer(byteBuf, DEFAULT_MAX_SIZE);
+        return forBuffer(byteBuf, Integer.MAX_VALUE);
     }
 
     static NBTLimiter forBuffer(final @NotNull Object byteBuf, final int max) {
