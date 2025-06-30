@@ -88,6 +88,12 @@ public final class JukeboxSongs {
             175, 10);
 
     /**
+     * Added with 1.21.7
+     */
+    public static final IJukeboxSong LAVA_CHICKEN = define("lava_chicken", Sounds.MUSIC_DISC_LAVA_CHICKEN,
+            134, 9);
+
+    /**
      * Returns an immutable view of the jukebox songs.
      *
      * @return Jukebox Songs

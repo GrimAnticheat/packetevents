@@ -34,7 +34,7 @@ public interface InputControl {
 
     @SuppressWarnings("unchecked") // not unchecked
     static void encode(NBTCompound compound, PacketWrapper<?> wrapper, InputControl control) {
-        compound.set("tag", control.getType().getName(), ResourceLocation::encode, wrapper);
+        compound.set("type", control.getType().getName(), ResourceLocation::encode, wrapper);
         ((InputControlType<? super InputControl>) control.getType()).encode(compound, wrapper, control);
     }
 
