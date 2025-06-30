@@ -24,7 +24,7 @@ public interface NBTLimiter {
 
     static int getMaxNbtLimit() {
         try {
-            int value = Integer.parseInt(System.getProperty("grim.packetevents.nbtlimit"));
+            int value = Integer.getInteger("grim.packetevents.nbtlimit");
             return value > 0 ? value : Integer.MAX_VALUE;
         } catch (Exception ignored) {
             return 1048576;
