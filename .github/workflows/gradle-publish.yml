@@ -69,6 +69,10 @@ jobs:
           name: sponge-build
           path: sponge/build/libs
 
+      - name: Debug github.ref
+        run: |
+          echo "Current branch ref: ${{ github.ref }}"
+
       - name: Publish with Gradle
         if: ${{ github.ref == 'refs/heads/grim/2.0' }}
         run: ./gradlew publish
