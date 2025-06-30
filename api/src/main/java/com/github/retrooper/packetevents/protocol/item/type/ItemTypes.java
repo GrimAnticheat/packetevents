@@ -1554,6 +1554,11 @@ public final class ItemTypes {
     public static final ItemType MUSIC_DISC_TEARS = builder("music_disc_tears").setMaxAmount(1).setAttributes(ItemAttribute.MUSIC_DISC).build();
 
     /**
+     * Added with 1.21.7
+     */
+    public static final ItemType MUSIC_DISC_LAVA_CHICKEN = builder("music_disc_lava_chicken").setMaxAmount(1).setAttributes(ItemAttribute.MUSIC_DISC).build();
+
+    /**
      * @deprecated Burning furnace shows up as a missing texture, removed in 1.9
      */
     @Deprecated
@@ -1681,6 +1686,7 @@ public final class ItemTypes {
         ClientVersion[] versions = new ClientVersion[]{
                 ClientVersion.V_1_20_5, ClientVersion.V_1_21, ClientVersion.V_1_21_2,
                 ClientVersion.V_1_21_4, ClientVersion.V_1_21_5, ClientVersion.V_1_21_6,
+                ClientVersion.V_1_21_7,
         };
         for (ClientVersion version : versions) {
             parseAllComponents(version);

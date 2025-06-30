@@ -2346,6 +2346,11 @@ public final class Sounds {
     public static final Sound ITEM_SADDLE_UNEQUIP = define("item.saddle.unequip");
 
     /**
+     * Added with 1.21.7
+     */
+    public static final Sound MUSIC_DISC_LAVA_CHICKEN = define("music_disc.lava_chicken");
+
+    /**
      * Returns an immutable view of the sounds.
      *
      * @return Sounds

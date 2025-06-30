@@ -106,6 +106,11 @@ public final class PaintingVariants {
     public static final PaintingVariant COURBET = define("courbet", 2, 1);
     public static final PaintingVariant OWLEMONS = define("owlemons", 3, 3);
 
+    /**
+     * Added with 1.21.7
+     */
+    public static final PaintingVariant DENNIS = define("dennis", 3, 3);
+
     static {
         REGISTRY.unloadMappings();
     }
