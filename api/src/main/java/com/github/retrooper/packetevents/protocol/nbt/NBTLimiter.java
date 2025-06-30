@@ -22,7 +22,16 @@ import org.jetbrains.annotations.NotNull;
 
 public interface NBTLimiter {
 
-    int DEFAULT_MAX_SIZE = 2097152;
+    static int getMaxNbtLimit() {
+        try {
+            int value = Integer.parseInt(System.getProperty("grim.packetevents.nbtlimit"));
+            return value > 0 ? value : Integer.MAX_VALUE;
+        } catch (Exception ignored) {
+            return 1048576;
+        }
+    }
+
+    int DEFAULT_MAX_SIZE = getMaxNbtLimit();
 
     static NBTLimiter noop() {
         return new NBTLimiter() {
@@ -50,12 +59,14 @@ public interface NBTLimiter {
             public void increment(int amount) {
                 bytes += amount;
 
-                if (bytes > max) throw new IllegalArgumentException("NBT size limit reached (" + bytes + "/" + max + ")");
+                if (bytes > max)
+                    throw new IllegalArgumentException("NBT size limit reached (" + bytes + "/" + max + ")");
             }
 
             @Override
             public void checkReadability(int length) {
-                if (length > ByteBufHelper.readableBytes(byteBuf)) throw new IllegalArgumentException("Length is too large: " + length + ", readable: " + ByteBufHelper.readableBytes(byteBuf));
+                if (length > ByteBufHelper.readableBytes(byteBuf))
+                    throw new IllegalArgumentException("Length is too large: " + length + ", readable: " + ByteBufHelper.readableBytes(byteBuf));
             }
         };
     }
