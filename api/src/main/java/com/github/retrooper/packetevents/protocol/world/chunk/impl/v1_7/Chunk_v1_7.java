@@ -18,11 +18,9 @@
 
 package com.github.retrooper.packetevents.protocol.world.chunk.impl.v1_7;
 
-import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.world.chunk.BaseChunk;
 import com.github.retrooper.packetevents.protocol.world.chunk.ByteArray3d;
 import com.github.retrooper.packetevents.protocol.world.chunk.NibbleArray3d;
-import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 
 public class Chunk_v1_7 implements BaseChunk {
     private final ByteArray3d blocks;
@@ -45,13 +43,21 @@ public class Chunk_v1_7 implements BaseChunk {
 
     @Override
     public int getBlockId(int x, int y, int z) {
-        return blocks.get(x, y, z) | (extendedBlocks.get(x, y, z) << 12);
+        int blockId = (blocks.get(x, y, z) & 0xFF) << 4;
+        blockId |= metadata.get(x, y, z) & 0xF;
+        if (extendedBlocks != null) {
+            blockId |= (extendedBlocks.get(x, y, z) & 0xF) << 8;
+        }
+        return blockId;
     }
 
     @Override
     public void set(int x, int y, int z, int combinedID) {
-        blocks.set(x, y, z, combinedID & 0xFF);
-        extendedBlocks.set(x, y, z, combinedID >> 12);
+        blocks.set(x, y, z, (combinedID >> 4) & 0xFF);
+        metadata.set(x, y, z, combinedID & 0xF);
+        if (extendedBlocks != null) {
+            extendedBlocks.set(x, y, z, (combinedID >> 8) & 0xF);
+        }
     }
 
     @Override

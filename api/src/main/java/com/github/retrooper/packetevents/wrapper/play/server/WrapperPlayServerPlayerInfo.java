@@ -71,7 +71,7 @@ public class WrapperPlayServerPlayerInfo extends PacketWrapper<WrapperPlayServer
 
     @Override
     public void read() {
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             playerDataList = new ArrayList<>(1);
             //Only one player data
             String rawUsername = readString();
@@ -145,7 +145,7 @@ public class WrapperPlayServerPlayerInfo extends PacketWrapper<WrapperPlayServer
 
     @Override
     public void write() {
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             //Only one player data can be sent
             PlayerData data = playerDataList.get(0);
             //We must convert the component string to a normal one

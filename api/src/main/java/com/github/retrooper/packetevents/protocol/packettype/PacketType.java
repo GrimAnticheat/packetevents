@@ -206,7 +206,7 @@ public final class PacketType {
 
     //TODO UPDATE Update packet type mappings (clientbound pt. 1)
     private static final VersionMapper CLIENTBOUND_PLAY_VERSION_MAPPER = new VersionMapper(
-            ClientVersion.V_1_7_10,
+            ClientVersion.V_1_7_2,
             ClientVersion.V_1_8,
             ClientVersion.V_1_9,
             ClientVersion.V_1_10,
@@ -235,7 +235,7 @@ public final class PacketType {
 
     //TODO UPDATE Update packet type mappings (serverbound pt. 1)
     private static final VersionMapper SERVERBOUND_PLAY_VERSION_MAPPER = new VersionMapper(
-            ClientVersion.V_1_7_10,
+            ClientVersion.V_1_7_2,
             ClientVersion.V_1_8,
             ClientVersion.V_1_9,
             ClientVersion.V_1_12,
@@ -1075,7 +1075,7 @@ public final class PacketType {
             USE_BED(WrapperPlayServerUseBed.class),
             SPAWN_WEATHER_ENTITY(WrapperPlayServerSpawnWeatherEntity.class),
             TITLE(WrapperPlayServerSetTitleSubtitle.class),
-            WORLD_BORDER(WrapperPlayServerInitializeWorldBorder.class),
+            WORLD_BORDER(WrapperPlayServerWorldBorder.class),
             COMBAT_EVENT(WrapperPlayServerCombatEvent.class),
             ENTITY_MOVEMENT(WrapperPlayServerEntityMovement.class),
             SPAWN_LIVING_ENTITY(WrapperPlayServerSpawnLivingEntity.class),
@@ -1125,7 +1125,7 @@ public final class PacketType {
             INITIALIZE_WORLD_BORDER(WrapperPlayServerInitializeWorldBorder.class),
             KEEP_ALIVE(WrapperPlayServerKeepAlive.class),
             CHUNK_DATA(WrapperPlayServerChunkData.class),
-            EFFECT(null),
+            EFFECT(WrapperPlayServerEffect.class),
             PARTICLE(WrapperPlayServerParticle.class),
             UPDATE_LIGHT(WrapperPlayServerUpdateLight.class),
             JOIN_GAME(WrapperPlayServerJoinGame.class),

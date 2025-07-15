@@ -18,6 +18,7 @@
 package io.github.retrooper.packetevents.sponge;
 
 import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.event.UserLoginEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.FakeChannelUtil;
 import io.github.retrooper.packetevents.sponge.injector.SpongeChannelInjector;
@@ -43,12 +44,13 @@ public class InternalSpongeListener {
             // Check if it is a fake connection...
             if (!FakeChannelUtil.isFakeChannel(channel)) {
                 // Kick them, if they are not a fake player.
-                player.kick(Component.text("PacketEvents 2.0 failed to inject"));
+                player.kick(Component.text("PacketEvents failed to inject into a channel."));
             }
             return;
         }
 
         // Set player object in the injectors
+        PacketEvents.getAPI().getEventManager().callEvent(new UserLoginEvent(user, player));
         injector.updatePlayer(user, player);
     }
 

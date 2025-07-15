@@ -179,7 +179,7 @@ public class WrapperPlayServerTeams extends PacketWrapper<WrapperPlayServerTeams
                 prefix = serializer.deserialize(this.readString(16));
                 suffix = serializer.deserialize(this.readString(16));
                 optionData = OptionData.values()[readByte()];
-                if (serverVersion == ServerVersion.V_1_7_10) {
+                if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
                     nameTagVisibility = NameTagVisibility.ALWAYS;
                     color = NamedTextColor.WHITE;
                 } else {
@@ -217,7 +217,7 @@ public class WrapperPlayServerTeams extends PacketWrapper<WrapperPlayServerTeams
         players = new ArrayList<>();
         if (teamMode == TeamMode.CREATE || teamMode == TeamMode.ADD_ENTITIES || teamMode == TeamMode.REMOVE_ENTITIES) {
             int size;
-            if (serverVersion == ServerVersion.V_1_7_10) {
+            if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
                 size = readShort();
             } else {
                 size = readVarInt();
@@ -241,7 +241,7 @@ public class WrapperPlayServerTeams extends PacketWrapper<WrapperPlayServerTeams
                 writeString(LegacyFormat.trimLegacyFormat(serializer.serialize(info.prefix), 16));
                 writeString(LegacyFormat.trimLegacyFormat(serializer.serialize(info.suffix), 16));
                 writeByte(info.optionData.ordinal());
-                if (serverVersion == ServerVersion.V_1_7_10) {
+                if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
                     writeString(NameTagVisibility.ALWAYS.getId(), 32);
                     writeByte(15);
                 } else {
@@ -274,7 +274,7 @@ public class WrapperPlayServerTeams extends PacketWrapper<WrapperPlayServerTeams
         }
 
         if (teamMode == TeamMode.CREATE || teamMode == TeamMode.ADD_ENTITIES || teamMode == TeamMode.REMOVE_ENTITIES) {
-            if (serverVersion == ServerVersion.V_1_7_10) {
+            if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
                 writeShort(players.size());
             } else {
                 writeVarInt(players.size());

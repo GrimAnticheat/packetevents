@@ -47,7 +47,6 @@ public class SpigotChannelInjector implements ChannelInjector {
     private int connectionChannelsListIndex = -1;
 
     public void updatePlayer(User user, Object player) {
-        PacketEvents.getAPI().getEventManager().callEvent(new UserLoginEvent(user, player));
         Object channel = user.getChannel();
         if (channel == null) {
             channel = PacketEvents.getAPI().getPlayerManager().getChannel(player);
@@ -123,7 +122,7 @@ public class SpigotChannelInjector implements ChannelInjector {
                     try {
                         ServerConnectionInitializer.initChannel(channel, ConnectionState.PLAY);
                     } catch (Exception e) {
-                        PacketEvents.getAPI().getLogManager().severe("Spigot injector failed to inject into an existing channel.");
+                        PacketEvents.getAPI().getLogManager().severe("PacketEvents Spigot injector failed to inject into an existing channel. If you need assistance, join our Discord server: https://discord.gg/DVHxPPxHZc");
                         e.printStackTrace();
                     }
                 }

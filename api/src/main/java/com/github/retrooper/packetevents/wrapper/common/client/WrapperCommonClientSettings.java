@@ -76,7 +76,7 @@ public class WrapperCommonClientSettings<T extends WrapperCommonClientSettings<T
         this.viewDistance = this.readByte();
         this.chatVisibility = this.readEnum(ChatVisibility.values());
         this.chatColors = this.readBoolean();
-        if (this.serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             this.ignoredDifficulty = this.readByte();
             if (this.readBoolean()) { // show cape
                 this.skinMask = SkinSection.CAPE.getMask();
@@ -98,7 +98,7 @@ public class WrapperCommonClientSettings<T extends WrapperCommonClientSettings<T
         this.writeByte(this.viewDistance);
         this.writeEnum(this.chatVisibility);
         this.writeBoolean(this.chatColors);
-        if (this.serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             this.writeByte(this.ignoredDifficulty);
             this.writeBoolean(SkinSection.CAPE.isSet(this.skinMask));
         } else {

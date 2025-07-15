@@ -68,7 +68,7 @@ public class WrapperPlayServerUpdateScore extends PacketWrapper<WrapperPlayServe
             this.value = Optional.of(this.readVarInt());
             this.entityDisplayName = this.readOptional(PacketWrapper::readComponent);
             this.scoreFormat = this.readOptional(ScoreFormat::readTyped);
-        } else if (this.serverVersion == ServerVersion.V_1_7_10) {
+        } else if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             entityName = readString(16);
             action = Action.VALUES[readByte()];
             if (action != Action.REMOVE_ITEM) {
@@ -107,7 +107,7 @@ public class WrapperPlayServerUpdateScore extends PacketWrapper<WrapperPlayServe
             this.writeVarInt(this.value.orElse(0));
             this.writeOptional(this.entityDisplayName, PacketWrapper::writeComponent);
             this.writeOptional(this.scoreFormat, ScoreFormat::writeTyped);
-        } else if (this.serverVersion == ServerVersion.V_1_7_10) {
+        } else if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             writeString(entityName, 16);
             writeByte(action.ordinal());
             if (action != Action.REMOVE_ITEM) {

@@ -72,7 +72,7 @@ public class WrapperPlayClientPlayerFlying extends PacketWrapper<WrapperPlayClie
         if (positionChanged) {
             double x = readDouble();
             double y = readDouble();
-            if (serverVersion == ServerVersion.V_1_7_10) {
+            if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
                 //Can be ignored, cause stance = (y + 1.62)
                 double stance = readDouble();
             }
@@ -93,7 +93,7 @@ public class WrapperPlayClientPlayerFlying extends PacketWrapper<WrapperPlayClie
     public void write() {
         if (positionChanged) {
             writeDouble(location.getPosition().getX());
-            if (serverVersion == ServerVersion.V_1_7_10) {
+            if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
                 //Can be ignored, cause stance = (y + 1.62)
                 writeDouble(location.getPosition().getY() + 1.62);
             }

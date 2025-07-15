@@ -561,6 +561,16 @@ public class WrappedBlockState {
         return type;
     }
 
+    public Object getData(StateValue stateValue) {
+        return data.get(stateValue);
+    }
+
+    public void setData(StateValue stateValue, Object object) {
+        checkIfCloneNeeded();
+        data.put(stateValue, object);
+        checkIsStillValid();
+    }
+
     // Begin all block data types
     public int getAge() {
         return (int) data.get(StateValue.AGE);

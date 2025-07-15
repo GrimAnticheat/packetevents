@@ -32,7 +32,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public enum ServerVersion {
     //TODO Rename to MinecraftVersion?
-    V_1_7_10(5),
+    V_1_7_2(4), V_1_7_4(4), V_1_7_5(4),
+    V_1_7_6(5), V_1_7_7(5), V_1_7_8(5), V_1_7_9(5), V_1_7_10(5),
     V_1_8(47), V_1_8_3(47), V_1_8_8(47),
     V_1_9(107), V_1_9_1(108), V_1_9_2(109), V_1_9_4(110),
     //1.10 and 1.10.1 are redundant

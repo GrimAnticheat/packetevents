@@ -39,6 +39,7 @@ import java.util.List;
  * @since 1.6.9
  */
 public enum ClientVersion {
+    V_1_7_2(4),
     V_1_7_10(5),
 
     V_1_8(47),
@@ -111,7 +112,7 @@ public enum ClientVersion {
     //TODO UPDATE Add new protocol version field
 
     @Deprecated
-    LOWER_THAN_SUPPORTED_VERSIONS(V_1_7_10.protocolVersion - 1, true),
+    LOWER_THAN_SUPPORTED_VERSIONS(V_1_7_2.protocolVersion - 1, true),
     //TODO UPDATE Update HIGHER_THAN_SUPPORTED_VERSIONS field
     @Deprecated
     HIGHER_THAN_SUPPORTED_VERSIONS(V_1_21_7.protocolVersion + 1, true),

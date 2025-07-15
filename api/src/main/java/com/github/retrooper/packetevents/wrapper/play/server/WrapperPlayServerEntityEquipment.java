@@ -45,7 +45,7 @@ public class WrapperPlayServerEntityEquipment extends PacketWrapper<WrapperPlayS
 
     @Override
     public void read() {
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             entityId = readInt();
         } else {
             entityId = readVarInt();
@@ -72,7 +72,7 @@ public class WrapperPlayServerEntityEquipment extends PacketWrapper<WrapperPlayS
 
     @Override
     public void write() {
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             writeInt(entityId);
         } else {
             writeVarInt(entityId);

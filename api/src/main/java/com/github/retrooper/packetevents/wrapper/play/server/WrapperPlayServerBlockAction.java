@@ -45,7 +45,7 @@ public class WrapperPlayServerBlockAction extends PacketWrapper<WrapperPlayServe
 
     @Override
     public void read() {
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             int x = readInt();
             int y = readShort();
             int z = readInt();
@@ -60,7 +60,7 @@ public class WrapperPlayServerBlockAction extends PacketWrapper<WrapperPlayServe
 
     @Override
     public void write() {
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             writeInt(blockPosition.x);
             writeShort(blockPosition.y);
             writeInt(blockPosition.z);

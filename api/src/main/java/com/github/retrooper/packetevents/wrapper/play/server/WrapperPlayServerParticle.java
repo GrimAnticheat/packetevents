@@ -77,7 +77,7 @@ public class WrapperPlayServerParticle extends PacketWrapper<WrapperPlayServerPa
         int particleTypeId = 0;
         ParticleType<?> particleType = null;
         boolean v1205 = this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_20_5);
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             String particleName = readString(64);
             particleType = ParticleTypes.getByName("minecraft:" + particleName);
         } else if (!v1205) {
@@ -118,7 +118,7 @@ public class WrapperPlayServerParticle extends PacketWrapper<WrapperPlayServerPa
     @Override
     public void write() {
         //TODO on 1.7 we get particle type by 64 len string
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             writeString(particle.getType().getName().getKey(), 64);
         } else if (this.serverVersion.isOlderThan(ServerVersion.V_1_20_5)) {
             int id = this.particle.getType().getId(this.serverVersion.toClientVersion());

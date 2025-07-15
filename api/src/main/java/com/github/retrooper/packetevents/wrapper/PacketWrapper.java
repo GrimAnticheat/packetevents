@@ -1362,6 +1362,18 @@ public class PacketWrapper<T extends PacketWrapper<T>> {
 
     public <K, C extends Collection<K>> C readCollection(IntFunction<C> function, Reader<K> reader) {
         int size = this.readVarInt();
+        return _readCollection(function, reader, size);
+    }
+
+    public <K, C extends Collection<K>> C readCollection(IntFunction<C> function, Reader<K> reader, int maxSize) {
+        int size = this.readVarInt();
+        if (size > maxSize) {
+            throw new RuntimeException(size + " elements exceeded max size of: " + maxSize);
+        }
+        return _readCollection(function, reader, size);
+    }
+
+    private <K, C extends Collection<K>> C _readCollection(IntFunction<C> function, Reader<K> reader, int size) {
         Collection<K> collection = function.apply(size);
         for (int i = 0; i < size; ++i) {
             collection.add(reader.apply(this));
@@ -1378,6 +1390,10 @@ public class PacketWrapper<T extends PacketWrapper<T>> {
 
     public <K> List<K> readList(Reader<K> reader) {
         return this.readCollection(ArrayList::new, reader);
+    }
+
+    public <K> List<K> readList(Reader<K> reader, int maxSize) {
+        return this.readCollection(ArrayList::new, reader, maxSize);
     }
 
     public <K> void writeList(List<K> list, Writer<K> writer) {

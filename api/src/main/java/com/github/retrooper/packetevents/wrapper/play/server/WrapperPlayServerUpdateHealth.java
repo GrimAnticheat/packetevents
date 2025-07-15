@@ -42,7 +42,7 @@ public class WrapperPlayServerUpdateHealth extends PacketWrapper<WrapperPlayServ
     @Override
     public void read() {
         health = readFloat();
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             food = readShort();
         } else {
             food = readVarInt();
@@ -53,7 +53,7 @@ public class WrapperPlayServerUpdateHealth extends PacketWrapper<WrapperPlayServ
     @Override
     public void write() {
         writeFloat(health);
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             writeShort(food);
         } else {
             writeVarInt(food);

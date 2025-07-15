@@ -41,7 +41,7 @@ public class WrapperPlayServerCollectItem extends PacketWrapper<WrapperPlayServe
 
     @Override
     public void read() {
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             collectedEntityId = readInt();
             collectorEntityId = readInt();
         } else {
@@ -55,7 +55,7 @@ public class WrapperPlayServerCollectItem extends PacketWrapper<WrapperPlayServe
 
     @Override
     public void write() {
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             writeInt(collectedEntityId);
             writeInt(collectorEntityId);
         } else {

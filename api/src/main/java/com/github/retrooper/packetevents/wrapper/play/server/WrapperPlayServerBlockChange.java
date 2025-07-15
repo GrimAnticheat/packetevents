@@ -41,7 +41,7 @@ public class WrapperPlayServerBlockChange extends PacketWrapper<WrapperPlayServe
 
     @Override
     public void read() {
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             blockPosition = new Vector3i(readInt(), readUnsignedByte(), readInt());
             int block = readVarInt();
             int blockData = readUnsignedByte();
@@ -54,7 +54,7 @@ public class WrapperPlayServerBlockChange extends PacketWrapper<WrapperPlayServe
 
     @Override
     public void write() {
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             writeInt(blockPosition.getX());
             writeByte(blockPosition.getY());
             writeInt(blockPosition.getZ());

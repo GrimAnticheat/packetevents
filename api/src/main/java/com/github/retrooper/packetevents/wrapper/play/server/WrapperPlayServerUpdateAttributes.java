@@ -83,7 +83,7 @@ public class WrapperPlayServerUpdateAttributes extends PacketWrapper<WrapperPlay
 
     @Override
     public void read() {
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             entityID = readInt();
         } else {
             entityID = readVarInt();
@@ -116,7 +116,7 @@ public class WrapperPlayServerUpdateAttributes extends PacketWrapper<WrapperPlay
 
             double value = readDouble();
             int modifiersLength;
-            if (serverVersion == ServerVersion.V_1_7_10) {
+            if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
                 modifiersLength = readShort();
             } else {
                 modifiersLength = readVarInt();
@@ -144,7 +144,7 @@ public class WrapperPlayServerUpdateAttributes extends PacketWrapper<WrapperPlay
 
     @Override
     public void write() {
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             writeInt(entityID);
         } else {
             writeVarInt(entityID);
@@ -167,7 +167,7 @@ public class WrapperPlayServerUpdateAttributes extends PacketWrapper<WrapperPlay
             }
 
             writeDouble(property.value);
-            if (serverVersion == ServerVersion.V_1_7_10) {
+            if (this.serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
                 writeShort(property.modifiers.size());
             } else {
                 writeVarInt(property.modifiers.size());

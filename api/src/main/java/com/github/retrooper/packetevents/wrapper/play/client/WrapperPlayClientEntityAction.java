@@ -106,7 +106,8 @@ public class WrapperPlayClientEntityAction extends PacketWrapper<WrapperPlayClie
             @Override
             public int getId(ServerVersion version) {
                 return version.isNewerThanOrEquals(ServerVersion.V_1_21_6)
-                        ? -1 : this.ordinal();
+                        ? -1 : version.isOlderThanOrEquals(ServerVersion.V_1_7_10)
+                        ? 1 : this.ordinal();
             }
         },
         /**
@@ -117,7 +118,8 @@ public class WrapperPlayClientEntityAction extends PacketWrapper<WrapperPlayClie
             @Override
             public int getId(ServerVersion version) {
                 return version.isNewerThanOrEquals(ServerVersion.V_1_21_6)
-                        ? -1 : this.ordinal();
+                        ? -1 : version.isOlderThanOrEquals(ServerVersion.V_1_7_10)
+                        ? 2 : this.ordinal();
             }
         },
         LEAVE_BED {
@@ -126,7 +128,7 @@ public class WrapperPlayClientEntityAction extends PacketWrapper<WrapperPlayClie
                 if (version.isNewerThanOrEquals(ServerVersion.V_1_21_6)) {
                     return this.ordinal() - 2;
                 }
-                return this.ordinal();
+                return version.isOlderThanOrEquals(ServerVersion.V_1_7_10) ? 3 : this.ordinal();
             }
         },
         START_SPRINTING {
@@ -135,7 +137,7 @@ public class WrapperPlayClientEntityAction extends PacketWrapper<WrapperPlayClie
                 if (version.isNewerThanOrEquals(ServerVersion.V_1_21_6)) {
                     return this.ordinal() - 2;
                 }
-                return this.ordinal();
+                return version.isOlderThanOrEquals(ServerVersion.V_1_7_10) ? 4 : this.ordinal();
             }
         },
         STOP_SPRINTING {
@@ -144,7 +146,7 @@ public class WrapperPlayClientEntityAction extends PacketWrapper<WrapperPlayClie
                 if (version.isNewerThanOrEquals(ServerVersion.V_1_21_6)) {
                     return this.ordinal() - 2;
                 }
-                return this.ordinal();
+                return version.isOlderThanOrEquals(ServerVersion.V_1_7_10) ? 5 : this.ordinal();
             }
         },
         START_JUMPING_WITH_HORSE {
@@ -153,7 +155,8 @@ public class WrapperPlayClientEntityAction extends PacketWrapper<WrapperPlayClie
                 if (version.isNewerThanOrEquals(ServerVersion.V_1_21_6)) {
                     return this.ordinal() - 2;
                 }
-                return this.ordinal();
+                return version.isOlderThanOrEquals(ServerVersion.V_1_7_10) ?
+                        (version.isOlderThanOrEquals(ServerVersion.V_1_7_5) ? -1 : 6) : this.ordinal();
             }
         },
         /**

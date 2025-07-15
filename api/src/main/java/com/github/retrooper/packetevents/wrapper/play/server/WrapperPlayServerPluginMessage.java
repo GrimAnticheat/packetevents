@@ -58,7 +58,7 @@ public class WrapperPlayServerPluginMessage extends PacketWrapper<WrapperPlaySer
         else {
             this.channelName = readString(20);
         }
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             //We ignore this, because it's not needed.
             int legacyDataSize = readShort();
         }
@@ -73,7 +73,7 @@ public class WrapperPlayServerPluginMessage extends PacketWrapper<WrapperPlaySer
         else {
             writeString(this.channelName, 20);
         }
-        if (serverVersion == ServerVersion.V_1_7_10) {
+        if (serverVersion.isOlderThanOrEquals(ServerVersion.V_1_7_10)) {
             writeShort(data.length);
         }
         writeBytes(data);
