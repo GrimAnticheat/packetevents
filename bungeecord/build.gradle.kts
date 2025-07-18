@@ -10,9 +10,8 @@ repositories {
 
 dependencies {
     compileOnly(libs.bungeecord)
-    apiAndPublish(libs.bundles.adventure)
-
-    apiAndPublish(project(":api"))
-    apiAndPublish(project(":netty-common"))
-    shadowAndPublish(libs.bstats.bungeecord)
+    shadow(libs.bundles.adventure)
+    compileShadowOnly(libs.bstats.bungeecord)
+    shadow(project(":api", "shadow"))
+    shadow(project(":netty-common"))
 }

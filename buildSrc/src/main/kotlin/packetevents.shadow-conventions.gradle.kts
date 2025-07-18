@@ -6,60 +6,95 @@ plugins {
     com.gradleup.shadow
 }
 
-// configuration which is added to runtime classpath and shadowed in the published jar
-val shadowAndPublish: Configuration by configurations.creating {
-    configurations.implementation.get().extendsFrom(this)
+val compileShadowOnly: Configuration by configurations.creating {
+    configurations.compileOnly.get().extendsFrom(this)
 }
 
 tasks {
     shadowJar {
+        configurations.add(compileShadowOnly)
+
         destinationDirectory = rootProject.layout.buildDirectory.dir("libs")
+        archiveFileName = "packetevents-${project.name}-${rootProject.ext["versionNoHash"]}.jar"
         archiveClassifier = null
+
+        relocate("net.kyori.adventure.text.serializer", "io.github.retrooper.packetevents.adventure.serializer")
+        relocate("net.kyori.option", "io.github.retrooper.packetevents.adventure.option")
+        relocate("org.bstats", "io.github.retrooper.packetevents.bstats")
+
+        dependencies {
+            exclude(dependency("com.google.code.gson:gson:.*"))
+        }
+
+        mergeServiceFiles()
     }
 
-    register<ShadowJar>("shadowJarPublish") {
-        archiveClassifier = "publish"
+    create<ShadowJar>("shadowNoAdventure") {
+        group = rootProject.name
+        description = "Create a combined JAR of project and runtime dependencies without Adventure dependencies."
+        archiveFileName = "packetevents-${project.name}-no-adv-${rootProject.ext["versionNoHash"]}.jar"
+        archiveClassifier = null
 
-        // include own actual source set
-        from(project.tasks.named<Jar>("jar"))
-        // include dependencies which should be shadowed in published jar
-        configurations = listOf(shadowAndPublish)
-    }
+        val shadowJar = shadowJar.get()
+        val sourceSets = project.extensions.getByType<SourceSetContainer>()
 
-    val shadowNoAdventureTask = register<ShadowJar>("shadowNoAdventure") {
-        destinationDirectory = rootProject.layout.buildDirectory.dir("libs")
-        archiveClassifier = "no-adv"
+        manifest.inheritFrom(shadowJar.manifest)
 
-        // include own actual source set
-        from(project.tasks.named<Jar>("jar"))
-        // include entire runtime classpath dependencies
-        configurations = listOf(project.configurations.runtimeClasspath.get())
+        from(sourceSets.main.get().output)
+        configurations = shadowJar.configurations
 
-        // exclude all adventure dependencies
+        relocate("net.kyori.adventure.text.serializer", "io.github.retrooper.packetevents.adventure.serializer")
+        relocate("net.kyori.option", "io.github.retrooper.packetevents.adventure.option")
+        relocate("org.bstats", "io.github.retrooper.packetevents.bstats")
+
         dependencies {
             exclude(dependency("net.kyori:adventure-api:.*"))
             exclude(dependency("net.kyori:adventure-key:.*"))
             exclude(dependency("net.kyori:adventure-nbt:.*"))
             exclude(dependency("net.kyori:examination-api:.*"))
             exclude(dependency("net.kyori:examination-string:.*"))
+            exclude(dependency("com.google.code.gson:gson:.*"))
+            exclude("META-INF/INDEX.LIST", "META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "module-info.class")
         }
-    }
 
-    withType<ShadowJar> {
-        // always relocate this; we sadly can't relocate adventure because it would
-        // break plugins which depend on packetevents
-        relocate("net.kyori.adventure.text.serializer", "io.github.retrooper.packetevents.adventure.serializer")
-        relocate("net.kyori.option", "io.github.retrooper.packetevents.adventure.option")
-        relocate("org.bstats", "io.github.retrooper.packetevents.bstats")
-
-        // always merge service files; this should be the default
         mergeServiceFiles()
     }
 
     assemble {
         dependsOn(shadowJar)
-        if (hasProperty("no-adv")) {
-            dependsOn(shadowNoAdventureTask)
+    }
+
+    if (project.properties.contains("no-adv")) {
+        assemble {
+            dependsOn("shadowNoAdventure")
         }
+    }
+}
+
+configurations.implementation.get().extendsFrom(configurations.shadow.get())
+
+// TODO properly publish correct shadow references instead of this mess
+gradle.taskGraph.whenReady {
+    if (gradle.startParameter.taskNames.any {
+            it.contains("publish") && !it.equals(
+                "publishMods",
+                ignoreCase = true
+            )
+        }) {
+        logger.info("Adding shadow configuration to shadowJar tasks in module ${project.name}.")
+        tasks.withType<ShadowJar> {
+            dependencies {
+                project.configurations.shadow.get().resolvedConfiguration.firstLevelModuleDependencies.forEach {
+                    exclude(it)
+                }
+            }
+        }
+    }
+}
+
+fun DependencyFilter.exclude(dependency: ResolvedDependency) {
+    exclude(dependency("${dependency.moduleGroup}:${dependency.moduleName}:.*"))
+    dependency.children.forEach {
+        exclude(it)
     }
 }
