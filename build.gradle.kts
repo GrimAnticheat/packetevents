@@ -6,8 +6,8 @@ plugins {
 ext["snapshot"] = ext["snapshot"].toString().toBooleanStrict()
 
 ext["commitHash"] = providers.exec {
-    commandLine("git", "rev-parse", "--short", "HEAD")
-}.standardOutput.asText.map { it.trim() }.getOrElse("unknown")
+    commandLine("git", "rev-parse", "HEAD")
+}.standardOutput.asText.map { it.trim().substring(0, 7) }.getOrElse("unknown")
 ext["versionMeta"] = if (ext["snapshot"] == true) "-SNAPSHOT" else ""
 ext["versionMetaWithHash"] = "+${ext["commitHash"]}${ext["versionMeta"]}"
 ext["versionNoHash"] = "${ext["fullVersion"]}${ext["versionMeta"]}"
