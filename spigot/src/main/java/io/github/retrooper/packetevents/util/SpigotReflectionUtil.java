@@ -22,46 +22,33 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.netty.buffer.UnpooledByteBufAllocationHelper;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleType;
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes;
 import com.github.retrooper.packetevents.protocol.player.TextureProperty;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
+import com.github.retrooper.packetevents.util.reflection.NestedClassUtil;
 import com.github.retrooper.packetevents.util.reflection.Reflection;
 import com.github.retrooper.packetevents.util.reflection.ReflectionObject;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.MapMaker;
 import io.netty.buffer.PooledByteBufAllocator;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Particle;
-import org.bukkit.Registry;
-import org.bukkit.Server;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -103,7 +90,8 @@ public final class SpigotReflectionUtil {
             DYNAMIC_OPS_NBT_CLASS, NMS_NBT_COMPOUND_CLASS, NMS_NBT_BASE_CLASS, NBT_COMPRESSION_STREAM_TOOLS_CLASS,
             STREAM_CODEC, STREAM_DECODER, STREAM_ENCODER, REGISTRY_FRIENDLY_BYTE_BUF, REGISTRY_ACCESS, REGISTRY_ACCESS_FROZEN,
             RESOURCE_KEY, REGISTRY, WRITABLE_REGISTRY, NBT_ACCOUNTER, CHUNK_PROVIDER_SERVER_CLASS, ICHUNKPROVIDER_CLASS, CHUNK_STATUS_CLASS,
-            BLOCK_POSITION_CLASS, PLAYER_CHUNK_MAP_CLASS, PLAYER_CHUNK_CLASS, CHUNK_CLASS, IBLOCKACCESS_CLASS, ICHUNKACCESS_CLASS, REMOTE_CHAT_SESSION_CLASS;
+            BLOCK_POSITION_CLASS, PLAYER_CHUNK_MAP_CLASS, PLAYER_CHUNK_CLASS, CHUNK_CLASS, IBLOCKACCESS_CLASS, ICHUNKACCESS_CLASS, REMOTE_CHAT_SESSION_CLASS,
+    DATA_WATCHER_CLASS, CLIENTBOUND_SET_ENTITY_DATA_PACKET_CLASS, DATA_WATCHER_ITEM_CLASS, DATA_WATCHER_VALUE_CLASS;
 
     //Netty classes
     public static Class<?> CHANNEL_CLASS, BYTE_BUF_CLASS, BYTE_TO_MESSAGE_DECODER, MESSAGE_TO_BYTE_ENCODER;
@@ -111,7 +99,7 @@ public final class SpigotReflectionUtil {
     //Fields
     public static Field ENTITY_PLAYER_PING_FIELD, ENTITY_BOUNDING_BOX_FIELD, BYTE_BUF_IN_PACKET_DATA_SERIALIZER, DIMENSION_CODEC_FIELD,
             DYNAMIC_OPS_NBT_INSTANCE_FIELD, CHUNK_PROVIDER_SERVER_FIELD, CRAFT_PARTICLE_PARTICLES_FIELD, NMS_MK_KEY_FIELD, LEGACY_NMS_PARTICLE_KEY_FIELD, LEGACY_NMS_KEY_TO_NMS_PARTICLE,
-            REMOTE_CHAT_SESSION_FIELD, REGISTRY_KEY_LOCATION_FIELD;
+            REMOTE_CHAT_SESSION_FIELD, REGISTRY_KEY_LOCATION_FIELD, DATA_WATCHER_FIELD;
 
     //Methods
     public static Method IS_DEBUGGING, GET_CRAFT_PLAYER_HANDLE_METHOD, GET_CRAFT_ENTITY_HANDLE_METHOD, GET_CRAFT_WORLD_HANDLE_METHOD,
@@ -125,7 +113,8 @@ public final class SpigotReflectionUtil {
             READ_NBT_FROM_STREAM_METHOD, WRITE_NBT_TO_STREAM_METHOD, STREAM_DECODER_DECODE, STREAM_ENCODER_ENCODE,
             CREATE_REGISTRY_RESOURCE_KEY, GET_REGISTRY_OR_THROW, GET_DIMENSION_TYPES, GET_REGISTRY_ID,
             NBT_ACCOUNTER_UNLIMITED_HEAP, CHUNK_CACHE_GET_IBLOCKACCESS, CHUNK_CACHE_GET_ICHUNKACCESS,
-            IBLOCKACCESS_GET_BLOCK_DATA, CHUNK_GET_BLOCK_DATA, PLAYER_CHUNK_MAP_GET_PLAYER_CHUNK, PLAYER_CHUNK_GET_CHUNK;
+            IBLOCKACCESS_GET_BLOCK_DATA, CHUNK_GET_BLOCK_DATA, PLAYER_CHUNK_MAP_GET_PLAYER_CHUNK, PLAYER_CHUNK_GET_CHUNK,
+            LEGACY_DATA_WATCHER_WRITE_METHOD, CLIENTBOUND_SET_ENTITY_DATA_PACKET_WRITE_DATA_WATCHER_METHOD, GET_DATA_VALUE_FROM_DATA_ITEM_METHOD;
 
     //Constructors
     private static Constructor<?> NMS_ITEM_STACK_CONSTRUCTOR, NMS_PACKET_DATA_SERIALIZER_CONSTRUCTOR,
@@ -275,6 +264,10 @@ public final class SpigotReflectionUtil {
         if (CHUNK_CLASS != null) {
             PLAYER_CHUNK_GET_CHUNK = Reflection.getMethod(SpigotReflectionUtil.PLAYER_CHUNK_CLASS, SpigotReflectionUtil.CHUNK_CLASS, 0);
         }
+
+        LEGACY_DATA_WATCHER_WRITE_METHOD = Reflection.getMethod(DATA_WATCHER_CLASS, void.class, 0, NMS_PACKET_DATA_SERIALIZER_CLASS);
+        CLIENTBOUND_SET_ENTITY_DATA_PACKET_WRITE_DATA_WATCHER_METHOD = Reflection.getMethod(CLIENTBOUND_SET_ENTITY_DATA_PACKET_CLASS, 0, List.class, REGISTRY_FRIENDLY_BYTE_BUF);
+        GET_DATA_VALUE_FROM_DATA_ITEM_METHOD = Reflection.getMethod(DATA_WATCHER_ITEM_CLASS, DATA_WATCHER_VALUE_CLASS, 0);
     }
 
     private static void initFields() {
@@ -302,6 +295,7 @@ public final class SpigotReflectionUtil {
 
         REMOTE_CHAT_SESSION_FIELD = Reflection.getField(ENTITY_PLAYER_CLASS, REMOTE_CHAT_SESSION_CLASS, 0);
         REGISTRY_KEY_LOCATION_FIELD = Reflection.getField(RESOURCE_KEY, NMS_MINECRAFT_KEY_CLASS, 1);
+        DATA_WATCHER_FIELD = Reflection.getField(NMS_ENTITY_CLASS, DATA_WATCHER_CLASS, 0, true);
     }
 
     private static void initClasses() {
@@ -402,6 +396,14 @@ public final class SpigotReflectionUtil {
         WRITABLE_REGISTRY = getServerClass(IS_OBFUSCATED ? "core.IRegistryWritable" : "core.WritableRegistry", "IRegistryWritable");
 
         REMOTE_CHAT_SESSION_CLASS = Reflection.getClassByNameWithoutException("net.minecraft.network.chat.RemoteChatSession");
+        DATA_WATCHER_CLASS =  SpigotReflectionUtil.getServerClass("network.syncher.DataWatcher", "DataWatcher");
+        if (DATA_WATCHER_CLASS == null) {
+            DATA_WATCHER_CLASS = SpigotReflectionUtil.getServerClass("network.syncher.SynchedEntityData", "DataWatcher");
+        }
+
+        CLIENTBOUND_SET_ENTITY_DATA_PACKET_CLASS = SpigotReflectionUtil.getServerClass("network.protocol.game.ClientboundSetEntityDataPacket", "PacketPlayOutEntityMetadata");
+        DATA_WATCHER_ITEM_CLASS = NestedClassUtil.getNestedClass(DATA_WATCHER_CLASS, 0);
+        DATA_WATCHER_VALUE_CLASS = NestedClassUtil.getNestedClass(DATA_WATCHER_CLASS, 1);
     }
 
     private static void initObjects() {
@@ -1205,6 +1207,37 @@ public final class SpigotReflectionUtil {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static List<EntityData<?>> getEntityMetadata(@NotNull Entity entity) {
+        Object byteBuf = PacketEvents.getAPI().getNettyManager().getByteBufAllocationOperator().buffer();
+        try {
+            Object handle = SpigotReflectionUtil.getNMSEntity(entity);
+            Object dataWatcher = DATA_WATCHER_FIELD.get(handle);
+
+            Object packetDataSerializer = createPacketDataSerializer(byteBuf);
+
+            if (LEGACY_DATA_WATCHER_WRITE_METHOD != null) {
+                // Legacy Minecraft versions have the DataWatcher class with a method to write to the PacketDataSerializer
+                LEGACY_DATA_WATCHER_WRITE_METHOD.invoke(dataWatcher, packetDataSerializer);
+            }
+            else {
+                // Modern Minecraft versions require the use of the pack method in the ClientboundSetEntityDataPacket class.
+                Object[] dataItems = new ReflectionObject(dataWatcher).readObjectArray(0, DATA_WATCHER_ITEM_CLASS);
+                List<Object> dataValues = new ArrayList<>(dataItems.length);
+                for (Object dataItem : dataItems) {
+                    dataValues.add(GET_DATA_VALUE_FROM_DATA_ITEM_METHOD.invoke(dataItem));
+                }
+                CLIENTBOUND_SET_ENTITY_DATA_PACKET_WRITE_DATA_WATCHER_METHOD.invoke(null, dataValues, packetDataSerializer);
+            }
+            PacketWrapper<?> packetWrapper = PacketWrapper.createUniversalPacketWrapper(byteBuf);
+            return packetWrapper.readEntityMetadata();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+            ByteBufHelper.release(byteBuf);
         }
     }
 }

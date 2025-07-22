@@ -93,9 +93,7 @@ public class WrapperPlayServerWorldBorder extends PacketWrapper<WrapperPlayServe
 
     @Override
     public void read() {
-        int actionId = readVarInt();
-        action = serverVersion.isNewerThanOrEquals(ServerVersion.V_1_12) ? WorldBorderAction.fromId(actionId)
-                : WorldBorderAction.fromLegacyId(actionId);
+        action = readEnum(WorldBorderAction.class);
         if (this.action == WorldBorderAction.SET_SIZE) {
             this.radius = readDouble();
         } else if (this.action == WorldBorderAction.LERP_SIZE) {
@@ -123,8 +121,7 @@ public class WrapperPlayServerWorldBorder extends PacketWrapper<WrapperPlayServe
 
     @Override
     public void write() {
-        int actionId = serverVersion.isNewerThanOrEquals(ServerVersion.V_1_12) ? action.getId() : action.getLegacyId();
-        writeVarInt(actionId);
+        writeEnum(action);
         if (this.action == WorldBorderAction.SET_SIZE) {
             writeDouble(this.radius);
         } else if (this.action == WorldBorderAction.LERP_SIZE) {
@@ -245,38 +242,20 @@ public class WrapperPlayServerWorldBorder extends PacketWrapper<WrapperPlayServe
     }
 
     public enum WorldBorderAction {
-        SET_SIZE(1),
-        LERP_SIZE(2),
-        SET_CENTER(3),
-        INITIALIZE(6),
-        SET_WARNING_TIME(5),
-        SET_WARNING_BLOCKS(4);
+        SET_SIZE,
+        LERP_SIZE,
+        SET_CENTER,
+        INITIALIZE,
+        SET_WARNING_TIME,
+        SET_WARNING_BLOCKS;
 
-        private final int legacyId;
-
-        WorldBorderAction(int legacyId) {
-            this.legacyId = legacyId;
-        }
 
         public int getId() {
             return ordinal();
         }
 
-        public int getLegacyId() {
-            return legacyId;
-        }
-
         public static WorldBorderAction fromId(int id) {
             return WorldBorderAction.values()[id];
-        }
-
-        public static WorldBorderAction fromLegacyId(int legacyId) {
-            for (WorldBorderAction action : WorldBorderAction.values()) {
-                if (action.legacyId == legacyId) {
-                    return action;
-                }
-            }
-            return null;
         }
     }
 }

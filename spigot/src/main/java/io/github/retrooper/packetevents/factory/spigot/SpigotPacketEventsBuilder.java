@@ -144,16 +144,23 @@ public class SpigotPacketEventsBuilder {
                 if (!initialized) {
                     Plugin plugin = (Plugin) PacketEvents.getAPI().getPlugin();
                     String bukkitVersion = Bukkit.getBukkitVersion();
-                    // Our PEVersion class can parse this version and detect if it is a newer version than what is currently supported
-                    PEVersion bukkitServerVersion = PEVersion.fromString(bukkitVersion.substring(0, bukkitVersion.indexOf("-")));
-                    PEVersion latestSupportedVersion = PEVersion.fromString(ServerVersion.getLatest().getReleaseName());
-                    if (bukkitServerVersion.isNewerThan(latestSupportedVersion)) {
-                        //We do not support this version yet, so let us warn the user
-                        plugin.getLogger().warning("Your build of PacketEvents does not support the Minecraft version "
-                                + bukkitServerVersion + "! The latest Minecraft version supported by your build of PacketEvents is " + latestSupportedVersion
-                                + ". Please test the development builds, as they may already have support for your Minecraft version (hint: select the build that contains 'spigot'): https://ci.codemc.io/job/retrooper/job/packetevents/ If you're in need of any help, join our Discord server: https://discord.gg/DVHxPPxHZc");
-                        Bukkit.getPluginManager().disablePlugin(plugin);
-                        return;
+
+                    if (bukkitVersion.contains("Unknown")) {
+                        ServerVersion fallbackVersion = ServerVersion.V_1_8_8;
+                        String failureToDetectVersionMsg = "Your server software is preventing us from checking the Minecraft Server version. This is what we found: " + bukkitVersion + ". We will assume the Server version is " + fallbackVersion.name() + "...\n If you need assistance, join our Discord server: https://discord.gg/DVHxPPxHZc";
+                        plugin.getLogger().warning(failureToDetectVersionMsg);
+                    } else {
+                        // Our PEVersion class can parse this version and detect if it is a newer version than what is currently supported
+                        PEVersion bukkitServerVersion = PEVersion.fromString(bukkitVersion.substring(0, bukkitVersion.indexOf("-")));
+                        PEVersion latestSupportedVersion = PEVersion.fromString(ServerVersion.getLatest().getReleaseName());
+                        if (bukkitServerVersion.isNewerThan(latestSupportedVersion)) {
+                            //We do not support this version yet, so let us warn the user
+                            plugin.getLogger().warning("Your build of PacketEvents does not support the Minecraft version "
+                                    + bukkitServerVersion + "! The latest Minecraft version supported by your build of PacketEvents is " + latestSupportedVersion
+                                    + ". Please test the development builds, as they may already have support for your Minecraft version (hint: select the build that contains 'spigot'): https://ci.codemc.io/job/retrooper/job/packetevents/ If you're in need of any help, join our Discord server: https://discord.gg/DVHxPPxHZc");
+                            Bukkit.getPluginManager().disablePlugin(plugin);
+                            return;
+                        }
                     }
                     if (settings.shouldCheckForUpdates()) {
                         getUpdateChecker().handleUpdateCheck();
