@@ -17,9 +17,9 @@
  */
 package com.github.retrooper.compression
 
-import com.github.steveice10.opennbt.tag.builtin.Tag
-import com.github.steveice10.opennbt.tag.io.NBTIO
-import com.github.steveice10.opennbt.tag.io.TagWriter
+import com.viaversion.nbt.tag.Tag
+import com.viaversion.nbt.io.NBTIO
+import com.viaversion.nbt.io.TagWriter
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement

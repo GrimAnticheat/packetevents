@@ -18,10 +18,10 @@
 
 package com.github.retrooper.compression.strategy.json
 
-import com.github.steveice10.opennbt.tag.builtin.ByteArrayTag
-import com.github.steveice10.opennbt.tag.builtin.ByteTag
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag
-import com.github.steveice10.opennbt.tag.builtin.Tag
+import com.viaversion.nbt.tag.ByteArrayTag
+import com.viaversion.nbt.tag.ByteTag
+import com.viaversion.nbt.tag.CompoundTag
+import com.viaversion.nbt.tag.Tag
 import com.google.gson.JsonElement
 import java.util.*
 

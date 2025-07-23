@@ -23,7 +23,7 @@ import com.github.difflib.patch.ChangeDelta
 import com.github.difflib.patch.DeleteDelta
 import com.github.difflib.patch.InsertDelta
 import com.github.retrooper.compression.asPrimitiveMap
-import com.github.steveice10.opennbt.tag.builtin.*
+import com.viaversion.nbt.tag.*
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 

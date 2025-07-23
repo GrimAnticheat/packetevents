@@ -17,7 +17,7 @@
  */
 package com.github.retrooper.compression.strategy.json
 
-import com.github.steveice10.opennbt.tag.builtin.*
+import com.viaversion.nbt.tag.*
 import com.google.gson.JsonElement
 import com.google.gson.internal.LazilyParsedNumber
 

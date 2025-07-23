@@ -20,6 +20,7 @@ package io.github.retrooper.packetevents.util;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.pose.EntityPose;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
@@ -41,9 +42,12 @@ import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.util.mappings.SimpleTypesBuilderData;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Pose;
 import org.bukkit.inventory.MainHand;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class SpigotConversionUtil {
     public static Location fromBukkitLocation(org.bukkit.Location location) {
@@ -232,5 +236,17 @@ public class SpigotConversionUtil {
 
     public static MainHand toBukkitHand(HumanoidArm arm) {
         return MainHand.values()[arm.ordinal()];
+    }
+
+    /**
+     * Retrieves the metadata of a given Bukkit {@link org.bukkit.entity.Entity},
+     * returned as a list of {@link com.github.retrooper.packetevents.protocol.entity.data.EntityData}
+     * compatible with PacketEvents.
+     *
+     * @param entity the Bukkit entity to extract metadata from
+     * @return a list of the entity's metadata values
+     */
+    public static List<EntityData<?>> getEntityMetadata(Entity entity) {
+        return SpigotReflectionUtil.getEntityMetadata(entity);
     }
 }

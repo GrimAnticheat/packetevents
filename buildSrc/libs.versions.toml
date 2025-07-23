@@ -1,7 +1,7 @@
 [versions]
-shadow = "8.3.3"
+shadow = "8.3.8"
 jetbrains-annotations = "23.0.0"
-via-nbt = "4.1.0"
+via-nbt = "5.1.2"
 fast-util = "8.5.6"
 gson = "2.8.9"
 java-diff-utils = "4.12"
