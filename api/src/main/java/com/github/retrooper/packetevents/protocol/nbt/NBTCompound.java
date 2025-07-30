@@ -284,7 +284,7 @@ public class NBTCompound extends NBT {
         if (list == null) {
             throw new IllegalStateException(MessageFormat.format("NBT {0} does not exist", key));
         }
-        return null;
+        return list;
     }
 
     public <T> void set(String key, T value, NbtEncoder<T> encoder, PacketWrapper<?> wrapper) {

@@ -58,10 +58,10 @@ public class SpigotChannelInjector implements ChannelInjector {
     public boolean isPlayerSet(Object channel) {
         if (channel == null) return false;
         PacketEventsEncoder encoder = getEncoder((Channel) channel);
-        if (encoder.player != null) return true;
+        if (encoder != null && encoder.player != null) return true;
 
         PacketEventsDecoder decoder = getDecoder((Channel) channel);
-        return decoder.player != null;
+        return decoder != null && decoder.player != null;
     }
 
     @Override
