@@ -103,7 +103,7 @@ public class InternalBukkitListener implements Listener {
         // delay by a tick
         FoliaScheduler.getEntityScheduler().runDelayed(player, this.plugin, __ -> {
             // only kick if the player is actually still connected
-            if (player.isConnected()) {
+            if (player.isOnline()) {
                 player.kickPlayer(KICK_MESSAGE);
             }
         }, null, 0);
