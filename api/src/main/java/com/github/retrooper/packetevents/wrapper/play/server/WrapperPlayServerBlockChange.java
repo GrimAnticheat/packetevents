@@ -33,6 +33,10 @@ public class WrapperPlayServerBlockChange extends PacketWrapper<WrapperPlayServe
         super(event);
     }
 
+    public WrapperPlayServerBlockChange(Vector3i blockPosition, WrappedBlockState state) {
+        this(blockPosition, state.getGlobalId());
+    }
+
     public WrapperPlayServerBlockChange(Vector3i blockPosition, int blockID) {
         super(PacketType.Play.Server.BLOCK_CHANGE);
         this.blockPosition = blockPosition;

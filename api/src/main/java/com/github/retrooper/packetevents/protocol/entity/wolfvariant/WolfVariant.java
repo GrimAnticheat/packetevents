@@ -50,14 +50,16 @@ public interface WolfVariant extends MappedEntity, CopyableEntity<WolfVariant>, 
     MappedEntitySet<Biome> getBiomes();
 
     static WolfVariant read(PacketWrapper<?> wrapper) {
-        if (wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_5)) {
+        if (wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_5)
+                || wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_21)) {
             return wrapper.readMappedEntity(WolfVariants.getRegistry());
         }
         return wrapper.readMappedEntityOrDirect(WolfVariants.getRegistry(), WolfVariant::readDirect);
     }
 
     static void write(PacketWrapper<?> wrapper, WolfVariant variant) {
-        if (wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_5)) {
+        if (wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_5)
+                || wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_21)) {
             wrapper.writeMappedEntity(variant);
         } else {
             wrapper.writeMappedEntityOrDirect(variant, WolfVariant::writeDirect);
