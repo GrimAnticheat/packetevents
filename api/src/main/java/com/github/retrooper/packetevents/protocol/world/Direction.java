@@ -19,16 +19,16 @@
 package com.github.retrooper.packetevents.protocol.world;
 
 import com.github.retrooper.packetevents.protocol.world.states.enums.Axis;
-import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3i;
 
 // From MCProtocolLib
 public enum Direction {
-    DOWN(-1, Axis.Z, new Vector3i(0 , -1, 0)),
-    UP(-1, Axis.Z, new Vector3i(0, 1, 0)),
-    NORTH(0, Axis.Y, new Vector3i(0 , 0, -1)),
-    SOUTH(1, Axis.Y, new Vector3i(0 ,0 ,1)),
-    WEST(2, Axis.X, new Vector3i(-1, 0 ,0)),
+
+    DOWN(-1, Axis.Y, new Vector3i(0, -1, 0)),
+    UP(-1, Axis.Y, new Vector3i(0, 1, 0)),
+    NORTH(0, Axis.Z, new Vector3i(0, 0, -1)),
+    SOUTH(1, Axis.Z, new Vector3i(0, 0, 1)),
+    WEST(2, Axis.X, new Vector3i(-1, 0, 0)),
     EAST(3, Axis.X, new Vector3i(1, 0, 0));
 
     private final int horizontalIndex;

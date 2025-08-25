@@ -194,8 +194,13 @@ public class WrapperPlayServerChunkData extends PacketWrapper<WrapperPlayServerC
             // verify the full chunk has been read
             int readerIndex = ByteBufHelper.readerIndex(this.buffer);
             if (expectedReaderIndex != readerIndex) {
-                throw new RuntimeException("Error while decoding chunk at " + chunkX + " " + chunkZ
-                        + "; expected reader index " + expectedReaderIndex + ", got " + readerIndex);
+                if (expectedReaderIndex < readerIndex) {
+                    // we advanced too far, error
+                    throw new RuntimeException("Error while decoding chunk at " + chunkX + " " + chunkZ
+                            + "; expected reader index " + expectedReaderIndex + ", got " + readerIndex);
+                }
+                // we didn't read the whole buffer, skip the rest
+                ByteBufHelper.readerIndex(this.buffer, expectedReaderIndex);
             }
         } finally {
             // change buffer back if it has been switched

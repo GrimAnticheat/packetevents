@@ -119,9 +119,6 @@ public class SingleOptionInputControl implements InputControl {
         }
 
         public static NBT encode(PacketWrapper<?> wrapper, Entry entry) {
-            if (entry.display == null && !entry.initial) {
-                return new NBTString(entry.id);
-            }
             NBTCompound compound = new NBTCompound();
             compound.setTag("id", new NBTString(entry.id));
             if (entry.display != null) {

@@ -35,6 +35,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -227,11 +228,17 @@ public class SpigotChannelInjector implements ChannelInjector {
         }
     }
 
-    private PacketEventsEncoder getEncoder(Channel channel) {
+    /**
+     * @return may return null if the channel is closed already or not initialized yet
+     */
+    private @Nullable PacketEventsEncoder getEncoder(Channel channel) {
         return (PacketEventsEncoder) channel.pipeline().get(PacketEvents.ENCODER_NAME);
     }
 
-    private PacketEventsDecoder getDecoder(Channel channel) {
+    /**
+     * @return may return null if the channel is closed already or not initialized yet
+     */
+    private @Nullable PacketEventsDecoder getDecoder(Channel channel) {
          return (PacketEventsDecoder) channel.pipeline().get(PacketEvents.DECODER_NAME);
     }
 

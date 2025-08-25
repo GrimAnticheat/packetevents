@@ -21,12 +21,14 @@ package com.github.retrooper.packetevents.protocol.nbt.serializer;
 import com.github.retrooper.packetevents.protocol.nbt.NBT;
 import com.github.retrooper.packetevents.protocol.nbt.NBTLimiter;
 import com.github.retrooper.packetevents.protocol.nbt.NBTType;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+@ApiStatus.NonExtendable
 public class NBTSerializer<IN, OUT> implements NBTReader<NBT, IN>, NBTWriter<NBT, OUT> {
 
     protected final IdReader<IN> idReader;
@@ -37,6 +39,7 @@ public class NBTSerializer<IN, OUT> implements NBTReader<NBT, IN>, NBTWriter<NBT
     protected final Map<NBTType<? extends NBT>, Integer> typeToId = new HashMap<>();
     protected final Map<NBTType<? extends NBT>, TagReader<IN, ? extends NBT>> typeReaders = new HashMap<>();
     protected final Map<NBTType<? extends NBT>, TagWriter<OUT, ? extends NBT>> typeWriters = new HashMap<>();
+
     public NBTSerializer(
             IdReader<IN> idReader, IdWriter<OUT> idWriter,
             NameReader<IN> nameReader, NameWriter<OUT> nameWriter
@@ -98,6 +101,7 @@ public class NBTSerializer<IN, OUT> implements NBTReader<NBT, IN>, NBTWriter<NBT
         return type;
     }
 
+    @ApiStatus.Internal
     String readTagName(NBTLimiter limiter, IN from) throws IOException {
         return nameReader.readName(limiter, from);
     }

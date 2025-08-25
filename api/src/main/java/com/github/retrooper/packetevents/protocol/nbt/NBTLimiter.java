@@ -18,20 +18,15 @@
 package com.github.retrooper.packetevents.protocol.nbt;
 
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
+@ApiStatus.NonExtendable
 public interface NBTLimiter {
 
-    static int getMaxNbtLimit() {
-        try {
-            int value = Integer.getInteger("grim.packetevents.nbtlimit");
-            return value > 0 ? value : Integer.MAX_VALUE;
-        } catch (Exception ignored) {
-            return 1048576;
-        }
-    }
-
-    int DEFAULT_MAX_SIZE = getMaxNbtLimit();
+    int DEFAULT_MAX_SIZE = Integer.getInteger("packetevents.nbt.default-max-size", 1 << 20); // 2MiB
+    int DEFAULT_MAX_DEPTH = Integer.getInteger("packetevents.nbt.default-max-depth", 512);
 
     static NBTLimiter noop() {
         return new NBTLimiter() {
@@ -44,29 +39,64 @@ public interface NBTLimiter {
             public void checkReadability(int length) {
                 // no-op
             }
+
+            @Override
+            public void enterDepth() {
+                // no-op
+            }
+
+            @Override
+            public void exitDepth() {
+                // no-op
+            }
         };
     }
 
-    static NBTLimiter forBuffer(final @NotNull Object byteBuf) {
+    static NBTLimiter forBuffer(Object byteBuf) {
         return forBuffer(byteBuf, DEFAULT_MAX_SIZE);
     }
 
-    static NBTLimiter forBuffer(final @NotNull Object byteBuf, final int max) {
+    static NBTLimiter forBuffer(Object byteBuf, int maxBytes) {
+        return forBuffer(byteBuf, maxBytes, DEFAULT_MAX_DEPTH);
+    }
+
+    static NBTLimiter forBuffer(Object byteBuf, int maxBytes, int maxDepth) {
         return new NBTLimiter() {
             private int bytes;
+            private int depth;
 
             @Override
             public void increment(int amount) {
-                bytes += amount;
-
-                if (bytes > max)
-                    throw new IllegalArgumentException("NBT size limit reached (" + bytes + "/" + max + ")");
+                if (amount < 0) {
+                    throw new IllegalArgumentException("Can't increment NBT limiter by negative amount: " + amount);
+                } else if (this.bytes + amount > maxBytes) {
+                    throw new IllegalArgumentException("NBT size limit reached (" + this.bytes + "/" + maxBytes + ")");
+                }
+                this.bytes += amount;
             }
 
             @Override
             public void checkReadability(int length) {
-                if (length > ByteBufHelper.readableBytes(byteBuf))
-                    throw new IllegalArgumentException("Length is too large: " + length + ", readable: " + ByteBufHelper.readableBytes(byteBuf));
+                int readableBytes = ByteBufHelper.readableBytes(byteBuf);
+                if (length > readableBytes) {
+                    throw new IllegalArgumentException("Can't read more than possible: " + length + " > " + readableBytes);
+                }
+            }
+
+            @Override
+            public void enterDepth() {
+                if (this.depth >= maxDepth) {
+                    throw new IllegalArgumentException("NBT depth limit reached (" + this.depth + "/" + maxDepth + ")");
+                }
+                this.depth++;
+            }
+
+            @Override
+            public void exitDepth() {
+                if (this.depth <= 0) {
+                    throw new IllegalArgumentException("Can't exit top-level depth");
+                }
+                this.depth--;
             }
         };
     }
@@ -75,4 +105,7 @@ public interface NBTLimiter {
 
     void checkReadability(int length);
 
+    void enterDepth();
+
+    void exitDepth();
 }

@@ -20,6 +20,7 @@ package io.github.retrooper.packetevents.bukkit;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.PacketEventsAPI;
+import com.github.retrooper.packetevents.netty.channel.ChannelHelper;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.FakeChannelUtil;
 import io.github.retrooper.packetevents.injector.SpigotChannelInjector;
@@ -103,7 +104,7 @@ public class InternalBukkitListener implements Listener {
         // delay by a tick
         FoliaScheduler.getEntityScheduler().runDelayed(player, this.plugin, __ -> {
             // only kick if the player is actually still connected
-            if (player.isOnline()) {
+            if (channel != null ? ChannelHelper.isOpen(channel) : player.isOnline()) {
                 player.kickPlayer(KICK_MESSAGE);
             }
         }, null, 0);
