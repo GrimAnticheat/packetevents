@@ -76,7 +76,7 @@ public class EventManager {
      * be the final decider whether the event has been cancelled or not.
      *
      * @param event                  {@link PacketEvent}
-     * @param postCallListenerAction The action to be ran after all the listeners have finished processing
+     * @param postCallListenerAction The action to be run after all the listeners have finished processing
      */
     public void callEvent(PacketEvent event, @Nullable Runnable postCallListenerAction, boolean preVia) {
         for (PacketListenerCommon listener : listeners) {
@@ -85,7 +85,7 @@ public class EventManager {
                     event.call(listener);
             } catch (Exception t) {
                 // ignore handshake exceptions
-                if (t.getClass() != InvalidHandshakeException.class) {
+                if (t.getClass() != InvalidHandshakeException.class && t.getCause().getClass() != InvalidHandshakeException.class) {
                     PacketEvents.getAPI().getLogger().log(Level.WARNING, "PacketEvents caught an unhandled exception while calling your listener.", t);
                 }
             }
