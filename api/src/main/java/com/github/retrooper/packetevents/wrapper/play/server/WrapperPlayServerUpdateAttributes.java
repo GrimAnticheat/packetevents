@@ -88,7 +88,10 @@ public class WrapperPlayServerUpdateAttributes extends PacketWrapper<WrapperPlay
         } else {
             entityID = readVarInt();
         }
+        readProperties();
+    }
 
+    protected void readProperties() {
         int propertyCount;
         if (serverVersion.isNewerThanOrEquals(ServerVersion.V_1_17)) {
             propertyCount = readVarInt();
