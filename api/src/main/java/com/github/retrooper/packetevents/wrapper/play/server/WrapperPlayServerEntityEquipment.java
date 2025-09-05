@@ -50,6 +50,12 @@ public class WrapperPlayServerEntityEquipment extends PacketWrapper<WrapperPlayS
         } else {
             entityId = readVarInt();
         }
+        readEquipment();
+    }
+
+    // allow this to be overridden by a subclass
+    // this could be used to save performance if you don't need to read the equipment
+    protected void readEquipment() {
         equipment = new ArrayList<>();
         if (serverVersion.isNewerThanOrEquals(ServerVersion.V_1_16)) {
             byte value;
