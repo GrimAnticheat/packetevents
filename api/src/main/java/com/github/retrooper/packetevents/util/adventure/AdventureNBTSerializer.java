@@ -20,60 +20,24 @@ package com.github.retrooper.packetevents.util.adventure;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.dialog.Dialog;
-import com.github.retrooper.packetevents.protocol.nbt.NBT;
-import com.github.retrooper.packetevents.protocol.nbt.NBTByte;
-import com.github.retrooper.packetevents.protocol.nbt.NBTByteArray;
-import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
-import com.github.retrooper.packetevents.protocol.nbt.NBTDouble;
-import com.github.retrooper.packetevents.protocol.nbt.NBTFloat;
-import com.github.retrooper.packetevents.protocol.nbt.NBTInt;
-import com.github.retrooper.packetevents.protocol.nbt.NBTIntArray;
-import com.github.retrooper.packetevents.protocol.nbt.NBTList;
-import com.github.retrooper.packetevents.protocol.nbt.NBTLong;
-import com.github.retrooper.packetevents.protocol.nbt.NBTLongArray;
-import com.github.retrooper.packetevents.protocol.nbt.NBTNumber;
-import com.github.retrooper.packetevents.protocol.nbt.NBTShort;
-import com.github.retrooper.packetevents.protocol.nbt.NBTString;
-import com.github.retrooper.packetevents.protocol.nbt.NBTType;
+import com.github.retrooper.packetevents.protocol.nbt.*;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.util.UniqueIdUtil;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.api.BinaryTagHolder;
-import net.kyori.adventure.text.BlockNBTComponent;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentBuilder;
-import net.kyori.adventure.text.ComponentLike;
-import net.kyori.adventure.text.EntityNBTComponent;
-import net.kyori.adventure.text.KeybindComponent;
-import net.kyori.adventure.text.NBTComponent;
-import net.kyori.adventure.text.ScoreComponent;
-import net.kyori.adventure.text.SelectorComponent;
-import net.kyori.adventure.text.StorageNBTComponent;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.TranslatableComponent;
-import net.kyori.adventure.text.TranslationArgument;
+import net.kyori.adventure.text.*;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.DataComponentValue;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.ShadowColor;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.format.*;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.BackwardCompatUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -476,6 +440,7 @@ public class AdventureNBTSerializer implements ComponentSerializer<Component, Co
                     }
 
                     NBTReader item = modernEvents ? hoverEvent : hoverEvent.child("contents");
+                    if (item == null) break;
                     Key itemId = item.readUTF("id", Key::key);
                     Integer count = item.readNumber("count", Number::intValue);
                     int nonNullCount = count == null ? 1 : count;
@@ -503,10 +468,12 @@ public class AdventureNBTSerializer implements ComponentSerializer<Component, Co
                     break;
                 case "show_entity":
                     NBTReader entity = modernEvents ? hoverEvent : hoverEvent.child("contents");
-                    style.hoverEvent(HoverEvent.showEntity(
-                            entity.readUTF(modernEvents ? "id" : "type", Key::key),
-                            entity.readIntArray(modernEvents ? "uuid" : "id", UniqueIdUtil::fromIntArray),
-                            entity.read("name", name -> this.deserialize(name, wrapper))));
+                    if (entity != null) {
+                        style.hoverEvent(HoverEvent.showEntity(
+                                entity.readUTF(modernEvents ? "id" : "type", Key::key),
+                                entity.readIntArray(modernEvents ? "uuid" : "id", UniqueIdUtil::fromIntArray),
+                                entity.read("name", name -> this.deserialize(name, wrapper))));
+                    }
                     break;
             }
         }
@@ -637,10 +604,12 @@ public class AdventureNBTSerializer implements ComponentSerializer<Component, Co
                 case "show_entity":
                     HoverEvent.ShowEntity showEntity = (HoverEvent.ShowEntity) hoverEvent.value();
                     NBTWriter entity = modern ? child : child.child("contents");
-                    entity.writeUTF(modern ? "id" : "type", showEntity.type().asString());
-                    entity.writeIntArray(modern ? "uuid" : "id", UniqueIdUtil.toIntArray(showEntity.id()));
-                    if (showEntity.name() != null) {
-                        entity.write("name", this.serialize(showEntity.name(), wrapper));
+                    if (entity != null) {
+                        entity.writeUTF(modern ? "id" : "type", showEntity.type().asString());
+                        entity.writeIntArray(modern ? "uuid" : "id", UniqueIdUtil.toIntArray(showEntity.id()));
+                        if (showEntity.name() != null) {
+                            entity.write("name", this.serialize(showEntity.name(), wrapper));
+                        }
                     }
                     break;
             }
