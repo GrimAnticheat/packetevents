@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClientClickWindow> {
 
@@ -239,6 +240,12 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
      * Added with 1.17, not actually optional; Removed with 1.21.5, replaced with {@link #getHashedSlots()}
      */
     public Optional<Map<Integer, ItemStack>> getSlots() {
+        if (this.slots == null && this.hashedSlots != null) {
+            return Optional.of(this.hashedSlots.entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()
+                            .map(HashedStack::asItemStack)
+                            .orElse(ItemStack.EMPTY))));
+        }
         return Optional.ofNullable(this.slots);
     }
 
@@ -267,7 +274,7 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
      * Removed with 1.21.5, replaced with {@link #getCarriedHashedStack()}
      */
     public ItemStack getCarriedItemStack() {
-        if (this.carriedItemStack == null && this.carriedHashedStack != null) {
+        if (this.carriedItemStack == null && this.carriedHashedStack != null && this.carriedHashedStack.isPresent()) {
             return this.carriedHashedStack
                     .map(HashedStack::asItemStack)
                     .orElse(ItemStack.EMPTY);
