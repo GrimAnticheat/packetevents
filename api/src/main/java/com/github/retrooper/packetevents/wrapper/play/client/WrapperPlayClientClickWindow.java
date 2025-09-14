@@ -105,14 +105,16 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
 
     @Override
     public void read() {
-        boolean v1_17 = this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_17);
         this.windowID = this.readContainerId();
         this.stateID = this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_17_1) ? this.readVarInt() : null;
         this.slot = this.readShort();
         this.button = this.readByte();
-        this.actionNumber = v1_17 ? null : (int) this.readShort();
+        this.actionNumber = this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_17) ? null : (int) this.readShort();
         this.windowClickType = WindowClickType.getById(this.readVarInt());
+        readSlots();
+    }
 
+    protected void readSlots() {
         if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_5)) {
             this.hashedSlots = this.readMap(
                     ew -> Math.toIntExact(ew.readShort()),
@@ -121,7 +123,7 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
             );
             this.carriedHashedStack = HashedStack.read(this);
         } else {
-            if (v1_17) {
+            if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_17)) {
                 this.slots = this.readMap(
                         packetWrapper -> Math.toIntExact(packetWrapper.readShort()),
                         PacketWrapper::readItemStack
