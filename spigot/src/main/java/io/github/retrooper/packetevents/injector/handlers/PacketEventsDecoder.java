@@ -100,13 +100,14 @@ public class PacketEventsDecoder extends MessageToMessageDecoder<ByteBuf> {
             if (PacketEvents.getAPI().getSettings().isFullStackTraceEnabled()) {
                 String state = user != null ? user.getDecoderState().name() : "null";
                 String clientVersion = user != null ? user.getClientVersion().getReleaseName() : "null";
+                String username = user != null ? user.getProfile().getName() : player != null ? player.getName() : "null";
 
                 PacketEvents.getAPI().getLogger().log(Level.WARNING, cause, () ->
-                        "An error occurred while processing a packet from " + user.getProfile().getName() +
+                        "An error occurred while processing a packet from " + username +
                         " (state: " + state +
                         ", clientVersion: " + clientVersion +
                         ", serverVersion: " + PacketEvents.getAPI().getServerManager().getVersion().getReleaseName() + ")" +
-                        ", preVia: " + preViaVersion);
+                        ", preVia: " + preViaVersion + ")");
             } else {
                 PacketEvents.getAPI().getLogManager().warn(cause.getMessage());
             }
@@ -125,9 +126,8 @@ public class PacketEventsDecoder extends MessageToMessageDecoder<ByteBuf> {
                 FoliaScheduler.getEntityScheduler().runDelayed(player, (Plugin) PacketEvents.getAPI().getPlugin(), (o) -> player.kickPlayer("Invalid packet"), null, 1);
             }
 
-            if (user != null && user.getProfile().getName() != null) {
-                PacketEvents.getAPI().getLogManager().warn("Disconnected " + user.getProfile().getName() + " due to an invalid packet!");
-            }
+            String username = user != null && user.getProfile().getName() != null ? user.getProfile().getName() : player != null ? player.getName() : "null";
+            PacketEvents.getAPI().getLogManager().warn("Disconnected " + username + " due to an invalid packet!");
         }
     }
 
