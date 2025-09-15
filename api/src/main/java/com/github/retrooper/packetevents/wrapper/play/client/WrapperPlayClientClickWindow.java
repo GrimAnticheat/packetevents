@@ -236,16 +236,20 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
         this.windowClickType = windowClickType;
     }
 
-    /**
-     * Added with 1.17, not actually optional; Removed with 1.21.5, replaced with {@link #getHashedSlots()}
-     */
-    public Map<Integer, ItemStack> getSlots() {
+    public Map<Integer, ItemStack> getRawSlots() {
         if (this.slots == null && this.hashedSlots != null) {
             this.slots = this.hashedSlots.entrySet().stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()
                             .asItemStack()));
         }
         return this.slots;
+    }
+
+    /**
+     * Added with 1.17, not actually optional; Removed with 1.21.5, replaced with {@link #getHashedSlots()}
+     */
+    public Optional<Map<Integer, ItemStack>> getSlots() {
+        return Optional.ofNullable(getRawSlots());
     }
 
     /**
