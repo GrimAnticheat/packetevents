@@ -55,7 +55,7 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
     /**
      * Added with 1.21.5
      */
-    private @Nullable Map<Integer, HashedStack> hashedSlots;
+    private @Nullable Map<Integer, Optional<HashedStack>> hashedSlots;
     /**
      * Removed with 1.21.5, replaced with {@link #carriedHashedStack}
      */
@@ -91,7 +91,7 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
     public WrapperPlayClientClickWindow(
             int windowID, @Nullable Integer stateID, int slot,
             int button, WindowClickType windowClickType,
-            @Nullable Map<Integer, HashedStack> hashedSlots,
+            @Nullable Map<Integer, Optional<HashedStack>> hashedSlots,
             @Nullable HashedStack carriedHashedStack
     ) {
         super(PacketType.Play.Client.CLICK_WINDOW);
@@ -119,7 +119,7 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
         if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_5)) {
             this.hashedSlots = this.readMap(
                     ew -> Math.toIntExact(ew.readShort()),
-                    HashedStack::read,
+                    HashedStack::readOptional,
                     MAX_SLOT_COUNT
             );
             this.carriedHashedStack = HashedStack.read(this);
@@ -162,7 +162,7 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
         }
         this.writeVarInt(this.windowClickType.ordinal());
         if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_5)) {
-            this.writeMap(this.hashedSlots != null ? this.hashedSlots : Collections.emptyMap(),
+            this.writeOptionalMap(this.hashedSlots != null ? this.hashedSlots : Collections.emptyMap(),
                     PacketWrapper::writeShort, HashedStack::write);
             HashedStack.write(this, this.carriedHashedStack);
         } else {
@@ -239,8 +239,7 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
     public Map<Integer, ItemStack> getRawSlots() {
         if (this.slots == null && this.hashedSlots != null) {
             this.slots = this.hashedSlots.entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()
-                            .asItemStack()));
+                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> HashedStack.toItemStackFromOptional(entry.getValue())));
         }
         return this.slots;
     }
@@ -258,22 +257,26 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
     public void setSlots(Map<Integer, ItemStack> slots) {
         this.slots = slots;
         if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_5) || this.hashedSlots != null) {
-            this.hashedSlots = this.slots == null ? null : slots.entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> HashedStack.fromItemStack(e.getValue())));
+            this.hashedSlots = this.slots == null ? null : this.slots.entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> HashedStack.toOptionalFromItemStack(entry.getValue())));
         }
+    }
+
+    public Optional<Map<Integer, Optional<HashedStack>>> getHashedSlots() {
+        return Optional.ofNullable(this.hashedSlots);
     }
 
     /**
      * Added with 1.21.5
      */
-    public Map<Integer, HashedStack> getHashedSlots() {
+    public @Nullable Map<Integer, Optional<HashedStack>> getHashedSlotsRaw() {
         return this.hashedSlots;
     }
 
     /**
      * Added with 1.21.5
      */
-    public void setHashedSlots(Map<Integer, HashedStack> hashedSlots) {
+    public void setHashedSlots(@Nullable Map<Integer, Optional<HashedStack>> hashedSlots) {
         this.hashedSlots = hashedSlots;
     }
 

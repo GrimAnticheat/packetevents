@@ -39,12 +39,28 @@ public final class HashedStack {
         this.components = components;
     }
 
+    public static Optional<HashedStack> readOptional(PacketWrapper<?> wrapper) {
+        return Optional.ofNullable(read(wrapper));
+    }
+
+    public static ItemStack toItemStackFromOptional(Optional<HashedStack> stack) {
+        return stack.map(HashedStack::asItemStack).orElse(ItemStack.EMPTY);
+    }
+
+    public static Optional<HashedStack> toOptionalFromItemStack(ItemStack itemStack) {
+        return Optional.ofNullable(fromItemStack(itemStack));
+    }
+
     public static @Nullable HashedStack read(PacketWrapper<?> wrapper) {
         if (!wrapper.readBoolean()) return null;
         ItemType item = wrapper.readMappedEntity(ItemTypes.getRegistry());
         int count = wrapper.readVarInt();
         HashedComponentPatchMap components = HashedComponentPatchMap.read(wrapper);
         return new HashedStack(item, count, components);
+    }
+
+    public static void writeOptional(PacketWrapper<?> wrapper, Optional<HashedStack> stack) {
+        write(wrapper, stack.orElse(null));
     }
 
     public static void write(PacketWrapper<?> wrapper, HashedStack stack) {
