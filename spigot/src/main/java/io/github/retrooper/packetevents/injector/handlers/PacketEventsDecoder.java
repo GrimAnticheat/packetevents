@@ -100,7 +100,7 @@ public class PacketEventsDecoder extends MessageToMessageDecoder<ByteBuf> {
             if (PacketEvents.getAPI().getSettings().isFullStackTraceEnabled()) {
                 String state = user != null ? user.getDecoderState().name() : "null";
                 String clientVersion = user != null ? user.getClientVersion().getReleaseName() : "null";
-                String username = user != null ? user.getProfile().getName() : player != null ? player.getName() : "null";
+                String username = user != null && user.getProfile().getName() != null ? user.getProfile().getName() : player != null ? player.getName() : "null";
 
                 PacketEvents.getAPI().getLogger().log(Level.WARNING, cause, () ->
                         "An error occurred while processing a packet from " + username +
