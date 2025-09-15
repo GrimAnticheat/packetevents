@@ -85,7 +85,7 @@ public class EventManager {
                     event.call(listener);
             } catch (Exception t) {
                 // ignore handshake exceptions
-                if (t.getClass() != InvalidHandshakeException.class && t.getCause().getClass() != InvalidHandshakeException.class) {
+                if (t.getClass() != InvalidHandshakeException.class && (t.getCause() == null || t.getCause().getClass() != InvalidHandshakeException.class)) {
                     PacketEvents.getAPI().getLogger().log(Level.WARNING, "PacketEvents caught an unhandled exception while calling your listener.", t);
                 }
             }
