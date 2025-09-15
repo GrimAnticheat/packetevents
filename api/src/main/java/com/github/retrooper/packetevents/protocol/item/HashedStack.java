@@ -23,6 +23,7 @@ import com.github.retrooper.packetevents.protocol.component.HashedComponentPatch
 import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -38,7 +39,8 @@ public final class HashedStack {
         this.components = components;
     }
 
-    public static HashedStack read(PacketWrapper<?> wrapper) {
+    public static @Nullable HashedStack read(PacketWrapper<?> wrapper) {
+        if (!wrapper.readBoolean()) return null;
         ItemType item = wrapper.readMappedEntity(ItemTypes.getRegistry());
         int count = wrapper.readVarInt();
         HashedComponentPatchMap components = HashedComponentPatchMap.read(wrapper);
