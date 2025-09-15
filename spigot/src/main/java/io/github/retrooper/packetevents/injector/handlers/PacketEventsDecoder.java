@@ -106,7 +106,7 @@ public class PacketEventsDecoder extends MessageToMessageDecoder<ByteBuf> {
                         "An error occurred while processing a packet from " + username +
                         " (state: " + state +
                         ", clientVersion: " + clientVersion +
-                        ", serverVersion: " + PacketEvents.getAPI().getServerManager().getVersion().getReleaseName() + ")" +
+                        ", serverVersion: " + PacketEvents.getAPI().getServerManager().getVersion().getReleaseName() +
                         ", preVia: " + preViaVersion + ")");
             } else {
                 PacketEvents.getAPI().getLogManager().warn(cause.getMessage());
