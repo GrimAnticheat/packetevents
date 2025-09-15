@@ -43,10 +43,6 @@ public final class HashedStack {
         return Optional.ofNullable(read(wrapper));
     }
 
-    public static ItemStack toItemStackFromOptional(Optional<HashedStack> stack) {
-        return stack.map(HashedStack::asItemStack).orElse(ItemStack.EMPTY);
-    }
-
     public static Optional<HashedStack> toOptionalFromItemStack(ItemStack itemStack) {
         return Optional.ofNullable(fromItemStack(itemStack));
     }

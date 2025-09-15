@@ -239,7 +239,9 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
     public Map<Integer, ItemStack> getRawSlots() {
         if (this.slots == null && this.hashedSlots != null) {
             this.slots = this.hashedSlots.entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> HashedStack.toItemStackFromOptional(entry.getValue())));
+                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()
+                            .map(HashedStack::asItemStack)
+                            .orElse(ItemStack.EMPTY)));
         }
         return this.slots;
     }
@@ -284,8 +286,8 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
      * Removed with 1.21.5, replaced with {@link #getCarriedHashedStack()}
      */
     public ItemStack getCarriedItemStack() {
-        if (this.carriedItemStack == null && this.carriedHashedStack != null) {
-            this.carriedItemStack = this.carriedHashedStack.asItemStack();
+        if (this.carriedItemStack == null) {
+            this.carriedItemStack = this.carriedHashedStack == null ? ItemStack.EMPTY : this.carriedHashedStack.asItemStack();
         }
         return this.carriedItemStack;
     }
