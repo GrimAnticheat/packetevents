@@ -162,8 +162,7 @@ public class WrapperPlayClientClickWindow extends PacketWrapper<WrapperPlayClien
         }
         this.writeVarInt(this.windowClickType.ordinal());
         if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_5)) {
-            this.writeOptionalMap(this.hashedSlots != null ? this.hashedSlots : Collections.emptyMap(),
-                    PacketWrapper::writeShort, HashedStack::write);
+            this.writeMap(this.hashedSlots != null ? this.hashedSlots : Collections.emptyMap(), PacketWrapper::writeShort, HashedStack::writeOptional);
             HashedStack.write(this, this.carriedHashedStack);
         } else {
             if (v1_17) {

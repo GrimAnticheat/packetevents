@@ -435,16 +435,6 @@ public class PacketWrapper<T extends PacketWrapper<T>> {
         return map;
     }
 
-    public <K, V> void writeOptionalMap(Map<K, Optional<V>> map, Writer<K> keyConsumer, Writer<V> valueConsumer) {
-        writeVarInt(map.size());
-        for (Map.Entry<K, Optional<V>> entry : map.entrySet()) {
-            K key = entry.getKey();
-            Optional<V> value = entry.getValue();
-            keyConsumer.accept(this, key);
-            value.ifPresent(v -> valueConsumer.accept(this, v));
-        }
-    }
-
     public <K, V> void writeMap(Map<K, V> map, Writer<K> keyConsumer, Writer<V> valueConsumer) {
         writeVarInt(map.size());
         for (Map.Entry<K, V> entry : map.entrySet()) {
