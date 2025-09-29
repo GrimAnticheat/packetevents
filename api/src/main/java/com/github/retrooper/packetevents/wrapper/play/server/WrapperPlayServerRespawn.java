@@ -405,4 +405,12 @@ public class WrapperPlayServerRespawn extends PacketWrapper<WrapperPlayServerRes
     public void setPortalCooldown(int portalCooldown) {
         this.portalCooldown = portalCooldown;
     }
+
+    public int getSeaLevel() {
+        return this.seaLevel;
+    }
+
+    public void setSeaLevel(int seaLevel) {
+        this.seaLevel = seaLevel;
+    }
 }
