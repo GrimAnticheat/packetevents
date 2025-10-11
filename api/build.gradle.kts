@@ -36,6 +36,7 @@ dependencies {
     testImplementation(libs.adventure.text.serializer.legacy)
     testImplementation(project(":netty-common"))
     testImplementation(testlibs.mockbukkit)
+    testImplementation(testlibs.paper.api)
     testImplementation(testlibs.slf4j)
     testImplementation(testlibs.bundles.junit)
     testImplementation(libs.netty)

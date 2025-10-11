@@ -2344,11 +2344,182 @@ public final class Sounds {
      * Added with 1.21.6
      */
     public static final Sound ITEM_SADDLE_UNEQUIP = define("item.saddle.unequip");
-
     /**
-     * Added with 1.21.7
+     * @versions 1.21.7+
      */
     public static final Sound MUSIC_DISC_LAVA_CHICKEN = define("music_disc.lava_chicken");
+    /**
+     * * @versions 1.21.9+
+     */
+    public static final Sound ITEM_ARMOR_EQUIP_COPPER = define("item.armor.equip_copper");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_COPPER_CHEST_CLOSE = define("block.copper_chest.close");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_COPPER_CHEST_OPEN = define("block.copper_chest.open");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_COPPER_CHEST_WEATHERED_CLOSE = define("block.copper_chest_weathered.close");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_COPPER_CHEST_WEATHERED_OPEN = define("block.copper_chest_weathered.open");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_COPPER_CHEST_OXIDIZED_CLOSE = define("block.copper_chest_oxidized.close");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_COPPER_CHEST_OXIDIZED_OPEN = define("block.copper_chest_oxidized.open");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_STEP = define("entity.copper_golem.step");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_HURT = define("entity.copper_golem.hurt");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_DEATH = define("entity.copper_golem.death");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_WEATHERED_STEP = define("entity.copper_golem_weathered.step");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_WEATHERED_HURT = define("entity.copper_golem_weathered.hurt");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_WEATHERED_DEATH = define("entity.copper_golem_weathered.death");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_OXIDIZED_STEP = define("entity.copper_golem_oxidized.step");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_OXIDIZED_HURT = define("entity.copper_golem_oxidized.hurt");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_OXIDIZED_DEATH = define("entity.copper_golem_oxidized.death");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_SPIN = define("entity.copper_golem.spin");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_WEATHERED_SPIN = define("entity.copper_golem_weathered.spin");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_OXIDIZED_SPIN = define("entity.copper_golem_oxidized.spin");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_NO_ITEM_GET = define("entity.copper_golem.no_item_get");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_NO_ITEM_NO_GET = define("entity.copper_golem.no_item_no_get");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_ITEM_DROP = define("entity.copper_golem.item_drop");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_ITEM_NO_DROP = define("entity.copper_golem.item_no_drop");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_BECOME_STATUE = define("entity.copper_golem_become_statue");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_COPPER_GOLEM_STATUE_BREAK = define("block.copper_golem_statue.break");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_COPPER_GOLEM_STATUE_PLACE = define("block.copper_golem_statue.place");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_COPPER_GOLEM_STATUE_HIT = define("block.copper_golem_statue.hit");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_COPPER_GOLEM_STATUE_STEP = define("block.copper_golem_statue.step");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_COPPER_GOLEM_STATUE_FALL = define("block.copper_golem_statue.fall");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_SPAWN = define("entity.copper_golem.spawn");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound ENTITY_COPPER_GOLEM_SHEAR = define("entity.copper_golem.shear");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_SHELF_ACTIVATE = define("block.shelf.activate");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_SHELF_BREAK = define("block.shelf.break");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_SHELF_DEACTIVATE = define("block.shelf.deactivate");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_SHELF_FALL = define("block.shelf.fall");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_SHELF_HIT = define("block.shelf.hit");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_SHELF_MULTI_SWAP = define("block.shelf.multi_swap");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_SHELF_PLACE = define("block.shelf.place");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_SHELF_PLACE_ITEM = define("block.shelf.place_item");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_SHELF_SINGLE_SWAP = define("block.shelf.single_swap");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_SHELF_STEP = define("block.shelf.step");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound BLOCK_SHELF_TAKE_ITEM = define("block.shelf.take_item");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final Sound WEATHER_END_FLASH = define("weather.end_flash");
 
     /**
      * Returns an immutable view of the sounds.

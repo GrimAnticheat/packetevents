@@ -23,6 +23,7 @@ import com.github.retrooper.packetevents.PacketEventsAPI;
 import com.github.retrooper.packetevents.event.UserLoginEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.FakeChannelUtil;
+import io.github.retrooper.packetevents.PacketEventsMod;
 import io.netty.channel.Channel;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -49,11 +50,13 @@ public class PlayerListMixin {
             Connection connection, ServerPlayer player,
             CommonListenerCookie cookie, CallbackInfo ci
     ) {
-        PacketEvents.getAPI().getInjector().setPlayer(connection.channel, player);
+        if (PacketEventsMod.isOurConnection(connection)) {
+            PacketEvents.getAPI().getInjector().setPlayer(connection.channel, player);
+        }
     }
 
     /**
-     * @reason Associate connection instance with player instance and handle login event
+     * @reason Call login event and verify injection
      */
     @Inject(
             method = "placeNewPlayer",
@@ -64,18 +67,21 @@ public class PlayerListMixin {
             )
     )
     private void onPlayerLogin(
-        Connection connection, ServerPlayer player,
-        CommonListenerCookie cookie, CallbackInfo ci
+            Connection connection, ServerPlayer player,
+            CommonListenerCookie cookie, CallbackInfo ci
     ) {
-        PacketEventsAPI<?> api = PacketEvents.getAPI();
+        if (!PacketEventsMod.isOurConnection(connection)) {
+            return;
+        }
 
+        PacketEventsAPI<?> api = PacketEvents.getAPI();
         User user = api.getPlayerManager().getUser(player);
         if (user == null) {
             Object channelObj = api.getPlayerManager().getChannel(player);
 
             // Check if it's a fake connection
             if (!FakeChannelUtil.isFakeChannel(channelObj) &&
-                (!api.isTerminated() || api.getSettings().isKickIfTerminated())) {
+                    (!api.isTerminated() || api.getSettings().isKickIfTerminated())) {
                 // Kick the player if they're not a fake player
                 player.connection.disconnect(Component.literal("PacketEvents failed to inject into a channel."));
             }
@@ -94,7 +100,9 @@ public class PlayerListMixin {
     )
     private void postRespawn(CallbackInfoReturnable<ServerPlayer> cir) {
         ServerPlayer player = cir.getReturnValue();
-        Channel channel = player.connection.connection.channel;
-        PacketEvents.getAPI().getInjector().setPlayer(channel, player);
+        if (PacketEventsMod.isOurConnection(player.connection.connection)) {
+            Channel channel = player.connection.connection.channel;
+            PacketEvents.getAPI().getInjector().setPlayer(channel, player);
+        }
     }
 }

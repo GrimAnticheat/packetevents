@@ -21,6 +21,7 @@ package com.github.retrooper.packetevents.protocol.world.states.type;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.protocol.world.states.enums.Attachment;
 import com.github.retrooper.packetevents.protocol.world.states.enums.Axis;
+import com.github.retrooper.packetevents.protocol.world.states.enums.CopperGolemPose;
 import com.github.retrooper.packetevents.protocol.world.states.enums.CreakingHeartState;
 import com.github.retrooper.packetevents.protocol.world.states.enums.East;
 import com.github.retrooper.packetevents.protocol.world.states.enums.Face;
@@ -34,6 +35,7 @@ import com.github.retrooper.packetevents.protocol.world.states.enums.Orientation
 import com.github.retrooper.packetevents.protocol.world.states.enums.Part;
 import com.github.retrooper.packetevents.protocol.world.states.enums.SculkSensorPhase;
 import com.github.retrooper.packetevents.protocol.world.states.enums.Shape;
+import com.github.retrooper.packetevents.protocol.world.states.enums.SideChainPart;
 import com.github.retrooper.packetevents.protocol.world.states.enums.South;
 import com.github.retrooper.packetevents.protocol.world.states.enums.Thickness;
 import com.github.retrooper.packetevents.protocol.world.states.enums.Tilt;
@@ -163,9 +165,17 @@ public enum StateValue {
      */
     MAP("map", boolean.class, Boolean::parseBoolean),
     /**
-     * Added with 1.21.6
+     * @versions 1.21.6+
      */
-    HYDRATION("hydration", int.class, Integer::parseInt)
+    HYDRATION("hydration", int.class, Integer::parseInt),
+    /**
+     * @versions 1.21.9+
+     */
+    SIDE_CHAIN("side_chain", SideChainPart.class, SideChainPart::valueOf),
+    /**
+     * @versions 1.21.9+
+     */
+    COPPER_GOLEM_POSE("copper_golem_pose", CopperGolemPose.class, CopperGolemPose::valueOf),
     ;
 
     public static final Index<String, StateValue> NAME_INDEX = Index.create(

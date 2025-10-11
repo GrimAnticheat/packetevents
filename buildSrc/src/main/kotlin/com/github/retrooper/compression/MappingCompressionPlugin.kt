@@ -20,6 +20,7 @@ package com.github.retrooper.compression
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.register
 import kotlin.io.path.exists
 
 class MappingCompressionPlugin : Plugin<Project> {
@@ -27,24 +28,26 @@ class MappingCompressionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         val ext = target.extensions.create<MappingCompressionExtension>(MappingCompressionExtension.EXTENSION_NAME)
 
-        val task = target.tasks.create<MappingCompressionTask>(MappingCompressionTask.TASK_NAME) {
+        val task = target.tasks.register<MappingCompressionTask>(MappingCompressionTask.TASK_NAME) {
             group = target.rootProject.name
             outputs.upToDateWhen {
                 if (outDir?.exists() != true)
                     return@upToDateWhen false
 
                 val genModified = outDir!!.toFile().walk().maxOf { it.lastModified() }
-                mappingsDir!!.toFile().walk().asSequence()
+                mappingsDir!!.toFile().walk()
                     .filter { it.isFile }
                     .any { it.lastModified() > genModified }
             }
         }
 
         target.afterEvaluate {
-            task.inputs.dir(ext.mappingDirectory)
-            task.mappingsDir = ext.mappingDirectory.get().asFile.toPath()
-            task.outDir = ext.outDirectory.get().asFile.toPath()
-            task.strategies = ext.strategies
+            task.configure {
+                inputs.dir(ext.mappingDirectory)
+                mappingsDir = ext.mappingDirectory.get().asFile.toPath()
+                outDir = ext.outDirectory.get().asFile.toPath()
+                strategies = ext.strategies
+            }
         }
     }
 

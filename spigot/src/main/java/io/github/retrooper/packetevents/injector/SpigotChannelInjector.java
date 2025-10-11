@@ -35,12 +35,14 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@ApiStatus.Internal
 public class SpigotChannelInjector implements ChannelInjector {
     //Channels that process connecting clients.
     public final Set<Channel> injectedConnectionChannels = new HashSet<>();
@@ -231,14 +233,14 @@ public class SpigotChannelInjector implements ChannelInjector {
     /**
      * @return may return null if the channel is closed already or not initialized yet
      */
-    private @Nullable PacketEventsEncoder getEncoder(Channel channel) {
+    public @Nullable PacketEventsEncoder getEncoder(Channel channel) {
         return (PacketEventsEncoder) channel.pipeline().get(PacketEvents.ENCODER_NAME);
     }
 
     /**
      * @return may return null if the channel is closed already or not initialized yet
      */
-    private @Nullable PacketEventsDecoder getDecoder(Channel channel) {
+    public @Nullable PacketEventsDecoder getDecoder(Channel channel) {
          return (PacketEventsDecoder) channel.pipeline().get(PacketEvents.DECODER_NAME);
     }
 

@@ -1,8 +1,10 @@
+import xyz.jpenilla.runvelocity.task.RunVelocity
+
 plugins {
     packetevents.`shadow-conventions`
     packetevents.`library-conventions`
     packetevents.`publish-conventions`
-    alias(libs.plugins.run.velocity)
+    xyz.jpenilla.`run-velocity`
 }
 
 repositories {
@@ -22,7 +24,7 @@ dependencies {
 }
 
 tasks {
-    runVelocity {
+    named<RunVelocity>("runVelocity") {
         velocityVersion("3.3.0-SNAPSHOT")
         runDirectory = rootDir.resolve("run/velocity/")
 

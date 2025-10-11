@@ -42,6 +42,7 @@ public interface ByteBufOperator {
 
     void writeByte(Object buffer, int value);
     void writeShort(Object buffer, int value);
+    void writeShortLE(Object buffer, int value);
     void writeMedium(Object buffer, int value);
     void writeInt(Object buffer, int value);
     void writeLong(Object buffer, long value);

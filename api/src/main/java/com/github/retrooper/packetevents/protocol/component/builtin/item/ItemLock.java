@@ -18,46 +18,100 @@
 
 package com.github.retrooper.packetevents.protocol.component.builtin.item;
 
+import com.github.retrooper.packetevents.manager.server.ServerVersion;
+import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTString;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Objects;
 
+@NullMarked
 public class ItemLock {
 
-    private String code;
+    private static final String FALLBACK_LOCK_STRING = "packetevents$invalid_lock";
 
+    /**
+     * @versions 1.20.5-1.21.1
+     */
+    @ApiStatus.Obsolete
+    private String code;
+    /**
+     * @versions 1.21.2+
+     */
+    private NBTCompound predicate;
+
+    /**
+     * @versions 1.20.5-1.21.1
+     */
+    @ApiStatus.Obsolete
     public ItemLock(String code) {
         this.code = code;
+        this.predicate = new NBTCompound();
+    }
+
+    public ItemLock(NBTCompound predicate) {
+        this.code = FALLBACK_LOCK_STRING;
+        this.predicate = predicate;
     }
 
     public static ItemLock read(PacketWrapper<?> wrapper) {
+        if (wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_2)) {
+            return new ItemLock(wrapper.readNBT());
+        }
         NBTString codeTag = (NBTString) wrapper.readNBTRaw();
         return new ItemLock(codeTag.getValue());
     }
 
     public static void write(PacketWrapper<?> wrapper, ItemLock lock) {
-        wrapper.writeNBTRaw(new NBTString(lock.code));
+        if (wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_2)) {
+            wrapper.writeNBT(lock.predicate);
+        } else {
+            wrapper.writeNBTRaw(new NBTString(lock.code));
+        }
     }
 
+    /**
+     * @versions 1.20.5-1.21.1
+     */
+    @ApiStatus.Obsolete
     public String getCode() {
         return this.code;
     }
 
+    /**
+     * @versions 1.20.5-1.21.1
+     */
+    @ApiStatus.Obsolete
     public void setCode(String code) {
         this.code = code;
     }
 
+    /**
+     * @versions 1.21.2+
+     */
+    public NBTCompound getPredicate() {
+        return this.predicate;
+    }
+
+    /**
+     * @versions 1.21.2+
+     */
+    public void setPredicate(NBTCompound predicate) {
+        this.predicate = predicate;
+    }
+
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof ItemLock)) return false;
+        if (obj == null || this.getClass() != obj.getClass()) return false;
         ItemLock itemLock = (ItemLock) obj;
-        return this.code.equals(itemLock.code);
+        if (!this.code.equals(itemLock.code)) return false;
+        return this.predicate.equals(itemLock.predicate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(this.code);
+        return Objects.hash(this.code, this.predicate);
     }
 }

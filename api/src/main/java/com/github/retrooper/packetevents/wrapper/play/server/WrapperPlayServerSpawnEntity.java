@@ -23,6 +23,7 @@ import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.util.LpVector3d;
 import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.util.MathUtil;
 import com.github.retrooper.packetevents.util.Vector3d;
@@ -32,6 +33,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Mojang name: ClientboundAddEntityPacket
+ */
 public class WrapperPlayServerSpawnEntity extends PacketWrapper<WrapperPlayServerSpawnEntity> {
     private static final float ROTATION_FACTOR = 256.0F / 360.0F;
     private static final double VELOCITY_FACTOR = 8000.0;
@@ -107,6 +111,9 @@ public class WrapperPlayServerSpawnEntity extends PacketWrapper<WrapperPlayServe
             z = readInt() / 32.0;
         }
         position = new Vector3d(x, y, z);
+        if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
+            this.velocity = Optional.of(LpVector3d.read(this));
+        }
 
         if (v1_15) {
             pitch = readByte() / ROTATION_FACTOR;
@@ -123,14 +130,16 @@ public class WrapperPlayServerSpawnEntity extends PacketWrapper<WrapperPlayServe
             data = readInt();
         }
 
-        //On 1.8 check if data > 0 before reading, or it won't be in the packet
-        if (v1_9 || data > 0) {
-            double velX = readShort() / VELOCITY_FACTOR;
-            double velY = readShort() / VELOCITY_FACTOR;
-            double velZ = readShort() / VELOCITY_FACTOR;
-            velocity = Optional.of(new Vector3d(velX, velY, velZ));
-        } else {
-            velocity = Optional.empty();
+        if (this.serverVersion.isOlderThan(ServerVersion.V_1_21_9)) {
+            //On 1.8 check if data > 0 before reading, or it won't be in the packet
+            if (v1_9 || data > 0) {
+                double velX = readShort() / VELOCITY_FACTOR;
+                double velY = readShort() / VELOCITY_FACTOR;
+                double velZ = readShort() / VELOCITY_FACTOR;
+                velocity = Optional.of(new Vector3d(velX, velY, velZ));
+            } else {
+                velocity = Optional.empty();
+            }
         }
     }
 
@@ -162,6 +171,9 @@ public class WrapperPlayServerSpawnEntity extends PacketWrapper<WrapperPlayServe
             writeInt(MathUtil.floor(position.y * 32.0));
             writeInt(MathUtil.floor(position.z * 32.0));
         }
+        if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
+            LpVector3d.write(this, this.velocity.orElse(Vector3d.zero()));
+        }
 
         if (v1_15) {
             writeByte(MathUtil.floor(pitch * ROTATION_FACTOR));
@@ -178,15 +190,17 @@ public class WrapperPlayServerSpawnEntity extends PacketWrapper<WrapperPlayServe
             writeInt(data);
         }
 
-        //On 1.8 check if data > 0 before reading, or it won't be in the packet
-        if (v1_9 || data > 0) {
-            Vector3d vel = velocity.orElse(new Vector3d(-1, -1, -1));
-            int velX = (int) (vel.x * VELOCITY_FACTOR);
-            int velY = (int) (vel.y * VELOCITY_FACTOR);
-            int velZ = (int) (vel.z * VELOCITY_FACTOR);
-            writeShort(velX);
-            writeShort(velY);
-            writeShort(velZ);
+        if (this.serverVersion.isOlderThan(ServerVersion.V_1_21_9)) {
+            //On 1.8 check if data > 0 before reading, or it won't be in the packet
+            if (v1_9 || data > 0) {
+                Vector3d vel = velocity.orElse(new Vector3d(-1, -1, -1));
+                int velX = (int) (vel.x * VELOCITY_FACTOR);
+                int velY = (int) (vel.y * VELOCITY_FACTOR);
+                int velZ = (int) (vel.z * VELOCITY_FACTOR);
+                writeShort(velX);
+                writeShort(velY);
+                writeShort(velZ);
+            }
         }
     }
 

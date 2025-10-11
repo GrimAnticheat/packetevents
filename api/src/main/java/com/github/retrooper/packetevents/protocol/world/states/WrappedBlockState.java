@@ -72,7 +72,7 @@ public class WrappedBlockState {
             ClientVersion.V_1_16, ClientVersion.V_1_16_2, ClientVersion.V_1_17, ClientVersion.V_1_19,
             ClientVersion.V_1_19_3, ClientVersion.V_1_19_4, ClientVersion.V_1_20, ClientVersion.V_1_20_2,
             ClientVersion.V_1_20_3, ClientVersion.V_1_20_5, ClientVersion.V_1_21_2, ClientVersion.V_1_21_4,
-            ClientVersion.V_1_21_5, ClientVersion.V_1_21_6,
+            ClientVersion.V_1_21_5, ClientVersion.V_1_21_6, ClientVersion.V_1_21_9,
     };
     private static final byte[] MAPPING_INDEXES;
     private static final ClientVersion[] MAPPING_VERSIONS;
@@ -1569,15 +1569,16 @@ public class WrappedBlockState {
     }
 
     /**
-     * This method is helpful if you want to check if a block can be
-     * waterlogged, or has other properties.
-     * <p>
-     * Unless you know what you are doing exactly, don't touch this method!
+     * Unless you know exactly what you are doing, don't touch this method!
      * It can result in invalid block types when modified directly
      */
     @Deprecated
     public Map<StateValue, Object> getInternalData() {
         return data;
+    }
+
+    public boolean hasProperty(StateValue property) {
+        return data.containsKey(property);
     }
 
     /**

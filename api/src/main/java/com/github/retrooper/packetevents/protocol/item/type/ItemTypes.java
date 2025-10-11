@@ -494,6 +494,10 @@ public final class ItemTypes {
     public static final ItemType RED_BED = builder("red_bed").setMaxAmount(1).setPlacedType(StateTypes.RED_BED).build();
     public static final ItemType YELLOW_BANNER = builder("yellow_banner").setMaxAmount(16).setPlacedType(StateTypes.YELLOW_BANNER).setAttributes(ItemAttribute.FUEL).build();
     public static final ItemType BARREL = builder("barrel").setMaxAmount(64).setPlacedType(StateTypes.BARREL).setAttributes(ItemAttribute.FUEL).build();
+    /**
+     * @versions 1.21.6-1.21.8
+     */
+    @ApiStatus.Obsolete
     public static final ItemType CHAIN = builder("chain").setMaxAmount(64).setPlacedType(StateTypes.CHAIN).build();
     public static final ItemType DEAD_BRAIN_CORAL_FAN = builder("dead_brain_coral_fan").setMaxAmount(64).setPlacedType(StateTypes.DEAD_BRAIN_CORAL_FAN).build();
     public static final ItemType ROTTEN_FLESH = builder("rotten_flesh").setMaxAmount(64).setAttributes(ItemAttribute.EDIBLE).build();
@@ -1552,11 +1556,302 @@ public final class ItemTypes {
      * Added with 1.21.6
      */
     public static final ItemType MUSIC_DISC_TEARS = builder("music_disc_tears").setMaxAmount(1).setAttributes(ItemAttribute.MUSIC_DISC).build();
-
     /**
-     * Added with 1.21.7
+     * @versions 1.21.7+
      */
     public static final ItemType MUSIC_DISC_LAVA_CHICKEN = builder("music_disc_lava_chicken").setMaxAmount(1).setAttributes(ItemAttribute.MUSIC_DISC).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType ACACIA_SHELF = builder("acacia_shelf").setMaxAmount(64).setPlacedType(StateTypes.ACACIA_SHELF).setAttributes(ItemAttribute.FUEL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType BAMBOO_SHELF = builder("bamboo_shelf").setMaxAmount(64).setPlacedType(StateTypes.BAMBOO_SHELF).setAttributes(ItemAttribute.FUEL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType BIRCH_SHELF = builder("birch_shelf").setMaxAmount(64).setPlacedType(StateTypes.BIRCH_SHELF).setAttributes(ItemAttribute.FUEL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType CHERRY_SHELF = builder("cherry_shelf").setMaxAmount(64).setPlacedType(StateTypes.CHERRY_SHELF).setAttributes(ItemAttribute.FUEL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType CRIMSON_SHELF = builder("crimson_shelf").setMaxAmount(64).setPlacedType(StateTypes.CRIMSON_SHELF).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType DARK_OAK_SHELF = builder("dark_oak_shelf").setMaxAmount(64).setPlacedType(StateTypes.DARK_OAK_SHELF).setAttributes(ItemAttribute.FUEL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType JUNGLE_SHELF = builder("jungle_shelf").setMaxAmount(64).setPlacedType(StateTypes.JUNGLE_SHELF).setAttributes(ItemAttribute.FUEL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType MANGROVE_SHELF = builder("mangrove_shelf").setMaxAmount(64).setPlacedType(StateTypes.MANGROVE_SHELF).setAttributes(ItemAttribute.FUEL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType OAK_SHELF = builder("oak_shelf").setMaxAmount(64).setPlacedType(StateTypes.OAK_SHELF).setAttributes(ItemAttribute.FUEL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType PALE_OAK_SHELF = builder("pale_oak_shelf").setMaxAmount(64).setPlacedType(StateTypes.PALE_OAK_SHELF).setAttributes(ItemAttribute.FUEL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType SPRUCE_SHELF = builder("spruce_shelf").setMaxAmount(64).setPlacedType(StateTypes.SPRUCE_SHELF).setAttributes(ItemAttribute.FUEL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WARPED_SHELF = builder("warped_shelf").setMaxAmount(64).setPlacedType(StateTypes.WARPED_SHELF).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_TORCH = builder("copper_torch").setMaxAmount(64).setPlacedType(StateTypes.COPPER_TORCH).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_BARS = builder("copper_bars").setMaxAmount(64).setPlacedType(StateTypes.COPPER_BARS).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType EXPOSED_COPPER_BARS = builder("exposed_copper_bars").setMaxAmount(64).setPlacedType(StateTypes.EXPOSED_COPPER_BARS).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WEATHERED_COPPER_BARS = builder("weathered_copper_bars").setMaxAmount(64).setPlacedType(StateTypes.WEATHERED_COPPER_BARS).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType OXIDIZED_COPPER_BARS = builder("oxidized_copper_bars").setMaxAmount(64).setPlacedType(StateTypes.OXIDIZED_COPPER_BARS).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_COPPER_BARS = builder("waxed_copper_bars").setMaxAmount(64).setPlacedType(StateTypes.WAXED_COPPER_BARS).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_EXPOSED_COPPER_BARS = builder("waxed_exposed_copper_bars").setMaxAmount(64).setPlacedType(StateTypes.WAXED_EXPOSED_COPPER_BARS).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_WEATHERED_COPPER_BARS = builder("waxed_weathered_copper_bars").setMaxAmount(64).setPlacedType(StateTypes.WAXED_WEATHERED_COPPER_BARS).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_OXIDIZED_COPPER_BARS = builder("waxed_oxidized_copper_bars").setMaxAmount(64).setPlacedType(StateTypes.WAXED_OXIDIZED_COPPER_BARS).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType IRON_CHAIN = builder("iron_chain").setMaxAmount(64).setPlacedType(StateTypes.IRON_CHAIN).setAttributes(ItemAttribute.IRON_TIER).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_CHAIN = builder("copper_chain").setMaxAmount(64).setPlacedType(StateTypes.COPPER_CHAIN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType EXPOSED_COPPER_CHAIN = builder("exposed_copper_chain").setMaxAmount(64).setPlacedType(StateTypes.EXPOSED_COPPER_CHAIN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WEATHERED_COPPER_CHAIN = builder("weathered_copper_chain").setMaxAmount(64).setPlacedType(StateTypes.WEATHERED_COPPER_CHAIN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType OXIDIZED_COPPER_CHAIN = builder("oxidized_copper_chain").setMaxAmount(64).setPlacedType(StateTypes.OXIDIZED_COPPER_CHAIN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_COPPER_CHAIN = builder("waxed_copper_chain").setMaxAmount(64).setPlacedType(StateTypes.WAXED_COPPER_CHAIN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_EXPOSED_COPPER_CHAIN = builder("waxed_exposed_copper_chain").setMaxAmount(64).setPlacedType(StateTypes.WAXED_EXPOSED_COPPER_CHAIN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_WEATHERED_COPPER_CHAIN = builder("waxed_weathered_copper_chain").setMaxAmount(64).setPlacedType(StateTypes.WAXED_WEATHERED_COPPER_CHAIN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_OXIDIZED_COPPER_CHAIN = builder("waxed_oxidized_copper_chain").setMaxAmount(64).setPlacedType(StateTypes.WAXED_OXIDIZED_COPPER_CHAIN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType EXPOSED_LIGHTNING_ROD = builder("exposed_lightning_rod").setMaxAmount(64).setPlacedType(StateTypes.EXPOSED_LIGHTNING_ROD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WEATHERED_LIGHTNING_ROD = builder("weathered_lightning_rod").setMaxAmount(64).setPlacedType(StateTypes.WEATHERED_LIGHTNING_ROD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType OXIDIZED_LIGHTNING_ROD = builder("oxidized_lightning_rod").setMaxAmount(64).setPlacedType(StateTypes.OXIDIZED_LIGHTNING_ROD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_LIGHTNING_ROD = builder("waxed_lightning_rod").setMaxAmount(64).setPlacedType(StateTypes.WAXED_LIGHTNING_ROD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_EXPOSED_LIGHTNING_ROD = builder("waxed_exposed_lightning_rod").setMaxAmount(64).setPlacedType(StateTypes.WAXED_EXPOSED_LIGHTNING_ROD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_WEATHERED_LIGHTNING_ROD = builder("waxed_weathered_lightning_rod").setMaxAmount(64).setPlacedType(StateTypes.WAXED_WEATHERED_LIGHTNING_ROD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_OXIDIZED_LIGHTNING_ROD = builder("waxed_oxidized_lightning_rod").setMaxAmount(64).setPlacedType(StateTypes.WAXED_OXIDIZED_LIGHTNING_ROD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_SWORD = builder("copper_sword").setMaxAmount(1).setMaxDurability(190).setAttributes(ItemAttribute.SWORD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_SHOVEL = builder("copper_shovel").setMaxAmount(1).setMaxDurability(190).setAttributes(ItemAttribute.SHOVEL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_PICKAXE = builder("copper_pickaxe").setMaxAmount(1).setMaxDurability(190).setAttributes(ItemAttribute.PICKAXE).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_AXE = builder("copper_axe").setMaxAmount(1).setMaxDurability(190).setAttributes(ItemAttribute.AXE).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_HOE = builder("copper_hoe").setMaxAmount(1).setMaxDurability(190).setAttributes(ItemAttribute.HOE).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_HELMET = builder("copper_helmet").setMaxAmount(1).setMaxDurability(121).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_CHESTPLATE = builder("copper_chestplate").setMaxAmount(1).setMaxDurability(176).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_LEGGINGS = builder("copper_leggings").setMaxAmount(1).setMaxDurability(165).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_BOOTS = builder("copper_boots").setMaxAmount(1).setMaxDurability(143).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_GOLEM_SPAWN_EGG = builder("copper_golem_spawn_egg").setMaxAmount(64).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_HORSE_ARMOR = builder("copper_horse_armor").setMaxAmount(1).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_NUGGET = builder("copper_nugget").setMaxAmount(64).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_LANTERN = builder("copper_lantern").setMaxAmount(64).setPlacedType(StateTypes.COPPER_LANTERN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType EXPOSED_COPPER_LANTERN = builder("exposed_copper_lantern").setMaxAmount(64).setPlacedType(StateTypes.EXPOSED_COPPER_LANTERN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WEATHERED_COPPER_LANTERN = builder("weathered_copper_lantern").setMaxAmount(64).setPlacedType(StateTypes.WEATHERED_COPPER_LANTERN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType OXIDIZED_COPPER_LANTERN = builder("oxidized_copper_lantern").setMaxAmount(64).setPlacedType(StateTypes.OXIDIZED_COPPER_LANTERN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_COPPER_LANTERN = builder("waxed_copper_lantern").setMaxAmount(64).setPlacedType(StateTypes.WAXED_COPPER_LANTERN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_EXPOSED_COPPER_LANTERN = builder("waxed_exposed_copper_lantern").setMaxAmount(64).setPlacedType(StateTypes.WAXED_EXPOSED_COPPER_LANTERN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_WEATHERED_COPPER_LANTERN = builder("waxed_weathered_copper_lantern").setMaxAmount(64).setPlacedType(StateTypes.WAXED_WEATHERED_COPPER_LANTERN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_OXIDIZED_COPPER_LANTERN = builder("waxed_oxidized_copper_lantern").setMaxAmount(64).setPlacedType(StateTypes.WAXED_OXIDIZED_COPPER_LANTERN).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_CHEST = builder("copper_chest").setMaxAmount(64).setPlacedType(StateTypes.COPPER_CHEST).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType EXPOSED_COPPER_CHEST = builder("exposed_copper_chest").setMaxAmount(64).setPlacedType(StateTypes.EXPOSED_COPPER_CHEST).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WEATHERED_COPPER_CHEST = builder("weathered_copper_chest").setMaxAmount(64).setPlacedType(StateTypes.WEATHERED_COPPER_CHEST).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType OXIDIZED_COPPER_CHEST = builder("oxidized_copper_chest").setMaxAmount(64).setPlacedType(StateTypes.OXIDIZED_COPPER_CHEST).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_COPPER_CHEST = builder("waxed_copper_chest").setMaxAmount(64).setPlacedType(StateTypes.WAXED_COPPER_CHEST).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_EXPOSED_COPPER_CHEST = builder("waxed_exposed_copper_chest").setMaxAmount(64).setPlacedType(StateTypes.WAXED_EXPOSED_COPPER_CHEST).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_WEATHERED_COPPER_CHEST = builder("waxed_weathered_copper_chest").setMaxAmount(64).setPlacedType(StateTypes.WAXED_WEATHERED_COPPER_CHEST).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_OXIDIZED_COPPER_CHEST = builder("waxed_oxidized_copper_chest").setMaxAmount(64).setPlacedType(StateTypes.WAXED_OXIDIZED_COPPER_CHEST).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType COPPER_GOLEM_STATUE = builder("copper_golem_statue").setMaxAmount(64).setPlacedType(StateTypes.COPPER_GOLEM_STATUE).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType EXPOSED_COPPER_GOLEM_STATUE = builder("exposed_copper_golem_statue").setMaxAmount(64).setPlacedType(StateTypes.EXPOSED_COPPER_GOLEM_STATUE).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WEATHERED_COPPER_GOLEM_STATUE = builder("weathered_copper_golem_statue").setMaxAmount(64).setPlacedType(StateTypes.WEATHERED_COPPER_GOLEM_STATUE).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType OXIDIZED_COPPER_GOLEM_STATUE = builder("oxidized_copper_golem_statue").setMaxAmount(64).setPlacedType(StateTypes.OXIDIZED_COPPER_GOLEM_STATUE).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_COPPER_GOLEM_STATUE = builder("waxed_copper_golem_statue").setMaxAmount(64).setPlacedType(StateTypes.WAXED_COPPER_GOLEM_STATUE).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_EXPOSED_COPPER_GOLEM_STATUE = builder("waxed_exposed_copper_golem_statue").setMaxAmount(64).setPlacedType(StateTypes.WAXED_EXPOSED_COPPER_GOLEM_STATUE).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_WEATHERED_COPPER_GOLEM_STATUE = builder("waxed_weathered_copper_golem_statue").setMaxAmount(64).setPlacedType(StateTypes.WAXED_WEATHERED_COPPER_GOLEM_STATUE).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ItemType WAXED_OXIDIZED_COPPER_GOLEM_STATUE = builder("waxed_oxidized_copper_golem_statue").setMaxAmount(64).setPlacedType(StateTypes.WAXED_OXIDIZED_COPPER_GOLEM_STATUE).build();
 
     /**
      * @deprecated Burning furnace shows up as a missing texture, removed in 1.9
@@ -1625,8 +1920,8 @@ public final class ItemTypes {
             }
 
             // reset to start of buffer
-            ByteBufHelper.resetReaderIndex(byteBuf);
-            ByteBufHelper.resetWriterIndex(byteBuf);
+            ByteBufHelper.readerIndex(byteBuf, 0);
+            ByteBufHelper.writerIndex(byteBuf, 0);
 
             // empty values are serialized as a single byte (smaller than an empty byte array),
             // so just parse byte array tag values
@@ -1636,9 +1931,13 @@ public final class ItemTypes {
                 ByteBufHelper.writeBytes(byteBuf, bytes);
             }
 
-            // read from shared buffer
-            Object compValue = compType.read(wrapper);
-            components.set((ComponentType<Object>) compType, compValue);
+            try {
+                // read from shared buffer
+                Object compValue = compType.read(wrapper);
+                components.set((ComponentType<Object>) compType, compValue);
+            } catch (Throwable throwable) {
+                throw new IllegalStateException("Failed to read " + compType, throwable);
+            }
 
             // ensure the entire component value has been read
             int wi = ByteBufHelper.writerIndex(byteBuf);
@@ -1686,7 +1985,7 @@ public final class ItemTypes {
         ClientVersion[] versions = new ClientVersion[]{
                 ClientVersion.V_1_20_5, ClientVersion.V_1_21, ClientVersion.V_1_21_2,
                 ClientVersion.V_1_21_4, ClientVersion.V_1_21_5, ClientVersion.V_1_21_6,
-                ClientVersion.V_1_21_7,
+                ClientVersion.V_1_21_7, ClientVersion.V_1_21_9,
         };
         for (ClientVersion version : versions) {
             parseAllComponents(version);

@@ -38,6 +38,9 @@ import java.util.Objects;
  * @since 1.8
  */
 public class Vector3d {
+
+    private static final Vector3d ZERO = new Vector3d();
+
     /**
      * X (coordinate/angle/whatever you wish)
      */
@@ -268,6 +271,6 @@ public class Vector3d {
     }
 
     public static Vector3d zero() {
-        return new Vector3d();
+        return ZERO;
     }
 }

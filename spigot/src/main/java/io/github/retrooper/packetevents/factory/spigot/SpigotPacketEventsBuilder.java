@@ -35,6 +35,7 @@ import com.github.retrooper.packetevents.util.PEVersion;
 import io.github.retrooper.packetevents.bukkit.InternalBukkitListener;
 import io.github.retrooper.packetevents.bukkit.InternalBukkitLoginListener;
 import io.github.retrooper.packetevents.bukkit.InternalGlobalBukkitListener;
+import io.github.retrooper.packetevents.bukkit.InternalPaperJoinListener;
 import io.github.retrooper.packetevents.bukkit.InternalPaperListener;
 import io.github.retrooper.packetevents.injector.SpigotChannelInjector;
 import io.github.retrooper.packetevents.injector.connection.ServerConnectionInitializer;
@@ -175,7 +176,11 @@ public class SpigotPacketEventsBuilder {
                     try {
                         // register paper listener to support 1.21.7+ configuration api
                         Class.forName("io.papermc.paper.connection.PlayerConnection");
-                        Bukkit.getPluginManager().registerEvents(new InternalPaperListener(plugin), plugin);
+                        if (this.serverManager.getVersion().isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
+                            Bukkit.getPluginManager().registerEvents(new InternalPaperJoinListener(plugin), plugin);
+                        } else {
+                            Bukkit.getPluginManager().registerEvents(new InternalPaperListener(plugin), plugin);
+                        }
                     } catch (ClassNotFoundException ignored) {
                         if (this.serverManager.getVersion().isNewerThanOrEquals(ServerVersion.V_1_20_5)) {
                             // register instant-login listener for 1.20.5+

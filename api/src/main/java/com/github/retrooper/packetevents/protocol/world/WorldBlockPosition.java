@@ -24,6 +24,9 @@ import com.github.retrooper.packetevents.util.Vector3i;
 import org.jetbrains.annotations.NotNull;
 
 public class WorldBlockPosition {
+
+    public static final ResourceLocation OVERWORLD_DIMENSION = ResourceLocation.minecraft("overworld");
+
     private ResourceLocation world;
     private Vector3i blockPosition;
 

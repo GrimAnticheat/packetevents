@@ -44,4 +44,13 @@ public final class MathUtil {
         int temp = (int) value;
         return value < (float) temp ? temp - 1 : temp;
     }
+
+    public static long ceilLong(double value) {
+        long temp = (long) value;
+        return value > (double) temp ? temp + 1L : temp;
+    }
+
+    public static double absMax(double a, double b) {
+        return Math.max(Math.abs(a), Math.abs(b));
+    }
 }

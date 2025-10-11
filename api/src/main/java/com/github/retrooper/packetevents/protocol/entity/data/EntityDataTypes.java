@@ -19,10 +19,13 @@
 package com.github.retrooper.packetevents.protocol.entity.data;
 
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
+import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemProfile;
 import com.github.retrooper.packetevents.protocol.entity.armadillo.ArmadilloState;
 import com.github.retrooper.packetevents.protocol.entity.cat.CatVariant;
 import com.github.retrooper.packetevents.protocol.entity.chicken.ChickenVariant;
 import com.github.retrooper.packetevents.protocol.entity.cow.CowVariant;
+import com.github.retrooper.packetevents.protocol.entity.data.struct.CopperGolemState;
+import com.github.retrooper.packetevents.protocol.entity.data.struct.WeatheringCopperState;
 import com.github.retrooper.packetevents.protocol.entity.frog.FrogVariant;
 import com.github.retrooper.packetevents.protocol.entity.pig.PigVariant;
 import com.github.retrooper.packetevents.protocol.entity.pose.EntityPose;
@@ -45,12 +48,15 @@ import com.github.retrooper.packetevents.util.mappings.VersionedRegistry;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@NullMarked
 public final class EntityDataTypes {
 
     private static final VersionedRegistry<EntityDataType<?>> REGISTRY = new VersionedRegistry<>("entity_data_serializer");
@@ -150,7 +156,10 @@ public final class EntityDataTypes {
 
     public static final EntityDataType<Integer> OPTIONAL_BLOCK_STATE = define("optional_block_state", readIntDeserializer(), writeIntSerializer());
 
-    // nbt was added in 1.12
+    /**
+     * @versions 1.12-1.21.8
+     */
+    @ApiStatus.Obsolete
     public static final EntityDataType<NBTCompound> NBT = define("nbt", PacketWrapper::readNBT, PacketWrapper::writeNBT);
 
     public static final EntityDataType<Particle<?>> PARTICLE = define("particle", Particle::read, Particle::write);
@@ -226,52 +235,66 @@ public final class EntityDataTypes {
             });
 
     /**
-     * Added with 1.20.5
+     * @versions 1.20.5+
      */
     public static final EntityDataType<ArmadilloState> ARMADILLO_STATE = define("armadillo_state",
             (PacketWrapper<?> wrapper) -> ArmadilloState.values()[wrapper.readVarInt()],
             (PacketWrapper<?> wrapper, ArmadilloState value) -> wrapper.writeVarInt(value.ordinal())
     );
     /**
-     * Added with 1.20.5
+     * @versions 1.20.5+
      */
     public static final EntityDataType<List<Particle<?>>> PARTICLES = define("particles",
             wrapper -> wrapper.readList(Particle::read),
             (wrapper, particles) -> wrapper.writeList(particles, Particle::write)
     );
     /**
-     * Added with 1.20.5
-     *
+     * @versions 1.20.5+
      * @deprecated use {@link #TYPED_WOLF_VARIANT} instead
      */
     @Deprecated
     public static final EntityDataType<Integer> WOLF_VARIANT =
             define("wolf_variant_type", readIntDeserializer(), writeIntSerializer());
     /**
-     * Added with 1.20.5
+     * @versions 1.20.5+
      */
     public static final EntityDataType<WolfVariant> TYPED_WOLF_VARIANT =
             define("wolf_variant_type", WolfVariant::read, WolfVariant::write);
     /**
-     * Added with 1.21.5
+     * @versions 1.21.5+
      */
     public static final EntityDataType<CowVariant> COW_VARIANT =
             define("cow_variant_type", CowVariant::read, CowVariant::write);
     /**
-     * Added with 1.21.5
+     * @versions 1.21.5+
      */
     public static final EntityDataType<WolfSoundVariant> WOLF_SOUND_VARIANT =
             define("wolf_sound_variant_type", WolfSoundVariant::read, WolfSoundVariant::write);
     /**
-     * Added with 1.21.5
+     * @versions 1.21.5+
      */
     public static final EntityDataType<PigVariant> PIG_VARIANT =
             define("pig_variant_type", PigVariant::read, PigVariant::write);
     /**
-     * Added with 1.21.5
+     * @versions 1.21.5+
      */
     public static final EntityDataType<ChickenVariant> CHICKEN_VARIANT =
             define("chicken_variant_type", ChickenVariant::read, ChickenVariant::write);
+    /**
+     * @versions 1.21.9+
+     */
+    public static final EntityDataType<CopperGolemState> COPPER_GOLEM_STATE =
+            define("copper_golem_state", CopperGolemState::read, CopperGolemState::write);
+    /**
+     * @versions 1.21.9+
+     */
+    public static final EntityDataType<WeatheringCopperState> WEATHERING_COPPER_STATE =
+            define("weathering_copper_state", WeatheringCopperState::read, WeatheringCopperState::write);
+    /**
+     * @versions 1.21.9+
+     */
+    public static final EntityDataType<ItemProfile> RESOLVABLE_PROFILE =
+            define("resolvable_profile", ItemProfile::read, ItemProfile::write);
 
     private EntityDataTypes() {
     }
@@ -289,11 +312,11 @@ public final class EntityDataTypes {
         return REGISTRY.getEntries();
     }
 
-    public static EntityDataType<?> getById(ClientVersion version, int id) {
+    public static @Nullable EntityDataType<?> getById(ClientVersion version, int id) {
         return REGISTRY.getById(version, id);
     }
 
-    public static EntityDataType<?> getByName(String name) {
+    public static @Nullable EntityDataType<?> getByName(String name) {
         return REGISTRY.getByName(name);
     }
 

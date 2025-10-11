@@ -39,6 +39,8 @@ import com.github.retrooper.packetevents.protocol.component.builtin.ShulkerColor
 import com.github.retrooper.packetevents.protocol.component.builtin.TropicalFishBaseColorComponent;
 import com.github.retrooper.packetevents.protocol.component.builtin.TropicalFishPatternColorComponent;
 import com.github.retrooper.packetevents.protocol.component.builtin.TropicalFishPatternComponent;
+import com.github.retrooper.packetevents.protocol.component.builtin.TypedBlockEntityData;
+import com.github.retrooper.packetevents.protocol.component.builtin.TypedEntityData;
 import com.github.retrooper.packetevents.protocol.component.builtin.VillagerVariantComponent;
 import com.github.retrooper.packetevents.protocol.component.builtin.WolfCollarComponent;
 import com.github.retrooper.packetevents.protocol.component.builtin.WolfSoundVariantComponent;
@@ -245,12 +247,18 @@ public final class ComponentTypes {
             ArmorTrim::read, ArmorTrim::write);
     public static final ComponentType<DebugStickState> DEBUG_STICK_STATE = define("debug_stick_state",
             DebugStickState::read, DebugStickState::write);
-    public static final ComponentType<NBTCompound> ENTITY_DATA = define("entity_data",
-            PacketWrapper::readNBT, PacketWrapper::writeNBT);
+    public static final ComponentType<TypedEntityData> TYPED_ENTITY_DATA = define("entity_data",
+            TypedEntityData::read, TypedEntityData::write);
+    @Deprecated
+    public static final ComponentType<NBTCompound> ENTITY_DATA = TYPED_ENTITY_DATA
+            .legacyMap(TypedEntityData::getCompound, TypedEntityData::new);
     public static final ComponentType<NBTCompound> BUCKET_ENTITY_DATA = define("bucket_entity_data",
             PacketWrapper::readNBT, PacketWrapper::writeNBT);
-    public static final ComponentType<NBTCompound> BLOCK_ENTITY_DATA = define("block_entity_data",
-            PacketWrapper::readNBT, PacketWrapper::writeNBT);
+    public static final ComponentType<TypedBlockEntityData> TYPED_BLOCK_ENTITY_DATA = define("block_entity_data",
+            TypedBlockEntityData::read, TypedBlockEntityData::write);
+    @Deprecated
+    public static final ComponentType<NBTCompound> BLOCK_ENTITY_DATA = TYPED_BLOCK_ENTITY_DATA
+            .legacyMap(TypedBlockEntityData::getCompound, TypedBlockEntityData::new);
     public static final ComponentType<ItemInstrument> ITEM_INSTRUMENT = define("instrument",
             ItemInstrument::read, ItemInstrument::write);
     @Deprecated

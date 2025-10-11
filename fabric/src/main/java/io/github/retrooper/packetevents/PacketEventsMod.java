@@ -20,13 +20,35 @@ package io.github.retrooper.packetevents;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.PacketEventsAPI;
+import com.github.retrooper.packetevents.protocol.PacketSide;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.PacketFlow;
 
 public class PacketEventsMod implements PreLaunchEntrypoint, ModInitializer {
 
     public static final String MOD_ID = "packetevents";
+
+    /**
+     * Tests whether this connection should be handled by this packetevents api instance.
+     */
+    public static boolean isOurConnection(Connection connection) {
+        return isOurConnection(connection.getReceiving());
+    }
+
+    /**
+     * Tests whether this connection should be handled by this packetevents api instance.
+     */
+    public static boolean isOurConnection(PacketFlow flow) {
+        PacketSide connectionSide = switch (flow) {
+            case CLIENTBOUND -> PacketSide.CLIENT;
+            case SERVERBOUND -> PacketSide.SERVER;
+        };
+        PacketEventsAPI<?> api = PacketEvents.getAPI();
+        return api != null && api.getInjector().getPacketSide() == connectionSide;
+    }
 
     @Override
     public void onPreLaunch() {

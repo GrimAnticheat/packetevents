@@ -1,11 +1,12 @@
 [versions]
-shadow = "8.3.8"
+shadow = "8.3.9"
 jetbrains-annotations = "23.0.0"
 via-nbt = "5.1.2"
-fast-util = "8.5.6"
+fast-util = "8.5.17"
 gson = "2.8.9"
 java-diff-utils = "4.12"
-mod-publish = "0.8.4"
+mod-publish = "1.0.0"
+runtask = "3.0.0"
 
 [libraries]
 shadow = { group = "com.gradleup.shadow", name = "shadow-gradle-plugin", version.ref = "shadow" }
@@ -15,3 +16,4 @@ fast-util = { group = "it.unimi.dsi", name = "fastutil", version.ref = "fast-uti
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 java-diff-utils = { group = "io.github.java-diff-utils", name = "java-diff-utils", version.ref = "java-diff-utils" }
 mod-publish = { group = "me.modmuss50", name = "mod-publish-plugin", version.ref = "mod-publish" }
+runtask = { group = "xyz.jpenilla", name = "run-task", version.ref = "runtask" }

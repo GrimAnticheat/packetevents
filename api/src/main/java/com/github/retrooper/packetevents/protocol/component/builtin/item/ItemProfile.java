@@ -18,40 +18,83 @@
 
 package com.github.retrooper.packetevents.protocol.component.builtin.item;
 
+import com.github.retrooper.packetevents.manager.server.ServerVersion;
+import com.github.retrooper.packetevents.protocol.player.PlayerModelType;
+import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public class ItemProfile {
+public final class ItemProfile {
 
     private @Nullable String name;
     private @Nullable UUID id;
     private List<Property> properties;
+    /**
+     * @versions 1.21.9+
+     */
+    private SkinPatch skinPatch;
 
     public ItemProfile(
             @Nullable String name,
             @Nullable UUID id,
             List<Property> properties
     ) {
+        this(name, id, properties, SkinPatch.EMPTY);
+    }
+
+    public ItemProfile(
+            @Nullable String name,
+            @Nullable UUID id,
+            List<Property> properties,
+            SkinPatch skinPatch
+    ) {
         this.name = name;
         this.id = id;
         this.properties = properties;
+        this.skinPatch = skinPatch;
     }
 
     public static ItemProfile read(PacketWrapper<?> wrapper) {
-        String name = wrapper.readOptional(ew -> ew.readString(16));
-        UUID id = wrapper.readOptional(PacketWrapper::readUUID);
+        String name;
+        UUID id;
+        boolean partial = wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_21_9) || !wrapper.readBoolean();
+        if (!partial) {
+            id = wrapper.readUUID();
+            name = wrapper.readString(16);
+        } else {
+            name = wrapper.readOptional(ew -> ew.readString(16));
+            id = wrapper.readOptional(PacketWrapper::readUUID);
+        }
         List<Property> properties = wrapper.readList(Property::read);
-        return new ItemProfile(name, id, properties);
+        SkinPatch skinPatch = wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_9)
+                ? SkinPatch.read(wrapper) : SkinPatch.EMPTY;
+        return new ItemProfile(name, id, properties, skinPatch);
     }
 
     public static void write(PacketWrapper<?> wrapper, ItemProfile profile) {
-        wrapper.writeOptional(profile.name, (ew, name) -> ew.writeString(name, 16));
-        wrapper.writeOptional(profile.id, PacketWrapper::writeUUID);
+        boolean partial;
+        if (wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
+            partial = profile.name == null || profile.id == null;
+            wrapper.writeBoolean(!partial);
+        } else {
+            // always partial profile (which is way simpler, why did they change this?)
+            partial = true;
+        }
+        if (!partial) {
+            wrapper.writeUUID(profile.id);
+            wrapper.writeString(profile.name, 16);
+        } else {
+            wrapper.writeOptional(profile.name, (ew, name) -> ew.writeString(name, 16));
+            wrapper.writeOptional(profile.id, PacketWrapper::writeUUID);
+        }
         wrapper.writeList(profile.properties, Property::write);
+        if (wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
+            SkinPatch.write(wrapper, profile.skinPatch);
+        }
     }
 
     public @Nullable String getName() {
@@ -82,6 +125,20 @@ public class ItemProfile {
         this.properties = properties;
     }
 
+    /**
+     * @versions 1.21.9+
+     */
+    public SkinPatch getSkinPatch() {
+        return this.skinPatch;
+    }
+
+    /**
+     * @versions 1.21.9+
+     */
+    public void setSkinPatch(SkinPatch skinPatch) {
+        this.skinPatch = skinPatch;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -89,12 +146,13 @@ public class ItemProfile {
         ItemProfile that = (ItemProfile) obj;
         if (!Objects.equals(this.name, that.name)) return false;
         if (!Objects.equals(this.id, that.id)) return false;
-        return this.properties.equals(that.properties);
+        if (!this.properties.equals(that.properties)) return false;
+        return this.skinPatch.equals(that.skinPatch);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.name, this.id, this.properties);
+        return Objects.hash(this.name, this.id, this.properties, this.skinPatch);
     }
 
     public static class Property {
@@ -160,6 +218,74 @@ public class ItemProfile {
         @Override
         public int hashCode() {
             return Objects.hash(this.name, this.value, this.signature);
+        }
+    }
+
+    public static class SkinPatch {
+
+        public static final SkinPatch EMPTY = new SkinPatch(null, null, null, null);
+
+        private final @Nullable ResourceLocation body;
+        private final @Nullable ResourceLocation cape;
+        private final @Nullable ResourceLocation elytra;
+        private final @Nullable PlayerModelType model;
+
+        public SkinPatch(
+                @Nullable ResourceLocation body,
+                @Nullable ResourceLocation cape,
+                @Nullable ResourceLocation elytra,
+                @Nullable PlayerModelType model
+        ) {
+            this.body = body;
+            this.cape = cape;
+            this.elytra = elytra;
+            this.model = model;
+        }
+
+        public static SkinPatch read(PacketWrapper<?> wrapper) {
+            ResourceLocation body = wrapper.readOptional(ResourceLocation::read);
+            ResourceLocation cape = wrapper.readOptional(ResourceLocation::read);
+            ResourceLocation elytra = wrapper.readOptional(ResourceLocation::read);
+            PlayerModelType model = wrapper.readOptional(ew -> ew.readEnum(PlayerModelType.class));
+            return new SkinPatch(body, cape, elytra, model);
+        }
+
+        public static void write(PacketWrapper<?> wrapper, SkinPatch patch) {
+            wrapper.writeOptional(patch.body, ResourceLocation::write);
+            wrapper.writeOptional(patch.cape, ResourceLocation::write);
+            wrapper.writeOptional(patch.elytra, ResourceLocation::write);
+            wrapper.writeOptional(patch.model, PacketWrapper::writeEnum);
+        }
+
+        public @Nullable ResourceLocation getBody() {
+            return this.body;
+        }
+
+        public @Nullable ResourceLocation getCape() {
+            return this.cape;
+        }
+
+        public @Nullable ResourceLocation getElytra() {
+            return this.elytra;
+        }
+
+        public @Nullable PlayerModelType getModel() {
+            return this.model;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || this.getClass() != obj.getClass()) return false;
+            SkinPatch skinPatch = (SkinPatch) obj;
+            if (!Objects.equals(this.body, skinPatch.body)) return false;
+            if (!Objects.equals(this.cape, skinPatch.cape)) return false;
+            if (!Objects.equals(this.elytra, skinPatch.elytra)) return false;
+            return this.model == skinPatch.model;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.body, this.cape, this.elytra, this.model);
         }
     }
 }

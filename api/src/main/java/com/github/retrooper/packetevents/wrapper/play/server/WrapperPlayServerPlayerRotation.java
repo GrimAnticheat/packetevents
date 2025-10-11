@@ -19,34 +19,64 @@
 package com.github.retrooper.packetevents.wrapper.play.server;
 
 import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 
+/**
+ * Mojang name: ClientboundPlayerRotationPacket
+ */
 public class WrapperPlayServerPlayerRotation extends PacketWrapper<WrapperPlayServerPlayerRotation> {
 
     private float yaw;
+    /**
+     * @versions 1.21.9+
+     */
+    private boolean relativeYaw;
     private float pitch;
+    /**
+     * @versions 1.21.9+
+     */
+    private boolean relativePitch;
 
     public WrapperPlayServerPlayerRotation(PacketSendEvent event) {
         super(event);
     }
 
     public WrapperPlayServerPlayerRotation(float yaw, float pitch) {
+        this(yaw, false, pitch, false);
+    }
+
+    public WrapperPlayServerPlayerRotation(float yaw, boolean relativeYaw, float pitch, boolean relativePitch) {
         super(PacketType.Play.Server.PLAYER_ROTATION);
         this.yaw = yaw;
+        this.relativeYaw = relativeYaw;
         this.pitch = pitch;
+        this.relativePitch = relativePitch;
     }
 
     @Override
     public void read() {
         this.yaw = this.readFloat();
+        if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
+            this.relativeYaw = this.readBoolean();
+        }
         this.pitch = this.readFloat();
+        if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
+            this.relativePitch = this.readBoolean();
+        }
     }
 
     @Override
     public void write() {
         this.writeFloat(this.yaw);
+        if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
+            this.writeBoolean(this.relativeYaw);
+        }
         this.writeFloat(this.pitch);
+        if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
+            this.writeBoolean(this.relativePitch);
+        }
     }
 
     @Override
@@ -63,11 +93,39 @@ public class WrapperPlayServerPlayerRotation extends PacketWrapper<WrapperPlaySe
         this.yaw = yaw;
     }
 
+    /**
+     * @versions 1.21.9+
+     */
+    public boolean isRelativeYaw() {
+        return this.relativeYaw;
+    }
+
+    /**
+     * @versions 1.21.9+
+     */
+    public void setRelativeYaw(boolean relativeYaw) {
+        this.relativeYaw = relativeYaw;
+    }
+
     public float getPitch() {
         return this.pitch;
     }
 
     public void setPitch(float pitch) {
         this.pitch = pitch;
+    }
+
+    /**
+     * @versions 1.21.9+
+     */
+    public boolean isRelativePitch() {
+        return this.relativePitch;
+    }
+
+    /**
+     * @versions 1.21.9+
+     */
+    public void setRelativePitch(boolean relativePitch) {
+        this.relativePitch = relativePitch;
     }
 }

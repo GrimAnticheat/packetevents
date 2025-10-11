@@ -42,6 +42,7 @@ import com.github.retrooper.packetevents.protocol.packettype.clientbound.Clientb
 import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_21_2;
 import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_21_5;
 import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_21_6;
+import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_21_9;
 import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_7_10;
 import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_8;
 import com.github.retrooper.packetevents.protocol.packettype.clientbound.ClientboundPacketType_1_9;
@@ -51,9 +52,11 @@ import com.github.retrooper.packetevents.protocol.packettype.config.clientbound.
 import com.github.retrooper.packetevents.protocol.packettype.config.clientbound.ClientboundConfigPacketType_1_20_5;
 import com.github.retrooper.packetevents.protocol.packettype.config.clientbound.ClientboundConfigPacketType_1_21;
 import com.github.retrooper.packetevents.protocol.packettype.config.clientbound.ClientboundConfigPacketType_1_21_6;
+import com.github.retrooper.packetevents.protocol.packettype.config.clientbound.ClientboundConfigPacketType_1_21_9;
 import com.github.retrooper.packetevents.protocol.packettype.config.serverbound.ServerboundConfigPacketType_1_20_2;
 import com.github.retrooper.packetevents.protocol.packettype.config.serverbound.ServerboundConfigPacketType_1_20_5;
 import com.github.retrooper.packetevents.protocol.packettype.config.serverbound.ServerboundConfigPacketType_1_21_6;
+import com.github.retrooper.packetevents.protocol.packettype.config.serverbound.ServerboundConfigPacketType_1_21_9;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_12;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_12_1;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_13;
@@ -73,12 +76,14 @@ import com.github.retrooper.packetevents.protocol.packettype.serverbound.Serverb
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_21_4;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_21_5;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_21_6;
+import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_21_9;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_7_10;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_8;
 import com.github.retrooper.packetevents.protocol.packettype.serverbound.ServerboundPacketType_1_9;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.util.VersionMapper;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientAcceptCodeOfConduct;
 import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientConfigurationEndAck;
 import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientCookieResponse;
 import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientCustomClickAction;
@@ -89,6 +94,7 @@ import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperCon
 import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientSelectKnownPacks;
 import com.github.retrooper.packetevents.wrapper.configuration.client.WrapperConfigClientSettings;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerClearDialog;
+import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerCodeOfConduct;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerConfigurationEnd;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerCookieRequest;
 import com.github.retrooper.packetevents.wrapper.configuration.server.WrapperConfigServerCustomReportDetails;
@@ -140,6 +146,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCr
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCustomClickAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientDebugPing;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientDebugSampleSubscription;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientDebugSubscriptionRequest;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEditBook;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientGenerateStructure;
@@ -188,7 +195,162 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientUp
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientUseItem;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientVehicleMove;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientWindowConfirmation;
-import com.github.retrooper.packetevents.wrapper.play.server.*;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerAcknowledgeBlockChanges;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerAcknowledgePlayerDigging;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerActionBar;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerAttachEntity;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockAction;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockBreakAnimation;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockChange;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockEntityData;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBossBar;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBundle;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCamera;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChangeGameState;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChatMessage;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChatPreview;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChunkBatchBegin;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChunkBatchEnd;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChunkData;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChunkDataBulk;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerClearDialog;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerClearTitles;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCloseWindow;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCollectItem;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCombatEvent;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerConfigurationStart;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCookieRequest;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCraftRecipeResponse;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCustomChatCompletions;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCustomReportDetails;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDamageEvent;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDeathCombatEvent;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDebugBlockValue;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDebugChunkValue;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDebugEntityValue;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDebugEvent;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDebugPong;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDebugSample;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDeclareCommands;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDeclareRecipes;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDeleteChat;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDifficulty;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDisconnect;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDisguisedChat;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDisplayScoreboard;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEffect;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEndCombatEvent;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEnterCombatEvent;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityAnimation;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityEffect;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityEquipment;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityHeadLook;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMovement;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityPositionSync;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityRelativeMove;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityRelativeMoveAndRotation;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityRotation;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntitySoundEffect;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityStatus;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityTeleport;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityVelocity;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerExplosion;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerFacePlayer;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerGameTestHighlightPos;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerHeldItemChange;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerHurtAnimation;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerInitializeWorldBorder;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerJoinGame;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerKeepAlive;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerMapData;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerMerchantOffers;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerMoveMinecart;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerMultiBlockChange;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerNBTQueryResponse;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenBook;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenHorseWindow;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenSignEditor;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenWindow;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPing;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerAbilities;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerChatHeader;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfo;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoRemove;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerListHeaderAndFooter;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerPositionAndLook;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerRotation;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPluginMessage;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerProjectilePower;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerRecipeBookAdd;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerRecipeBookRemove;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerRecipeBookSettings;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerRemoveEntityEffect;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerResetScore;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerResourcePackRemove;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerResourcePackSend;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerRespawn;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerScoreboardObjective;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSelectAdvancementsTab;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerServerData;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerServerLinks;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetCompression;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetCooldown;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetCursorItem;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetDisplayChatPreview;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetExperience;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPassengers;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPlayerInventory;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetTitleSubtitle;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetTitleText;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetTitleTimes;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerShowDialog;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSoundEffect;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnExperienceOrb;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnLivingEntity;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPainting;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPlayer;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPosition;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnWeatherEntity;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerStatistics;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerStoreCookie;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSystemChatMessage;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTabComplete;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTags;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTestInstanceBlockStatus;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTickingState;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTickingStep;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTimeUpdate;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTransfer;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUnloadChunk;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAdvancements;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateEnabledFeatures;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateEntityNBT;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateHealth;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateLight;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateScore;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateSimulationDistance;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewDistance;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUseBed;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerVehicleMove;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWaypoint;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowConfirmation;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowItems;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowProperty;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWorldBorder;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWorldBorderCenter;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWorldBorderSize;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWorldBorderWarningReach;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayWorldBorderLerpSize;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayWorldBorderWarningDelay;
 import com.github.retrooper.packetevents.wrapper.status.client.WrapperStatusClientPing;
 import com.github.retrooper.packetevents.wrapper.status.client.WrapperStatusClientRequest;
 import com.github.retrooper.packetevents.wrapper.status.server.WrapperStatusServerPong;
@@ -231,7 +393,8 @@ public final class PacketType {
             ClientVersion.V_1_21,
             ClientVersion.V_1_21_2,
             ClientVersion.V_1_21_5,
-            ClientVersion.V_1_21_6);
+            ClientVersion.V_1_21_6,
+            ClientVersion.V_1_21_9);
 
     //TODO UPDATE Update packet type mappings (serverbound pt. 1)
     private static final VersionMapper SERVERBOUND_PLAY_VERSION_MAPPER = new VersionMapper(
@@ -256,7 +419,8 @@ public final class PacketType {
             ClientVersion.V_1_21_2,
             ClientVersion.V_1_21_4,
             ClientVersion.V_1_21_5,
-            ClientVersion.V_1_21_6);
+            ClientVersion.V_1_21_6,
+            ClientVersion.V_1_21_9);
 
     // TODO UPDATE Update packet type mappings (config clientbound pt. 1)
     private static final VersionMapper CLIENTBOUND_CONFIG_VERSION_MAPPER = new VersionMapper(
@@ -264,12 +428,14 @@ public final class PacketType {
             ClientVersion.V_1_20_3,
             ClientVersion.V_1_20_5,
             ClientVersion.V_1_21,
-            ClientVersion.V_1_21_6);
+            ClientVersion.V_1_21_6,
+            ClientVersion.V_1_21_9);
     // TODO UPDATE Update packet type mappings (config serverbound pt. 1)
     private static final VersionMapper SERVERBOUND_CONFIG_VERSION_MAPPER = new VersionMapper(
             ClientVersion.V_1_20_2,
             ClientVersion.V_1_20_5,
-            ClientVersion.V_1_21_6);
+            ClientVersion.V_1_21_6,
+            ClientVersion.V_1_21_9);
 
     public static void prepare() {
         PacketType.Play.Client.load();
@@ -628,6 +794,10 @@ public final class PacketType {
              * Added with 1.21.6
              */
             CUSTOM_CLICK_ACTION(WrapperConfigClientCustomClickAction.class),
+            /**
+             * @versions 1.21.9+
+             */
+            ACCEPT_CODE_OF_CONDUCT(WrapperConfigClientAcceptCodeOfConduct.class),
             ;
 
             private static int INDEX = 0;
@@ -651,6 +821,7 @@ public final class PacketType {
                 loadPacketIds(ServerboundConfigPacketType_1_20_2.values());
                 loadPacketIds(ServerboundConfigPacketType_1_20_5.values());
                 loadPacketIds(ServerboundConfigPacketType_1_21_6.values());
+                loadPacketIds(ServerboundConfigPacketType_1_21_9.values());
                 // TODO UPDATE Update packet type mappings (config serverbound pt. 2)
             }
 
@@ -754,6 +925,11 @@ public final class PacketType {
              * Added with 1.21.6
              */
             SHOW_DIALOG(WrapperConfigServerShowDialog.class),
+
+            /**
+             * @versions 1.21.9+
+             */
+            CODE_OF_CONDUCT(WrapperConfigServerCodeOfConduct.class),
             ;
 
             private static int INDEX = 0;
@@ -779,6 +955,7 @@ public final class PacketType {
                 loadPacketIds(ClientboundConfigPacketType_1_20_5.values());
                 loadPacketIds(ClientboundConfigPacketType_1_21.values());
                 loadPacketIds(ClientboundConfigPacketType_1_21_6.values());
+                loadPacketIds(ClientboundConfigPacketType_1_21_9.values());
                 // TODO UPDATE Update packet type mappings (config clientbound pt. 2)
             }
 
@@ -936,8 +1113,9 @@ public final class PacketType {
              */
             COOKIE_RESPONSE(WrapperPlayClientCookieResponse.class),
             /**
-             * Added with 1.20.5
+             * @versions 1.20.5-1.21.8
              */
+            @ApiStatus.Obsolete
             DEBUG_SAMPLE_SUBSCRIPTION(WrapperPlayClientDebugSampleSubscription.class),
 
             /**
@@ -983,6 +1161,11 @@ public final class PacketType {
              * Added with 1.21.6
              */
             CUSTOM_CLICK_ACTION(WrapperPlayClientCustomClickAction.class),
+
+            /**
+             * @versions 1.21.9+
+             */
+            DEBUG_SUBSCRIPTION_REQUEST(WrapperPlayClientDebugSubscriptionRequest.class),
             ;
 
             private static int INDEX = 0;
@@ -1048,6 +1231,7 @@ public final class PacketType {
                 loadPacketIds(ServerboundPacketType_1_21_4.values());
                 loadPacketIds(ServerboundPacketType_1_21_5.values());
                 loadPacketIds(ServerboundPacketType_1_21_6.values());
+                loadPacketIds(ServerboundPacketType_1_21_9.values());
                 //TODO UPDATE Update packet type mappings (serverbound pt. 2)
             }
 
@@ -1364,6 +1548,27 @@ public final class PacketType {
              * Added with 1.21.6
              */
             SHOW_DIALOG(WrapperPlayServerShowDialog.class),
+
+            /**
+             * @versions 1.21.9+
+             */
+            DEBUG_BLOCK_VALUE(WrapperPlayServerDebugBlockValue.class),
+            /**
+              @versions 1.21.9+
+             */
+            DEBUG_CHUNK_VALUE(WrapperPlayServerDebugChunkValue.class),
+            /**
+              @versions 1.21.9+
+             */
+            DEBUG_ENTITY_VALUE(WrapperPlayServerDebugEntityValue.class),
+            /**
+              @versions 1.21.9+
+             */
+            DEBUG_EVENT(WrapperPlayServerDebugEvent.class),
+            /**
+              @versions 1.21.9+
+             */
+            GAME_TEST_HIGHLIGHT_POS(WrapperPlayServerGameTestHighlightPos.class),
             ;
 
             private static int INDEX = 0;
@@ -1445,6 +1650,7 @@ public final class PacketType {
                 loadPacketIds(ClientboundPacketType_1_21_2.values());
                 loadPacketIds(ClientboundPacketType_1_21_5.values());
                 loadPacketIds(ClientboundPacketType_1_21_6.values());
+                loadPacketIds(ClientboundPacketType_1_21_9.values());
                 //TODO UPDATE Update packet type mappings (clientbound pt. 2)
             }
         }

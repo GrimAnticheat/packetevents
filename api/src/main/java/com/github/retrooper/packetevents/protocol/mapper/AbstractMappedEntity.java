@@ -21,10 +21,12 @@ package com.github.retrooper.packetevents.protocol.mapper;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.util.mappings.TypesBuilderData;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
+@NullMarked
 public abstract class AbstractMappedEntity implements MappedEntity {
 
     protected final @Nullable TypesBuilderData data;

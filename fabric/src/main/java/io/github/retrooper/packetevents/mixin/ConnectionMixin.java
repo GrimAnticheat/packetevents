@@ -20,13 +20,13 @@ package io.github.retrooper.packetevents.mixin;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.UserConnectEvent;
-import com.github.retrooper.packetevents.manager.protocol.ProtocolManager;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.PacketSide;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.player.UserProfile;
 import com.github.retrooper.packetevents.util.PacketEventsImplHelper;
+import io.github.retrooper.packetevents.PacketEventsMod;
 import io.github.retrooper.packetevents.handler.PacketDecoder;
 import io.github.retrooper.packetevents.handler.PacketEncoder;
 import io.netty.channel.Channel;
@@ -36,7 +36,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.network.BandwidthDebugMonitor;
 import net.minecraft.network.protocol.PacketFlow;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -58,16 +57,11 @@ public class ConnectionMixin {
             ChannelPipeline pipeline, PacketFlow flow, boolean memoryOnly,
             BandwidthDebugMonitor bandwithDebugMonitor, CallbackInfo ci
     ) {
-        PacketSide pipelineSide = switch (flow) {
-            case CLIENTBOUND -> PacketSide.CLIENT;
-            case SERVERBOUND -> PacketSide.SERVER;
-        };
-        PacketSide apiSide = PacketEvents.getAPI().getInjector().getPacketSide();
-        if (pipelineSide != apiSide) {
+        if (!PacketEventsMod.isOurConnection(flow)) {
             // if pipeline side doesn't match api side, don't inject into
             // this pipeline - it probably means this is the pipeline from
             // integrated server to minecraft client, which is currently unsupported
-            PacketEvents.getAPI().getLogManager().debug("Skipped pipeline injection on " + pipelineSide);
+            PacketEvents.getAPI().getLogManager().debug("Skipped pipeline injection on " + flow);
             return;
         }
 
@@ -85,6 +79,7 @@ public class ConnectionMixin {
             return;
         }
 
+        PacketSide apiSide = PacketEvents.getAPI().getInjector().getPacketSide();
         channel.pipeline().addAfter("splitter", PacketEvents.DECODER_NAME, new PacketDecoder(apiSide, user));
         channel.pipeline().addAfter("prepender", PacketEvents.ENCODER_NAME, new PacketEncoder(apiSide, user));
         channel.closeFuture().addListener((ChannelFutureListener) future ->

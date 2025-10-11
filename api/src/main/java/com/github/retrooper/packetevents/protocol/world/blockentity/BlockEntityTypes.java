@@ -95,18 +95,27 @@ public final class BlockEntityTypes {
     public static final BlockEntityType VAULT = define("vault");
 
     /**
-     * Added with 1.21.2
+     * @versions 1.21.2+
      */
     public static final BlockEntityType CREAKING_HEART = define("creaking_heart");
 
     /**
-     * Added with 1.21.5
+     * @versions 1.21.5+
      */
     public static final BlockEntityType TEST_BLOCK = define("test_block");
     /**
-     * Added with 1.21.5
+     * @versions 1.21.5+
      */
     public static final BlockEntityType TEST_INSTANCE_BLOCK = define("test_instance_block");
+
+    /**
+     * @versions 1.21.9+
+     */
+    public static final BlockEntityType SHELF = define("shelf");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final BlockEntityType COPPER_GOLEM_STATUE = define("copper_golem_statue");
 
     /**
      * Returns an immutable view of the block entity types.

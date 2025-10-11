@@ -1,5 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.internal.DependencyFilter
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.kotlin.dsl.register
 
 plugins {
     java
@@ -29,7 +30,7 @@ tasks {
         mergeServiceFiles()
     }
 
-    create<ShadowJar>("shadowNoAdventure") {
+    register<ShadowJar>("shadowNoAdventure") {
         group = rootProject.name
         description = "Create a combined JAR of project and runtime dependencies without Adventure dependencies."
         archiveFileName = "packetevents-${project.name}-no-adv-${rootProject.ext["versionNoHash"]}.jar"
@@ -38,7 +39,7 @@ tasks {
         val shadowJar = shadowJar.get()
         val sourceSets = project.extensions.getByType<SourceSetContainer>()
 
-        manifest.inheritFrom(shadowJar.manifest)
+        manifest.from(shadowJar.manifest)
 
         from(sourceSets.main.get().output)
         configurations = shadowJar.configurations

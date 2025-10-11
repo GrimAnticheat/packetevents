@@ -1,8 +1,11 @@
+import xyz.jpenilla.runpaper.RunPaperExtension
+import xyz.jpenilla.runpaper.task.RunServer
+
 plugins {
     packetevents.`shadow-conventions`
     packetevents.`library-conventions`
     packetevents.`publish-conventions`
-    alias(libs.plugins.run.paper)
+    xyz.jpenilla.`run-paper`
 }
 
 repositories {
@@ -35,7 +38,7 @@ tasks {
     // 1.17           = Java 16
     // 1.18 - 1.20.4  = Java 17
     // 1.20.5+        = Java 21
-    val version = "1.21.7"
+    val version = "1.21.9"
     val javaVersion = JavaLanguageVersion.of(21)
 
     val jvmArgsExternal = listOf(
@@ -47,7 +50,7 @@ tasks {
         exclude("io/github/retrooper/packetevents/util/protocolsupport/**")
     }
 
-    runServer {
+    named<RunServer>("runServer") {
         minecraftVersion(version)
         runDirectory = rootDir.resolve("run/paper/$version")
 
@@ -58,14 +61,16 @@ tasks {
         jvmArgs = jvmArgsExternal
     }
 
-    runPaper.folia.registerTask {
-        minecraftVersion(version)
-        runDirectory = rootDir.resolve("run/folia/$version")
+    configure<RunPaperExtension> {
+        folia.registerTask {
+            minecraftVersion(version)
+            runDirectory = rootDir.resolve("run/folia/$version")
 
-        javaLauncher = project.javaToolchains.launcherFor {
-            languageVersion = javaVersion
+            javaLauncher = project.javaToolchains.launcherFor {
+                languageVersion = javaVersion
+            }
+
+            jvmArgs = jvmArgsExternal
         }
-
-        jvmArgs = jvmArgsExternal
     }
 }

@@ -418,6 +418,10 @@ public final class StateTypes {
     public static StateType RED_MUSHROOM_BLOCK = StateTypes.builder().name("RED_MUSHROOM_BLOCK").blastResistance(0.2f).hardness(0.2f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
     public static StateType MUSHROOM_STEM = StateTypes.builder().name("MUSHROOM_STEM").blastResistance(0.2f).hardness(0.2f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
     public static StateType IRON_BARS = StateTypes.builder().name("IRON_BARS").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.6-1.21.8
+     */
+    @ApiStatus.Obsolete
     public static StateType CHAIN = StateTypes.builder().name("CHAIN").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
     public static StateType GLASS_PANE = StateTypes.builder().name("GLASS_PANE").blastResistance(0.3f).hardness(0.3f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.GLASS).build();
     public static StateType MELON = StateTypes.builder().name("MELON").blastResistance(1.0f).hardness(1.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.VEGETABLE).build();
@@ -1213,9 +1217,258 @@ public final class StateTypes {
     public static StateType FIREFLY_BUSH = StateTypes.builder().name("FIREFLY_BUSH").blastResistance(0.0f).hardness(0.0f).isBlocking(false).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.PLANT).build();
 
     /**
-     * Added with 1.21.6
+     * @versions 1.21.6+
      */
     public static StateType DRIED_GHAST = StateTypes.builder().name("DRIED_GHAST").blastResistance(0.0f).hardness(0.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.STONE).build();
+
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType ACACIA_SHELF = StateTypes.builder().name("ACACIA_SHELF").blastResistance(3.0f).hardness(2.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType BAMBOO_SHELF = StateTypes.builder().name("BAMBOO_SHELF").blastResistance(3.0f).hardness(2.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType BIRCH_SHELF = StateTypes.builder().name("BIRCH_SHELF").blastResistance(3.0f).hardness(2.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType CHERRY_SHELF = StateTypes.builder().name("CHERRY_SHELF").blastResistance(3.0f).hardness(2.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType CRIMSON_SHELF = StateTypes.builder().name("CRIMSON_SHELF").blastResistance(3.0f).hardness(2.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType DARK_OAK_SHELF = StateTypes.builder().name("DARK_OAK_SHELF").blastResistance(3.0f).hardness(2.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType JUNGLE_SHELF = StateTypes.builder().name("JUNGLE_SHELF").blastResistance(3.0f).hardness(2.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType MANGROVE_SHELF = StateTypes.builder().name("MANGROVE_SHELF").blastResistance(3.0f).hardness(2.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType OAK_SHELF = StateTypes.builder().name("OAK_SHELF").blastResistance(3.0f).hardness(2.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType PALE_OAK_SHELF = StateTypes.builder().name("PALE_OAK_SHELF").blastResistance(3.0f).hardness(2.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType SPRUCE_SHELF = StateTypes.builder().name("SPRUCE_SHELF").blastResistance(3.0f).hardness(2.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WARPED_SHELF = StateTypes.builder().name("WARPED_SHELF").blastResistance(3.0f).hardness(2.0f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.WOOD).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType COPPER_TORCH = StateTypes.builder().name("COPPER_TORCH").blastResistance(0.0f).hardness(0.0f).isBlocking(false).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.DECORATION).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType COPPER_WALL_TORCH = StateTypes.builder().name("COPPER_WALL_TORCH").blastResistance(0.0f).hardness(0.0f).isBlocking(false).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.DECORATION).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType COPPER_BARS = StateTypes.builder().name("COPPER_BARS").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType EXPOSED_COPPER_BARS = StateTypes.builder().name("EXPOSED_COPPER_BARS").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WEATHERED_COPPER_BARS = StateTypes.builder().name("WEATHERED_COPPER_BARS").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType OXIDIZED_COPPER_BARS = StateTypes.builder().name("OXIDIZED_COPPER_BARS").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_COPPER_BARS = StateTypes.builder().name("WAXED_COPPER_BARS").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_EXPOSED_COPPER_BARS = StateTypes.builder().name("WAXED_EXPOSED_COPPER_BARS").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_WEATHERED_COPPER_BARS = StateTypes.builder().name("WAXED_WEATHERED_COPPER_BARS").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_OXIDIZED_COPPER_BARS = StateTypes.builder().name("WAXED_OXIDIZED_COPPER_BARS").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType IRON_CHAIN = StateTypes.builder().name("IRON_CHAIN").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType COPPER_CHAIN = StateTypes.builder().name("COPPER_CHAIN").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType EXPOSED_COPPER_CHAIN = StateTypes.builder().name("EXPOSED_COPPER_CHAIN").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WEATHERED_COPPER_CHAIN = StateTypes.builder().name("WEATHERED_COPPER_CHAIN").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType OXIDIZED_COPPER_CHAIN = StateTypes.builder().name("OXIDIZED_COPPER_CHAIN").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_COPPER_CHAIN = StateTypes.builder().name("WAXED_COPPER_CHAIN").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_EXPOSED_COPPER_CHAIN = StateTypes.builder().name("WAXED_EXPOSED_COPPER_CHAIN").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_WEATHERED_COPPER_CHAIN = StateTypes.builder().name("WAXED_WEATHERED_COPPER_CHAIN").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_OXIDIZED_COPPER_CHAIN = StateTypes.builder().name("WAXED_OXIDIZED_COPPER_CHAIN").blastResistance(6.0f).hardness(5.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType COPPER_LANTERN = StateTypes.builder().name("COPPER_LANTERN").blastResistance(3.5f).hardness(3.5f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType EXPOSED_COPPER_LANTERN = StateTypes.builder().name("EXPOSED_COPPER_LANTERN").blastResistance(3.5f).hardness(3.5f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WEATHERED_COPPER_LANTERN = StateTypes.builder().name("WEATHERED_COPPER_LANTERN").blastResistance(3.5f).hardness(3.5f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType OXIDIZED_COPPER_LANTERN = StateTypes.builder().name("OXIDIZED_COPPER_LANTERN").blastResistance(3.5f).hardness(3.5f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_COPPER_LANTERN = StateTypes.builder().name("WAXED_COPPER_LANTERN").blastResistance(3.5f).hardness(3.5f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_EXPOSED_COPPER_LANTERN = StateTypes.builder().name("WAXED_EXPOSED_COPPER_LANTERN").blastResistance(3.5f).hardness(3.5f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_WEATHERED_COPPER_LANTERN = StateTypes.builder().name("WAXED_WEATHERED_COPPER_LANTERN").blastResistance(3.5f).hardness(3.5f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_OXIDIZED_COPPER_LANTERN = StateTypes.builder().name("WAXED_OXIDIZED_COPPER_LANTERN").blastResistance(3.5f).hardness(3.5f).isBlocking(true).requiresCorrectTool(false).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType COPPER_CHEST = StateTypes.builder().name("COPPER_CHEST").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType EXPOSED_COPPER_CHEST = StateTypes.builder().name("EXPOSED_COPPER_CHEST").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WEATHERED_COPPER_CHEST = StateTypes.builder().name("WEATHERED_COPPER_CHEST").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType OXIDIZED_COPPER_CHEST = StateTypes.builder().name("OXIDIZED_COPPER_CHEST").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_COPPER_CHEST = StateTypes.builder().name("WAXED_COPPER_CHEST").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_EXPOSED_COPPER_CHEST = StateTypes.builder().name("WAXED_EXPOSED_COPPER_CHEST").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_WEATHERED_COPPER_CHEST = StateTypes.builder().name("WAXED_WEATHERED_COPPER_CHEST").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_OXIDIZED_COPPER_CHEST = StateTypes.builder().name("WAXED_OXIDIZED_COPPER_CHEST").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType COPPER_GOLEM_STATUE = StateTypes.builder().name("COPPER_GOLEM_STATUE").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType EXPOSED_COPPER_GOLEM_STATUE = StateTypes.builder().name("EXPOSED_COPPER_GOLEM_STATUE").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WEATHERED_COPPER_GOLEM_STATUE = StateTypes.builder().name("WEATHERED_COPPER_GOLEM_STATUE").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType OXIDIZED_COPPER_GOLEM_STATUE = StateTypes.builder().name("OXIDIZED_COPPER_GOLEM_STATUE").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_COPPER_GOLEM_STATUE = StateTypes.builder().name("WAXED_COPPER_GOLEM_STATUE").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_EXPOSED_COPPER_GOLEM_STATUE = StateTypes.builder().name("WAXED_EXPOSED_COPPER_GOLEM_STATUE").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_WEATHERED_COPPER_GOLEM_STATUE = StateTypes.builder().name("WAXED_WEATHERED_COPPER_GOLEM_STATUE").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_OXIDIZED_COPPER_GOLEM_STATUE = StateTypes.builder().name("WAXED_OXIDIZED_COPPER_GOLEM_STATUE").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(false).isSolid(false).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType EXPOSED_LIGHTNING_ROD = StateTypes.builder().name("EXPOSED_LIGHTNING_ROD").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WEATHERED_LIGHTNING_ROD = StateTypes.builder().name("WEATHERED_LIGHTNING_ROD").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType OXIDIZED_LIGHTNING_ROD = StateTypes.builder().name("OXIDIZED_LIGHTNING_ROD").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_LIGHTNING_ROD = StateTypes.builder().name("WAXED_LIGHTNING_ROD").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_EXPOSED_LIGHTNING_ROD = StateTypes.builder().name("WAXED_EXPOSED_LIGHTNING_ROD").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_WEATHERED_LIGHTNING_ROD = StateTypes.builder().name("WAXED_WEATHERED_LIGHTNING_ROD").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
+    /**
+     * @versions 1.21.9+
+     */
+    public static StateType WAXED_OXIDIZED_LIGHTNING_ROD = StateTypes.builder().name("WAXED_OXIDIZED_LIGHTNING_ROD").blastResistance(6.0f).hardness(3.0f).isBlocking(true).requiresCorrectTool(true).isSolid(true).setMaterial(MaterialType.METAL).build();
     // </editor-fold>
 
     static {

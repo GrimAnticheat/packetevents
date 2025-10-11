@@ -26,6 +26,7 @@ import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes;
 import com.github.retrooper.packetevents.protocol.sound.Sound;
 import com.github.retrooper.packetevents.protocol.sound.Sounds;
 import com.github.retrooper.packetevents.protocol.sound.StaticSound;
+import com.github.retrooper.packetevents.protocol.util.WeightedList;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3f;
@@ -33,21 +34,57 @@ import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Mojang name: ClientboundExplodePacket
+ */
+@NullMarked
 public class WrapperPlayServerExplosion extends PacketWrapper<WrapperPlayServerExplosion> {
 
     private Vector3d position;
-    private float strength; // removed in 1.21.2
-    private List<Vector3i> records; // removed in 1.21.2
-    private @Nullable Vector3d knockback; // optional since 1.21.2
+    /**
+     * @versions 1.7-1.21.2 and 1.21.9+
+     */
+    private float strength;
+    /**
+     * @versions 1.21.9+
+     */
+    private int blockCount;
+    /**
+     * @versions 1.7-1.21.1
+     */
+    private List<Vector3i> records;
+    /**
+     * Only nullable for 1.21.2+
+     */
+    private @Nullable Vector3d knockback;
 
-    private Particle<?> smallParticle; // removed in 1.21.2
+    /**
+     * @versions 1.20.3-1.21.2
+     */
+    @ApiStatus.Obsolete
+    private Particle<?> smallParticle;
+    /**
+     * @versions 1.20.3+
+     */
     private Particle<?> particle;
-    private BlockInteraction blockInteraction; // removed in 1.21.2
+    /**
+     * @versions 1.20.3-1.21.2
+     */
+    @ApiStatus.Obsolete
+    private BlockInteraction blockInteraction;
+    /**
+     * @versions 1.20.3+
+     */
     private Sound explosionSound;
+    /**
+     * @versions 1.21.9+
+     */
+    private WeightedList<ParticleInfo> blockParticles;
 
     public WrapperPlayServerExplosion(PacketSendEvent event) {
         super(event);
@@ -75,18 +112,31 @@ public class WrapperPlayServerExplosion extends PacketWrapper<WrapperPlayServerE
                 smallParticle, particle, blockInteraction, explosionSound);
     }
 
-    public WrapperPlayServerExplosion(Vector3d position, float strength, List<Vector3i> records, Vector3d playerMotion,
-                                      Particle<?> smallParticle, Particle<?> particle,
-                                      BlockInteraction blockInteraction, Sound explosionSound) {
+    public WrapperPlayServerExplosion(
+            Vector3d position, float strength, List<Vector3i> records, Vector3d playerMotion,
+            Particle<?> smallParticle, Particle<?> particle,
+            BlockInteraction blockInteraction, Sound explosionSound
+    ) {
+        this(position, strength, records, playerMotion, smallParticle, particle,
+                blockInteraction, explosionSound, new WeightedList<>());
+    }
+
+    public WrapperPlayServerExplosion(
+            Vector3d position, float strength, List<Vector3i> records, Vector3d playerMotion,
+            Particle<?> smallParticle, Particle<?> particle,
+            BlockInteraction blockInteraction, Sound explosionSound, WeightedList<ParticleInfo> blockParticles
+    ) {
         super(PacketType.Play.Server.EXPLOSION);
         this.position = position;
         this.strength = strength;
+        this.blockCount = records.size();
         this.records = records;
         this.knockback = playerMotion;
         this.smallParticle = smallParticle;
         this.particle = particle;
         this.blockInteraction = blockInteraction;
         this.explosionSound = explosionSound;
+        this.blockParticles = blockParticles;
     }
 
     public WrapperPlayServerExplosion(
@@ -102,11 +152,23 @@ public class WrapperPlayServerExplosion extends PacketWrapper<WrapperPlayServerE
             Vector3d position, @Nullable Vector3d playerMotion,
             Particle<?> particle, Sound explosionSound
     ) {
+        this(position, 0f, 0, playerMotion,
+                particle, explosionSound, new WeightedList<>());
+    }
+
+    public WrapperPlayServerExplosion(
+            Vector3d position, float strength, int blockCount,
+            @Nullable Vector3d playerMotion, Particle<?> particle,
+            Sound explosionSound, WeightedList<ParticleInfo> blockParticles
+    ) {
         super(PacketType.Play.Server.EXPLOSION);
         this.position = position;
+        this.strength = strength;
+        this.blockCount = blockCount;
         this.knockback = playerMotion;
         this.particle = particle;
         this.explosionSound = explosionSound;
+        this.blockParticles = blockParticles;
     }
 
     @Override
@@ -118,9 +180,18 @@ public class WrapperPlayServerExplosion extends PacketWrapper<WrapperPlayServerE
         }
         if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_2)) {
             // this packet has been basically completely emptied with 1.21.2
+            if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
+                this.strength = this.readFloat();
+                this.blockCount = this.readInt();
+            }
             this.knockback = this.readOptional(Vector3d::read);
             this.particle = Particle.read(this);
             this.explosionSound = Sound.read(this);
+            if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
+                this.blockParticles = WeightedList.read(this, ParticleInfo::read);
+            }
+            // legacy fields
+            this.blockInteraction = BlockInteraction.DESTROY_BLOCKS;
         } else {
             strength = readFloat();
             int recordsLength = serverVersion.isNewerThanOrEquals(ServerVersion.V_1_17) ? readVarInt() : readInt();
@@ -152,6 +223,10 @@ public class WrapperPlayServerExplosion extends PacketWrapper<WrapperPlayServerE
                     Float explosionSoundRange = this.readOptional(PacketWrapper::readFloat);
                     this.explosionSound = new StaticSound(explosionSoundKey, explosionSoundRange);
                 }
+            } else {
+                // set newer fields
+                this.blockInteraction = BlockInteraction.DESTROY_BLOCKS;
+                this.explosionSound = Sounds.INTENTIONALLY_EMPTY;
             }
         }
     }
@@ -167,9 +242,16 @@ public class WrapperPlayServerExplosion extends PacketWrapper<WrapperPlayServerE
         }
         if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_2)) {
             // this packet has been basically completely emptied with 1.21.2
+            if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
+                this.writeFloat(this.strength);
+                this.writeInt(this.blockCount);
+            }
             this.writeOptional(this.knockback, Vector3d::write);
             Particle.write(this, this.particle);
             Sound.write(this, this.explosionSound);
+            if (this.serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
+                WeightedList.write(this, this.blockParticles, ParticleInfo::write);
+            }
         } else {
             writeFloat(strength);
 
@@ -210,12 +292,14 @@ public class WrapperPlayServerExplosion extends PacketWrapper<WrapperPlayServerE
     public void copy(WrapperPlayServerExplosion wrapper) {
         position = wrapper.position;
         strength = wrapper.strength;
+        blockCount = wrapper.blockCount;
         records = wrapper.records;
         knockback = wrapper.knockback;
         smallParticle = wrapper.smallParticle;
         particle = wrapper.particle;
         blockInteraction = wrapper.blockInteraction;
         explosionSound = wrapper.explosionSound;
+        blockParticles = wrapper.blockParticles;
     }
 
     private Vector3i toFloor(Vector3d position) {
@@ -242,22 +326,50 @@ public class WrapperPlayServerExplosion extends PacketWrapper<WrapperPlayServerE
         this.position = position;
     }
 
-    @ApiStatus.Obsolete // removed in 1.21.2
+    /**
+     * @versions 1.7-1.21.1 and 1.21.9+
+     */
     public float getStrength() {
         return strength;
     }
 
-    @ApiStatus.Obsolete // removed in 1.21.2
+    /**
+     * @versions 1.7-1.21.1 and 1.21.9+
+     */
     public void setStrength(float strength) {
         this.strength = strength;
     }
 
-    @ApiStatus.Obsolete // removed in 1.21.2
+    /**
+     * @versions 1.21.9+
+     */
+    public int getBlockCount() {
+        if (this.serverVersion.isOlderThan(ServerVersion.V_1_21_9) && this.blockCount == 0) {
+            return this.records.size();
+        }
+        return this.blockCount;
+    }
+
+    /**
+     * @versions 1.21.9+
+     */
+    public void setBlockCount(int blockCount) {
+        this.blockCount = blockCount;
+    }
+
+    /**
+     * @versions 1.7-1.21.1
+     */
     public List<Vector3i> getRecords() {
+        if (this.records == null) {
+            this.records = new ArrayList<>();
+        }
         return records;
     }
 
-    @ApiStatus.Obsolete // removed in 1.21.2
+    /**
+     * @versions 1.7-1.21.1
+     */
     public void setRecords(List<Vector3i> records) {
         this.records = records;
     }
@@ -287,6 +399,9 @@ public class WrapperPlayServerExplosion extends PacketWrapper<WrapperPlayServerE
 
     @ApiStatus.Obsolete // removed in 1.21.2
     public Particle<?> getSmallExplosionParticles() {
+        if (this.smallParticle == null) {
+            return new Particle<>(ParticleTypes.EXPLOSION);
+        }
         return this.smallParticle;
     }
 
@@ -296,6 +411,9 @@ public class WrapperPlayServerExplosion extends PacketWrapper<WrapperPlayServerE
     }
 
     public Particle<?> getParticle() {
+        if (this.particle == null) {
+            return new Particle<>(ParticleTypes.EXPLOSION_EMITTER);
+        }
         return this.particle;
     }
 
@@ -347,10 +465,62 @@ public class WrapperPlayServerExplosion extends PacketWrapper<WrapperPlayServerE
         this.explosionSound = explosionSound;
     }
 
+    /**
+     * @versions 1.21.9+
+     */
+    public WeightedList<ParticleInfo> getBlockParticles() {
+        return this.blockParticles;
+    }
+
+    /**
+     * @versions 1.21.9+
+     */
+    public void setBlockParticles(WeightedList<ParticleInfo> blockParticles) {
+        this.blockParticles = blockParticles;
+    }
+
     public enum BlockInteraction {
         KEEP_BLOCKS,
         DESTROY_BLOCKS,
         DECAY_DESTROYED_BLOCKS,
         TRIGGER_BLOCKS,
+    }
+
+    public static final class ParticleInfo {
+
+        private final Particle<?> particle;
+        private final float scaling;
+        private final float speed;
+
+        public ParticleInfo(Particle<?> particle, float scaling, float speed) {
+            this.particle = particle;
+            this.scaling = scaling;
+            this.speed = speed;
+        }
+
+        public static ParticleInfo read(PacketWrapper<?> wrapper) {
+            Particle<?> particle = Particle.read(wrapper);
+            float scaling = wrapper.readFloat();
+            float speed = wrapper.readFloat();
+            return new ParticleInfo(particle, scaling, speed);
+        }
+
+        public static void write(PacketWrapper<?> wrapper, ParticleInfo info) {
+            Particle.write(wrapper, info.particle);
+            wrapper.writeFloat(info.scaling);
+            wrapper.writeFloat(info.speed);
+        }
+
+        public Particle<?> getParticle() {
+            return this.particle;
+        }
+
+        public float getScaling() {
+            return this.scaling;
+        }
+
+        public float getSpeed() {
+            return this.speed;
+        }
     }
 }

@@ -97,6 +97,12 @@ public final class EntityTypes {
     public static final EntityType PROJECTILE_ABSTRACT = define("projectile_abstract", ENTITY);
     public static final EntityType MINECART_ABSTRACT = define("minecart_abstract", ENTITY);
     public static final EntityType CHESTED_MINECART_ABSTRACT = define("chested_minecart_abstract", MINECART_ABSTRACT);
+    /**
+     * Not spawnable
+     *
+     * @versions 1.21.9+
+     */
+    public static final EntityType AVATAR = define("avatar", LIVINGENTITY);
     public static final EntityType AREA_EFFECT_CLOUD = define("area_effect_cloud", ENTITY);
     public static final EntityType ARMOR_STAND = define("armor_stand", LIVINGENTITY);
     public static final EntityType ALLAY = define("allay", ABSTRACT_CREATURE);
@@ -226,7 +232,7 @@ public final class EntityTypes {
     public static final EntityType ZOMBIE_HORSE = define("zombie_horse", ABSTRACT_HORSE);
     public static final EntityType ZOMBIE_VILLAGER = define("zombie_villager", ZOMBIE);
     public static final EntityType ZOMBIFIED_PIGLIN = define("zombified_piglin", ZOMBIE);
-    public static final EntityType PLAYER = define("player", LIVINGENTITY);
+    public static final EntityType PLAYER = define("player", AVATAR);
     public static final EntityType FISHING_BOBBER = define("fishing_bobber", ENTITY);
     public static final EntityType ENDER_SIGNAL = define("ender_signal", ENTITY);
     public static final EntityType THROWN_EXP_BOTTLE = define("thrown_exp_bottle", PROJECTILE_ABSTRACT);
@@ -239,67 +245,167 @@ public final class EntityTypes {
     public static final EntityType MINECART_TNT = define("minecart_tnt", MINECART_ABSTRACT);
     public static final EntityType MINECART_HOPPER = define("minecart_hopper", MINECART_ABSTRACT);
     public static final EntityType MINECART_MOB_SPAWNER = define("minecart_mob_spawner", MINECART_ABSTRACT);
-
-    // Added in 1.19.4
+    /**
+     * @versions 1.19.4+
+     */
     public static final EntityType DISPLAY = define("display", ENTITY);
+    /**
+     * @versions 1.19.4+
+     */
     public static final EntityType BLOCK_DISPLAY = define("block_display", DISPLAY);
+    /**
+     * @versions 1.19.4+
+     */
     public static final EntityType ITEM_DISPLAY = define("item_display", DISPLAY);
+    /**
+     * @versions 1.19.4+
+     */
     public static final EntityType TEXT_DISPLAY = define("text_display", DISPLAY);
+    /**
+     * @versions 1.19.4+
+     */
     public static final EntityType INTERACTION = define("interaction", DISPLAY);
+    /**
+     * @versions 1.19.4+
+     */
     public static final EntityType SNIFFER = define("sniffer", ABSTRACT_ANIMAL);
-
-    // Added in 1.20.3
+    /**
+     * @versions 1.20.3+
+     */
     public static final EntityType BREEZE = define("breeze", ABSTRACT_MONSTER);
+    /**
+     * @versions 1.20.3+
+     */
     public static final EntityType ABSTRACT_WIND_CHARGE = define("abstract_wind_charge", PROJECTILE_ABSTRACT);
+    /**
+     * @versions 1.20.3+
+     */
     public static final EntityType WIND_CHARGE = define("wind_charge", ABSTRACT_WIND_CHARGE);
-
-    // Added in 1.20.5
+    /**
+     * @versions 1.20.5+
+     */
     public static final EntityType ARMADILLO = define("armadillo", ABSTRACT_ANIMAL);
+    /**
+     * @versions 1.20.5+
+     */
     public static final EntityType BOGGED = define("bogged", ABSTRACT_SKELETON);
+    /**
+     * @versions 1.20.5+
+     */
     public static final EntityType BREEZE_WIND_CHARGE = define("breeze_wind_charge", ABSTRACT_WIND_CHARGE);
+    /**
+     * @versions 1.20.5+
+     */
     public static final EntityType OMINOUS_ITEM_SPAWNER = define("ominous_item_spawner", ENTITY);
-
-    // added with 1.21.2
+    /**
+     * @versions 1.21.2+
+     */
     public static final EntityType ACACIA_BOAT = define("acacia_boat", BOAT);
+    /**
+     * @versions 1.21.2+
+     */
     public static final EntityType ACACIA_CHEST_BOAT = define("acacia_chest_boat", CHEST_BOAT);
+    /**
+     * @versions 1.21.2+
+     */
     public static final EntityType BAMBOO_CHEST_RAFT = define("bamboo_chest_raft", CHEST_BOAT);
+    /**
+     * @versions 1.21.2+
+     */
     public static final EntityType BAMBOO_RAFT = define("bamboo_raft", BOAT);
+    /**
+     * @versions 1.21.2+
+     */
     public static final EntityType BIRCH_BOAT = define("birch_boat", BOAT);
+    /**
+     * @versions 1.21.2+
+     */
     public static final EntityType BIRCH_CHEST_BOAT = define("birch_chest_boat", CHEST_BOAT);
+    /**
+     * @versions 1.21.2+
+     */
     public static final EntityType CHERRY_BOAT = define("cherry_boat", BOAT);
+    /**
+     * @versions 1.21.2+
+     */
     public static final EntityType CHERRY_CHEST_BOAT = define("cherry_chest_boat", CHEST_BOAT);
+    /**
+     * @versions 1.21.2+
+     */
     public static final EntityType CREAKING = define("creaking", ABSTRACT_MONSTER);
     /**
-     * Removed with 1.21.4
+     * @versions 1.21.2-1.21.3
      */
     @ApiStatus.Obsolete
     public static final EntityType CREAKING_TRANSIENT = define("creaking_transient", CREAKING);
-    public static final EntityType DARK_OAK_BOAT = define("dark_oak_boat", BOAT);
-    public static final EntityType DARK_OAK_CHEST_BOAT = define("dark_oak_chest_boat", CHEST_BOAT);
-    public static final EntityType JUNGLE_BOAT = define("jungle_boat", BOAT);
-    public static final EntityType JUNGLE_CHEST_BOAT = define("jungle_chest_boat", CHEST_BOAT);
-    public static final EntityType MANGROVE_BOAT = define("mangrove_boat", BOAT);
-    public static final EntityType MANGROVE_CHEST_BOAT = define("mangrove_chest_boat", CHEST_BOAT);
-    public static final EntityType OAK_BOAT = define("oak_boat", BOAT);
-    public static final EntityType OAK_CHEST_BOAT = define("oak_chest_boat", CHEST_BOAT);
-    public static final EntityType PALE_OAK_BOAT = define("pale_oak_boat", BOAT);
-    public static final EntityType PALE_OAK_CHEST_BOAT = define("pale_oak_chest_boat", CHEST_BOAT);
-    public static final EntityType SPRUCE_BOAT = define("spruce_boat", BOAT);
-    public static final EntityType SPRUCE_CHEST_BOAT = define("spruce_chest_boat", CHEST_BOAT);
-
     /**
-     * Added with 1.21.5
+     * @versions 1.21.2+
+     */
+    public static final EntityType DARK_OAK_BOAT = define("dark_oak_boat", BOAT);
+    /**
+     * @versions 1.21.2+
+     */
+    public static final EntityType DARK_OAK_CHEST_BOAT = define("dark_oak_chest_boat", CHEST_BOAT);
+    /**
+     * @versions 1.21.2+
+     */
+    public static final EntityType JUNGLE_BOAT = define("jungle_boat", BOAT);
+    /**
+     * @versions 1.21.2+
+     */
+    public static final EntityType JUNGLE_CHEST_BOAT = define("jungle_chest_boat", CHEST_BOAT);
+    /**
+     * @versions 1.21.2+
+     */
+    public static final EntityType MANGROVE_BOAT = define("mangrove_boat", BOAT);
+    /**
+     * @versions 1.21.2+
+     */
+    public static final EntityType MANGROVE_CHEST_BOAT = define("mangrove_chest_boat", CHEST_BOAT);
+    /**
+     * @versions 1.21.2+
+     */
+    public static final EntityType OAK_BOAT = define("oak_boat", BOAT);
+    /**
+     * @versions 1.21.2+
+     */
+    public static final EntityType OAK_CHEST_BOAT = define("oak_chest_boat", CHEST_BOAT);
+    /**
+     * @versions 1.21.2+
+     */
+    public static final EntityType PALE_OAK_BOAT = define("pale_oak_boat", BOAT);
+    /**
+     * @versions 1.21.2+
+     */
+    public static final EntityType PALE_OAK_CHEST_BOAT = define("pale_oak_chest_boat", CHEST_BOAT);
+    /**
+     * @versions 1.21.2+
+     */
+    public static final EntityType SPRUCE_BOAT = define("spruce_boat", BOAT);
+    /**
+     * @versions 1.21.2+
+     */
+    public static final EntityType SPRUCE_CHEST_BOAT = define("spruce_chest_boat", CHEST_BOAT);
+    /**
+     * @versions 1.21.5+
      */
     public static final EntityType SPLASH_POTION = define("splash_potion", POTION);
     /**
-     * Added with 1.21.5
+     * @versions 1.21.5+
      */
     public static final EntityType LINGERING_POTION = define("lingering_potion", POTION);
-
     /**
-     * Added with 1.21.6
+     * @versions 1.21.6+
      */
     public static final EntityType HAPPY_GHAST = define("happy_ghast", ABSTRACT_ANIMAL);
+    /**
+     * @versions 1.21.9+
+     */
+    public static final EntityType COPPER_GOLEM = define("copper_golem", ABSTRACT_GOLEM);
+    /**
+     * @versions 1.21.9+
+     */
+    public static final EntityType MANNEQUIN = define("mannequin", AVATAR);
 
     /**
      * Returns an immutable view of the entity types.

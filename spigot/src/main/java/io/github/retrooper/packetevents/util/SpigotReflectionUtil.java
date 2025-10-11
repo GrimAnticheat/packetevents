@@ -35,23 +35,41 @@ import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.MapMaker;
 import io.netty.buffer.PooledByteBufAllocator;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
+import org.bukkit.Registry;
+import org.bukkit.Server;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+@ApiStatus.Internal
 public final class SpigotReflectionUtil {
     private static final String MODIFIED_PACKAGE_NAME;
     //Example: net.minecraft.server.v1_8_R3.
@@ -91,7 +109,8 @@ public final class SpigotReflectionUtil {
             STREAM_CODEC, STREAM_DECODER, STREAM_ENCODER, REGISTRY_FRIENDLY_BYTE_BUF, REGISTRY_ACCESS, REGISTRY_ACCESS_FROZEN,
             RESOURCE_KEY, REGISTRY, WRITABLE_REGISTRY, NBT_ACCOUNTER, CHUNK_PROVIDER_SERVER_CLASS, ICHUNKPROVIDER_CLASS, CHUNK_STATUS_CLASS,
             BLOCK_POSITION_CLASS, PLAYER_CHUNK_MAP_CLASS, PLAYER_CHUNK_CLASS, CHUNK_CLASS, IBLOCKACCESS_CLASS, ICHUNKACCESS_CLASS, REMOTE_CHAT_SESSION_CLASS,
-    DATA_WATCHER_CLASS, CLIENTBOUND_SET_ENTITY_DATA_PACKET_CLASS, DATA_WATCHER_ITEM_CLASS, DATA_WATCHER_VALUE_CLASS;
+            DATA_WATCHER_CLASS, CLIENTBOUND_SET_ENTITY_DATA_PACKET_CLASS, DATA_WATCHER_ITEM_CLASS, DATA_WATCHER_VALUE_CLASS,
+            PAPER_COMMON_CONNECTION_CLASS;
 
     //Netty classes
     public static Class<?> CHANNEL_CLASS, BYTE_BUF_CLASS, BYTE_TO_MESSAGE_DECODER, MESSAGE_TO_BYTE_ENCODER;
@@ -99,7 +118,7 @@ public final class SpigotReflectionUtil {
     //Fields
     public static Field ENTITY_PLAYER_PING_FIELD, ENTITY_BOUNDING_BOX_FIELD, BYTE_BUF_IN_PACKET_DATA_SERIALIZER, DIMENSION_CODEC_FIELD,
             DYNAMIC_OPS_NBT_INSTANCE_FIELD, CHUNK_PROVIDER_SERVER_FIELD, CRAFT_PARTICLE_PARTICLES_FIELD, NMS_MK_KEY_FIELD, LEGACY_NMS_PARTICLE_KEY_FIELD, LEGACY_NMS_KEY_TO_NMS_PARTICLE,
-            REMOTE_CHAT_SESSION_FIELD, REGISTRY_KEY_LOCATION_FIELD, DATA_WATCHER_FIELD;
+            REMOTE_CHAT_SESSION_FIELD, REGISTRY_KEY_LOCATION_FIELD, DATA_WATCHER_FIELD, PAPER_CONNECTION_HANDLE_FIELD, PACKETLISTENER_CONNECTION_FIELD, CONNECTION_CHANNEL_FIELD;
 
     //Methods
     public static Method IS_DEBUGGING, GET_CRAFT_PLAYER_HANDLE_METHOD, GET_CRAFT_ENTITY_HANDLE_METHOD, GET_CRAFT_WORLD_HANDLE_METHOD,
@@ -114,7 +133,8 @@ public final class SpigotReflectionUtil {
             CREATE_REGISTRY_RESOURCE_KEY, GET_REGISTRY_OR_THROW, GET_DIMENSION_TYPES, GET_REGISTRY_ID,
             NBT_ACCOUNTER_UNLIMITED_HEAP, CHUNK_CACHE_GET_IBLOCKACCESS, CHUNK_CACHE_GET_ICHUNKACCESS,
             IBLOCKACCESS_GET_BLOCK_DATA, CHUNK_GET_BLOCK_DATA, PLAYER_CHUNK_MAP_GET_PLAYER_CHUNK, PLAYER_CHUNK_GET_CHUNK,
-            LEGACY_DATA_WATCHER_WRITE_METHOD, CLIENTBOUND_SET_ENTITY_DATA_PACKET_WRITE_DATA_WATCHER_METHOD, GET_DATA_VALUE_FROM_DATA_ITEM_METHOD;
+            LEGACY_DATA_WATCHER_WRITE_METHOD, CLIENTBOUND_SET_ENTITY_DATA_PACKET_WRITE_DATA_WATCHER_METHOD, GET_DATA_VALUE_FROM_DATA_ITEM_METHOD,
+            GET_TPS;
 
     //Constructors
     private static Constructor<?> NMS_ITEM_STACK_CONSTRUCTOR, NMS_PACKET_DATA_SERIALIZER_CONSTRUCTOR,
@@ -268,6 +288,7 @@ public final class SpigotReflectionUtil {
         LEGACY_DATA_WATCHER_WRITE_METHOD = Reflection.getMethod(DATA_WATCHER_CLASS, void.class, 0, NMS_PACKET_DATA_SERIALIZER_CLASS);
         CLIENTBOUND_SET_ENTITY_DATA_PACKET_WRITE_DATA_WATCHER_METHOD = Reflection.getMethod(CLIENTBOUND_SET_ENTITY_DATA_PACKET_CLASS, 0, List.class, REGISTRY_FRIENDLY_BYTE_BUF);
         GET_DATA_VALUE_FROM_DATA_ITEM_METHOD = Reflection.getMethod(DATA_WATCHER_ITEM_CLASS, DATA_WATCHER_VALUE_CLASS, 0);
+        GET_TPS = Reflection.getMethod(Server.class, "getTPS");
     }
 
     private static void initFields() {
@@ -296,6 +317,10 @@ public final class SpigotReflectionUtil {
         REMOTE_CHAT_SESSION_FIELD = Reflection.getField(ENTITY_PLAYER_CLASS, REMOTE_CHAT_SESSION_CLASS, 0);
         REGISTRY_KEY_LOCATION_FIELD = Reflection.getField(RESOURCE_KEY, NMS_MINECRAFT_KEY_CLASS, 1);
         DATA_WATCHER_FIELD = Reflection.getField(NMS_ENTITY_CLASS, DATA_WATCHER_CLASS, 0, true);
+
+        PAPER_CONNECTION_HANDLE_FIELD = Reflection.getField(PAPER_COMMON_CONNECTION_CLASS, SERVER_COMMON_PACKETLISTENER_IMPL_CLASS, 0);
+        PACKETLISTENER_CONNECTION_FIELD = Reflection.getField(SERVER_COMMON_PACKETLISTENER_IMPL_CLASS, NETWORK_MANAGER_CLASS, 0);
+        CONNECTION_CHANNEL_FIELD = Reflection.getField(NETWORK_MANAGER_CLASS, CHANNEL_CLASS, 0);
     }
 
     private static void initClasses() {
@@ -318,6 +343,8 @@ public final class SpigotReflectionUtil {
         SERVER_COMMON_PACKETLISTENER_IMPL_CLASS = getServerClass("server.network.ServerCommonPacketListenerImpl", "ServerCommonPacketListenerImpl");
         // 1.20.5+
         TRANSFER_COOKIE_CONNECTION_CLASS = getOBCClass("entity.CraftPlayer$TransferCookieConnection");
+        // 1.21.7+
+        PAPER_COMMON_CONNECTION_CLASS = Reflection.getClassByNameWithoutException("io.papermc.paper.connection.PaperCommonConnection");
 
         SERVER_CONNECTION_CLASS = getServerClass(IS_OBFUSCATED ? "server.network.ServerConnection" : "server.network.ServerConnectionListener", "ServerConnection");
         NETWORK_MANAGER_CLASS = getServerClass(IS_OBFUSCATED ? "network.NetworkManager" : "network.Connection", "NetworkManager");
@@ -396,7 +423,7 @@ public final class SpigotReflectionUtil {
         WRITABLE_REGISTRY = getServerClass(IS_OBFUSCATED ? "core.IRegistryWritable" : "core.WritableRegistry", "IRegistryWritable");
 
         REMOTE_CHAT_SESSION_CLASS = Reflection.getClassByNameWithoutException("net.minecraft.network.chat.RemoteChatSession");
-        DATA_WATCHER_CLASS =  SpigotReflectionUtil.getServerClass("network.syncher.DataWatcher", "DataWatcher");
+        DATA_WATCHER_CLASS = SpigotReflectionUtil.getServerClass("network.syncher.DataWatcher", "DataWatcher");
         if (DATA_WATCHER_CLASS == null) {
             DATA_WATCHER_CLASS = SpigotReflectionUtil.getServerClass("network.syncher.SynchedEntityData", "DataWatcher");
         }
@@ -484,6 +511,13 @@ public final class SpigotReflectionUtil {
     }
 
     public static double[] recentTPS() {
+        if (GET_TPS != null) {
+            try {
+                return (double[]) GET_TPS.invoke(Bukkit.getServer());
+            } catch (IllegalAccessException | InvocationTargetException exception) {
+                throw new RuntimeException(exception);
+            }
+        }
         return new ReflectionObject(getMinecraftServerInstance(Bukkit.getServer()), MINECRAFT_SERVER_CLASS).readDoubleArray(0);
     }
 
@@ -624,13 +658,23 @@ public final class SpigotReflectionUtil {
         return null;
     }
 
-    public static Object getChannel(Player player) {
+    public static @Nullable Object getChannel(Player player) {
         Object networkManager = getNetworkManager(player);
         if (networkManager == null) {
             return null;
         }
         ReflectionObject wrapper = new ReflectionObject(networkManager, NETWORK_MANAGER_CLASS);
         return wrapper.readObject(0, CHANNEL_CLASS);
+    }
+
+    public static Object getChannelFromPaperConnection(Object paperConnection) {
+        try {
+            Object packetlistener = PAPER_CONNECTION_HANDLE_FIELD.get(paperConnection);
+            Object connection = PACKETLISTENER_CONNECTION_FIELD.get(packetlistener);
+            return CONNECTION_CHANNEL_FIELD.get(connection);
+        } catch (IllegalAccessException exception) {
+            throw new RuntimeException(exception);
+        }
     }
 
     @Deprecated
@@ -1221,8 +1265,7 @@ public final class SpigotReflectionUtil {
             if (LEGACY_DATA_WATCHER_WRITE_METHOD != null) {
                 // Legacy Minecraft versions have the DataWatcher class with a method to write to the PacketDataSerializer
                 LEGACY_DATA_WATCHER_WRITE_METHOD.invoke(dataWatcher, packetDataSerializer);
-            }
-            else {
+            } else {
                 // Modern Minecraft versions require the use of the pack method in the ClientboundSetEntityDataPacket class.
                 Object[] dataItems = new ReflectionObject(dataWatcher).readObjectArray(0, DATA_WATCHER_ITEM_CLASS);
                 List<Object> dataValues = new ArrayList<>(dataItems.length);
@@ -1235,8 +1278,7 @@ public final class SpigotReflectionUtil {
             return packetWrapper.readEntityMetadata();
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-        finally {
+        } finally {
             ByteBufHelper.release(byteBuf);
         }
     }

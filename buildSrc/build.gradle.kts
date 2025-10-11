@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
     compilerOptions {
-        jvmToolchain(8)
+        jvmToolchain(21)
     }
 }
 
@@ -22,4 +22,5 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.java.diff.utils)
     implementation(libs.mod.publish)
+    implementation(libs.runtask)
 }

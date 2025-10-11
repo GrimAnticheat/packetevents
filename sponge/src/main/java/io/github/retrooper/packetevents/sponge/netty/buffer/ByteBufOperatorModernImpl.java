@@ -110,6 +110,10 @@ public class ByteBufOperatorModernImpl implements ByteBufOperator {
         ((ByteBuf)buffer).writeShort(value);
     }
 
+    @Override
+    public void writeShortLE(Object buffer, int value) {
+        ((ByteBuf) buffer).writeShortLE(value);
+    }
 
     @Override
     public void writeMedium(Object buffer, int value) {

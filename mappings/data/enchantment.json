@@ -301,13 +301,12 @@
               },
               {
                 "predicate": {
-                  "can_see_sky": 1
+                  "can_see_sky": 1,
+                  "block": {
+                    "blocks": "#minecraft:lightning_rods"
+                  }
                 },
                 "condition": "minecraft:location_check"
-              },
-              {
-                "condition": "minecraft:block_state_property",
-                "block": "minecraft:lightning_rod"
               }
             ]
           },

@@ -235,30 +235,36 @@ public final class ParticleTypes {
     public static final ParticleType<ParticleData> OMINOUS_SPAWNING = define("ominous_spawning");
     public static final ParticleType<ParticleData> RAID_OMEN = define("raid_omen");
     public static final ParticleType<ParticleData> TRIAL_OMEN = define("trial_omen");
-
-    // added with 1.21.2
+    /**
+     * @versions 1.21.2+
+     */
     public static final ParticleType<ParticleTrailData> TRAIL = define("trail",
             ParticleTrailData::read, ParticleTrailData::write,
             ParticleTrailData::decode, ParticleTrailData::encode);
+    /**
+     * @versions 1.21.2+
+     */
     public static final ParticleType<ParticleBlockStateData> BLOCK_CRUMBLE = define("block_crumble",
             ParticleBlockStateData::read, ParticleBlockStateData::write,
             ParticleBlockStateData::decode, ParticleBlockStateData::encode);
-
     /**
-     * Added with 1.21.4
+     * @versions 1.21.4+
      */
     public static final ParticleType<ParticleData> PALE_OAK_LEAVES = define("pale_oak_leaves");
-
     /**
-     * Added with 1.21.5
+     * @versions 1.21.5+
      */
     public static final ParticleType<ParticleColorData> TINTED_LEAVES = define("tinted_leaves",
             ParticleColorData::read, ParticleColorData::write,
             ParticleColorData::decode, ParticleColorData::encode);
     /**
-     * Added with 1.21.5
+     * @versions 1.21.5+
      */
     public static final ParticleType<ParticleData> FIREFLY = define("firefly");
+    /**
+     * @versions 1.21.9+
+     */
+    public static final ParticleType<ParticleData> COPPER_FIRE_FLAME = define("copper_fire_flame");
 
     /**
      * Returns an immutable view of the particle types.

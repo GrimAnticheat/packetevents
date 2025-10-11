@@ -22,7 +22,14 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDebugSample.SampleType;
+import org.jetbrains.annotations.ApiStatus;
 
+/**
+ * Mojang name: ServerboundDebugSampleSubscriptionPacket
+ *
+ * @versions 1.21.5-1.21.8
+ */
+@ApiStatus.Obsolete
 public class WrapperPlayClientDebugSampleSubscription extends PacketWrapper<WrapperPlayClientDebugSampleSubscription> {
 
     private SampleType sampleType;
