@@ -25,7 +25,6 @@ import com.github.retrooper.packetevents.protocol.chat.message.reader.ChatMessag
 import com.github.retrooper.packetevents.protocol.chat.message.reader.impl.*;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
-import org.jetbrains.annotations.ApiStatus.Internal;
 
 public class WrapperPlayServerChatMessage extends PacketWrapper<WrapperPlayServerChatMessage> {
     private static final ChatMessageProcessor CHAT_LEGACY_PROCESSOR;
@@ -78,7 +77,6 @@ public class WrapperPlayServerChatMessage extends PacketWrapper<WrapperPlayServe
         this.message = message;
     }
 
-    @Internal
     protected ChatMessageProcessor getProcessor() {
         if (serverVersion.isNewerThanOrEquals(ServerVersion.V_1_21_5)) {
             return CHAT_V1_21_5_PROCESSOR;
