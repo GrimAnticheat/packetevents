@@ -226,23 +226,33 @@ public final class AdventureSerializer implements NbtEncoder<Component>, NbtDeco
         if (this.gson == null) {
             this.gson = GsonComponentSerializer.builder()
                     .editOptions(builder -> {
-                        builder
-                                .values(JSONOptions.byDataVersion().at(0))
-                                .value(JSONOptions.EMIT_HOVER_EVENT_TYPE, JSONOptions.HoverEventValueMode.BOTH)
-                                .value(JSONOptions.SHOW_ITEM_HOVER_DATA_MODE, JSONOptions.ShowItemHoverDataMode.EMIT_EITHER);
-                        if (this.version.isNewerThanOrEquals(ClientVersion.V_1_16)
-                                && !PacketEvents.getAPI().getSettings().shouldDownsampleColors()) {
-                            builder.value(JSONOptions.EMIT_RGB, true);
+                        builder.values(JSONOptions.byDataVersion().at(0));
+                        if (this.version.isNewerThanOrEquals(ClientVersion.V_1_16)) {
+                            builder.value(JSONOptions.EMIT_HOVER_EVENT_TYPE, JSONOptions.HoverEventValueMode.CAMEL_CASE);
+                            if (!PacketEvents.getAPI().getSettings().shouldDownsampleColors()) {
+                                builder.value(JSONOptions.EMIT_RGB, true);
+                            }
                         }
                         if (this.version.isNewerThanOrEquals(ClientVersion.V_1_20_3)) {
+                            builder.value(JSONOptions.EMIT_COMPACT_TEXT_COMPONENT, true);
                             builder.value(JSONOptions.EMIT_HOVER_SHOW_ENTITY_ID_AS_INT_ARRAY, true);
                             builder.value(JSONOptions.VALIDATE_STRICT_EVENTS, true);
                         }
                         if (this.version.isNewerThanOrEquals(ClientVersion.V_1_20_5)) {
                             builder.value(JSONOptions.EMIT_DEFAULT_ITEM_HOVER_QUANTITY, true);
+                            builder.value(JSONOptions.SHOW_ITEM_HOVER_DATA_MODE, JSONOptions.ShowItemHoverDataMode.EMIT_DATA_COMPONENTS);
                         }
                         if (this.version.isNewerThanOrEquals(ClientVersion.V_1_21_4)) {
                             builder.value(JSONOptions.SHADOW_COLOR_MODE, JSONOptions.ShadowColorEmitMode.EMIT_INTEGER);
+                        }
+                        if (this.version.isNewerThanOrEquals(ClientVersion.V_1_21_5)) {
+                            builder.value(JSONOptions.EMIT_HOVER_EVENT_TYPE, JSONOptions.HoverEventValueMode.SNAKE_CASE);
+                            builder.value(JSONOptions.EMIT_CLICK_EVENT_TYPE, JSONOptions.ClickEventValueMode.SNAKE_CASE);
+                            builder.value(JSONOptions.EMIT_HOVER_SHOW_ENTITY_KEY_AS_TYPE_AND_UUID_AS_ID, false);
+                            builder.value(JSONOptions.EMIT_CLICK_URL_HTTPS, true);
+                        }
+                        if (this.version.isNewerThanOrEquals(ClientVersion.V_1_21_6)) {
+                            builder.value(JSONOptions.EMIT_CHANGE_PAGE_CLICK_EVENT_PAGE_AS_STRING, false);
                         }
                     })
                     .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())

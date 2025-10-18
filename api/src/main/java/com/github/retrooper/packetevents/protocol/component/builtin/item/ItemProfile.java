@@ -19,15 +19,29 @@
 package com.github.retrooper.packetevents.protocol.component.builtin.item;
 
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
+import com.github.retrooper.packetevents.protocol.nbt.NBT;
+import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
+import com.github.retrooper.packetevents.protocol.nbt.NBTString;
 import com.github.retrooper.packetevents.protocol.player.PlayerModelType;
+import com.github.retrooper.packetevents.protocol.util.NbtCodec;
+import com.github.retrooper.packetevents.protocol.util.NbtCodecs;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import net.kyori.adventure.text.object.PlayerHeadObjectContents;
+import net.kyori.adventure.text.object.PlayerHeadObjectContents.ProfileProperty;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import static net.kyori.adventure.text.object.PlayerHeadObjectContents.property;
+
+@NullMarked
 public final class ItemProfile {
 
     private @Nullable String name;
@@ -97,6 +111,55 @@ public final class ItemProfile {
         }
     }
 
+    public static ItemProfile decode(NBT nbt, PacketWrapper<?> wrapper) {
+        if (nbt instanceof NBTString) {
+            String name = ((NBTString) nbt).getValue();
+            return new ItemProfile(name, null, new ArrayList<>());
+        }
+        NBTCompound compound = (NBTCompound) nbt;
+        UUID id = compound.getOrNull("id", NbtCodecs.UUID, wrapper);
+        String name = compound.getStringTagValueOrNull("name");
+        List<Property> properties = compound.getOrSupply("properties",
+                Property.PROPERTY_MAP, ArrayList::new, wrapper);
+        SkinPatch patch = SkinPatch.decode(compound, wrapper);
+        return new ItemProfile(name, id, properties, patch);
+    }
+
+    public static NBT encode(PacketWrapper<?> wrapper, ItemProfile profile) {
+        NBTCompound compound = new NBTCompound();
+        if (profile.id != null) {
+            compound.set("id", profile.id, NbtCodecs.UUID, wrapper);
+        }
+        if (profile.name != null) {
+            compound.setTag("name", new NBTString(profile.name));
+        }
+        if (!profile.properties.isEmpty()) {
+            compound.set("properties", profile.properties, Property.PROPERTY_MAP, wrapper);
+        }
+        SkinPatch.encode(compound, wrapper, profile.skinPatch);
+        return compound;
+    }
+
+    public static ItemProfile fromAdventure(PlayerHeadObjectContents headContents) {
+        List<ProfileProperty> advProps = headContents.profileProperties();
+        List<Property> properties = new ArrayList<>(advProps.size());
+        for (ProfileProperty property : advProps) {
+            properties.add(Property.fromAdventure(property));
+        }
+        return new ItemProfile(headContents.name(), headContents.id(), properties);
+    }
+
+    public List<ProfileProperty> getAdventureProperties() {
+        if (this.properties.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<ProfileProperty> properties = new ArrayList<>(this.properties.size());
+        for (Property property : this.properties) {
+            properties.add(property.asAdventure());
+        }
+        return Collections.unmodifiableList(properties);
+    }
+
     public @Nullable String getName() {
         return this.name;
     }
@@ -157,6 +220,52 @@ public final class ItemProfile {
 
     public static class Property {
 
+        public static final NbtCodec<Property> CODEC = new NbtCodec<ItemProfile.Property>() {
+            @Override
+            public ItemProfile.Property decode(NBT nbt, PacketWrapper<?> wrapper) {
+                NBTCompound compound = (NBTCompound) nbt;
+                String name = compound.getStringTagValueOrThrow("name");
+                String value = compound.getStringTagValueOrThrow("value");
+                String signature = compound.getStringTagValueOrNull("signature");
+                return new ItemProfile.Property(name, value, signature);
+            }
+
+            @Override
+            public NBT encode(PacketWrapper<?> wrapper, ItemProfile.Property value) {
+                NBTCompound compound = new NBTCompound();
+                compound.setTag("name", new NBTString(value.getName()));
+                compound.setTag("value", new NBTString(value.getValue()));
+                if (value.getSignature() != null) {
+                    compound.setTag("signature", new NBTString(value.getSignature()));
+                }
+                return compound;
+            }
+        };
+
+        public static final NbtCodec<List<ItemProfile.Property>> PROPERTY_MAP = new NbtCodec<List<ItemProfile.Property>>() {
+            private final NbtCodec<List<ItemProfile.Property>> propertyList = CODEC.applyList();
+
+            @Override
+            public List<ItemProfile.Property> decode(NBT nbt, PacketWrapper<?> wrapper) {
+                if (nbt instanceof NBTCompound) {
+                    Map<String, NBT> tags = ((NBTCompound) nbt).getTags();
+                    List<ItemProfile.Property> properties = new ArrayList<>(tags.size());
+                    for (Map.Entry<String, NBT> entry : tags.entrySet()) {
+                        for (String value : NbtCodecs.STRING_LIST.decode(entry.getValue(), wrapper)) {
+                            properties.add(new ItemProfile.Property(entry.getKey(), value, null));
+                        }
+                    }
+                    return properties;
+                }
+                return this.propertyList.decode(nbt, wrapper);
+            }
+
+            @Override
+            public NBT encode(PacketWrapper<?> wrapper, List<ItemProfile.Property> value) {
+                return this.propertyList.encode(wrapper, value);
+            }
+        };
+
         private String name;
         private String value;
         private @Nullable String signature;
@@ -179,6 +288,14 @@ public final class ItemProfile {
             wrapper.writeString(property.value, 32767);
             wrapper.writeOptional(property.signature,
                     (ew, signature) -> ew.writeString(signature, 1024));
+        }
+
+        public static Property fromAdventure(ProfileProperty property) {
+            return new Property(property.name(), property.value(), property.signature());
+        }
+
+        public ProfileProperty asAdventure() {
+            return property(this.name, this.value, this.signature);
         }
 
         public String getName() {
@@ -246,7 +363,7 @@ public final class ItemProfile {
             ResourceLocation body = wrapper.readOptional(ResourceLocation::read);
             ResourceLocation cape = wrapper.readOptional(ResourceLocation::read);
             ResourceLocation elytra = wrapper.readOptional(ResourceLocation::read);
-            PlayerModelType model = wrapper.readOptional(ew -> ew.readEnum(PlayerModelType.class));
+            PlayerModelType model = wrapper.readOptional(PlayerModelType::read);
             return new SkinPatch(body, cape, elytra, model);
         }
 
@@ -254,7 +371,30 @@ public final class ItemProfile {
             wrapper.writeOptional(patch.body, ResourceLocation::write);
             wrapper.writeOptional(patch.cape, ResourceLocation::write);
             wrapper.writeOptional(patch.elytra, ResourceLocation::write);
-            wrapper.writeOptional(patch.model, PacketWrapper::writeEnum);
+            wrapper.writeOptional(patch.model, PlayerModelType::write);
+        }
+
+        public static SkinPatch decode(NBTCompound nbt, PacketWrapper<?> wrapper) {
+            ResourceLocation body = nbt.getOrNull("texture", ResourceLocation.CODEC, wrapper);
+            ResourceLocation cape = nbt.getOrNull("cape", ResourceLocation.CODEC, wrapper);
+            ResourceLocation elytra = nbt.getOrNull("elytra", ResourceLocation.CODEC, wrapper);
+            PlayerModelType model = nbt.getOrNull("model", PlayerModelType.CODEC, wrapper);
+            return new SkinPatch(body, cape, elytra, model);
+        }
+
+        public static void encode(NBTCompound compound, PacketWrapper<?> wrapper, SkinPatch patch) {
+            if (patch.body != null) {
+                compound.set("texture", patch.body, ResourceLocation.CODEC, wrapper);
+            }
+            if (patch.cape != null) {
+                compound.set("cape", patch.cape, ResourceLocation.CODEC, wrapper);
+            }
+            if (patch.elytra != null) {
+                compound.set("elytra", patch.elytra, ResourceLocation.CODEC, wrapper);
+            }
+            if (patch.model != null) {
+                compound.set("model", patch.model, PlayerModelType.CODEC, wrapper);
+            }
         }
 
         public @Nullable ResourceLocation getBody() {

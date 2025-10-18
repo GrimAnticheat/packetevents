@@ -53,6 +53,19 @@ public class NBTList<T extends NBT> extends NBT {
         return new NBTList<>(NBTType.STRING);
     }
 
+    public static NBTType<?> getCommonTagType(List<? extends NBT> tags) {
+        NBTType<?> type = NBTType.END;
+        for (NBT tag : tags) {
+            if (type == NBTType.END) {
+                type = tag.getType();
+            } else if (type != tag.getType()) {
+                // there is no common type, fallback to heterogeneous list
+                return NBTType.COMPOUND;
+            }
+        }
+        return type; // common type found!
+    }
+
     @Override
     @SuppressWarnings("rawtypes")
     public NBTType<NBTList> getType() {
@@ -110,6 +123,38 @@ public class NBTList<T extends NBT> extends NBT {
         if (type != tag.getType()) {
             throw new IllegalArgumentException(MessageFormat.format("Invalid tag type. Expected {0}, got {1}.", type.getNBTClass(), tag.getClass()));
         }
+    }
+
+    @SuppressWarnings("unchecked") // checked casts
+    public void addTagOrWrap(NBT tag) {
+        if (this.type == tag.getType()) {
+            this.tags.add((T) tag);
+        } else if (this.type == NBTType.COMPOUND) {
+            NBTCompound wrapped = new NBTCompound();
+            wrapped.setTag("", tag);
+            this.tags.add((T) wrapped);
+        } else {
+            throw new IllegalArgumentException("Can't add or wrap tag " + tag + " to list of type " + this.type);
+        }
+    }
+
+    // vanilla allows heterogeneous lists by wrapping the different
+    // tag types in a compound tag list
+    public List<? extends NBT> unwrapTags() {
+        if (this.type != NBTType.COMPOUND) {
+            return new ArrayList<>(this.tags);
+        }
+        List<NBT> tags = new ArrayList<>(this.tags.size());
+        for (T tag : this.tags) {
+            if (!(tag instanceof NBTCompound) || ((NBTCompound) tag).size() != 1) {
+                continue;
+            }
+            NBT wrapped = ((NBTCompound) tag).getTagOrNull("");
+            if (wrapped != null) {
+                tags.add(wrapped);
+            }
+        }
+        return tags;
     }
 
     @SuppressWarnings("unchecked")

@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class NBTCompound extends NBT {
 
@@ -43,6 +44,10 @@ public class NBTCompound extends NBT {
 
     public boolean isEmpty() {
         return tags.isEmpty();
+    }
+
+    public boolean contains(String key) {
+        return this.tags.containsKey(key);
     }
 
     public Set<String> getTagNames() {
@@ -239,6 +244,12 @@ public class NBTCompound extends NBT {
     public <T> @Nullable T getOr(String key, NbtDecoder<T> decoder, @Nullable T def, PacketWrapper<?> wrapper) {
         NBT tag = this.getTagOrNull(key);
         return tag != null ? decoder.decode(tag, wrapper) : def;
+    }
+
+    @Contract("_, _, !null, _ -> !null")
+    public <T> @Nullable T getOrSupply(String key, NbtDecoder<T> decoder, Supplier<@Nullable T> def, PacketWrapper<?> wrapper) {
+        NBT tag = this.getTagOrNull(key);
+        return tag != null ? decoder.decode(tag, wrapper) : def.get();
     }
 
     public <T> @Nullable T getOrNull(String key, NbtDecoder<T> decoder, PacketWrapper<?> wrapper) {

@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure, licensed under the MIT License.
  *
- * Copyright (c) 2017-2024 KyoriPowered
+ * Copyright (c) 2017-2025 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,11 +35,13 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.ShadowColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -48,16 +50,25 @@ import net.kyori.adventure.util.Codec;
 import net.kyori.option.OptionState;
 import org.jetbrains.annotations.Nullable;
 
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.CLICK_EVENT;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.CLICK_EVENT_ACTION;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.CLICK_EVENT_VALUE;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.COLOR;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.FONT;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.HOVER_EVENT;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.HOVER_EVENT_ACTION;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.HOVER_EVENT_CONTENTS;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.HOVER_EVENT_VALUE;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.INSERTION;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.CLICK_EVENT_ACTION;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.CLICK_EVENT_CAMEL;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.CLICK_EVENT_COMMAND;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.CLICK_EVENT_ID;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.CLICK_EVENT_PAGE;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.CLICK_EVENT_PATH;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.CLICK_EVENT_PAYLOAD;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.CLICK_EVENT_SNAKE;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.CLICK_EVENT_URL;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.CLICK_EVENT_VALUE;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.COLOR;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.FONT;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.HOVER_EVENT_ACTION;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.HOVER_EVENT_CAMEL;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.HOVER_EVENT_CONTENTS;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.HOVER_EVENT_SNAKE;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.HOVER_EVENT_VALUE;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.INSERTION;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.SHADOW_COLOR;
 
 final class StyleSerializer extends TypeAdapter<Style> {
     @SuppressWarnings("checkstyle:NoWhitespaceAfter")
@@ -71,6 +82,8 @@ final class StyleSerializer extends TypeAdapter<Style> {
             TextDecoration.OBFUSCATED
     };
 
+    private static final String FALLBACK_URL_PROTOCOL = "https://";
+
     static {
         // Ensure coverage of decorations
         final Set<TextDecoration> knownDecorations = EnumSet.allOf(TextDecoration.class);
@@ -82,46 +95,65 @@ final class StyleSerializer extends TypeAdapter<Style> {
         }
     }
 
-    // packetevents patch begin
-    static TypeAdapter<Style> create(final net.kyori.adventure.text.serializer.json.@Nullable LegacyHoverEventSerializer legacyHover, final @Nullable BackwardCompatUtil.ShowAchievementToComponent compatShowAchievement, final OptionState features, final Gson gson) {
+    static TypeAdapter<Style> create(final net.kyori.adventure.text.serializer.json.@Nullable LegacyHoverEventSerializer legacyHover, final @Nullable BackwardCompatUtil.ShowAchievementToComponent compatShowAchievement, final OptionState features, final Gson gson) { // packetevents patch
         final JSONOptions.HoverEventValueMode hoverMode = features.value(JSONOptions.EMIT_HOVER_EVENT_TYPE);
+        final JSONOptions.ClickEventValueMode clickMode = features.value(JSONOptions.EMIT_CLICK_EVENT_TYPE);
         return new StyleSerializer(
                 legacyHover,
-                compatShowAchievement,
-                hoverMode == JSONOptions.HoverEventValueMode.LEGACY_ONLY || hoverMode == JSONOptions.HoverEventValueMode.BOTH,
-                hoverMode == JSONOptions.HoverEventValueMode.MODERN_ONLY || hoverMode == JSONOptions.HoverEventValueMode.BOTH,
+                compatShowAchievement, // packetevents patch
+                hoverMode == JSONOptions.HoverEventValueMode.VALUE_FIELD || hoverMode == JSONOptions.HoverEventValueMode.ALL,
+                hoverMode == JSONOptions.HoverEventValueMode.CAMEL_CASE || hoverMode == JSONOptions.HoverEventValueMode.ALL,
+                hoverMode == JSONOptions.HoverEventValueMode.SNAKE_CASE || hoverMode == JSONOptions.HoverEventValueMode.ALL,
+                clickMode == JSONOptions.ClickEventValueMode.CAMEL_CASE || clickMode == JSONOptions.ClickEventValueMode.BOTH,
+                clickMode == JSONOptions.ClickEventValueMode.SNAKE_CASE || clickMode == JSONOptions.ClickEventValueMode.BOTH,
                 features.value(JSONOptions.VALIDATE_STRICT_EVENTS),
+                features.value(JSONOptions.SHADOW_COLOR_MODE) != JSONOptions.ShadowColorEmitMode.NONE,
+                features.value(JSONOptions.EMIT_CHANGE_PAGE_CLICK_EVENT_PAGE_AS_STRING),
+                features.value(JSONOptions.EMIT_CLICK_URL_HTTPS),
                 gson
         ).nullSafe();
     }
-    // packetevents patch end
 
     private final net.kyori.adventure.text.serializer.json.LegacyHoverEventSerializer legacyHover;
-    // packetevents patch begin
-    private final BackwardCompatUtil.ShowAchievementToComponent compatShowAchievement;
-    // packetevents patch end
-    private final boolean emitLegacyHover;
-    private final boolean emitModernHover;
+    private final BackwardCompatUtil.ShowAchievementToComponent compatShowAchievement; // packetevents patch
+    private final boolean emitValueFieldHover;
+    private final boolean emitCamelCaseHover;
+    private final boolean emitSnakeCaseHover;
+    private final boolean emitCamelCaseClick;
+    private final boolean emitSnakeCaseClick;
     private final boolean strictEventValues;
+    private final boolean emitShadowColor;
+    private final boolean emitStringPage;
+    private final boolean emitClickUrlHttps;
     private final Gson gson;
 
-    // packetevents patch begin
     private StyleSerializer(
             final net.kyori.adventure.text.serializer.json.@Nullable LegacyHoverEventSerializer legacyHover,
-            final @Nullable BackwardCompatUtil.ShowAchievementToComponent compatShowAchievement,
-            final boolean emitLegacyHover,
-            final boolean emitModernHover,
+            final @Nullable BackwardCompatUtil.ShowAchievementToComponent compatShowAchievement, // packetevents patch
+            final boolean emitValueFieldHover,
+            final boolean emitCamelCaseHover,
+            final boolean emitSnakeCaseHover,
+            final boolean emitCamelCaseClick,
+            final boolean emitSnakeCaseClick,
             final boolean strictEventValues,
+            final boolean emitShadowColor,
+            final boolean emitStringPage,
+            final boolean emitClickUrlHttps,
             final Gson gson
     ) {
         this.legacyHover = legacyHover;
-        this.compatShowAchievement = compatShowAchievement;
-        this.emitLegacyHover = emitLegacyHover;
-        this.emitModernHover = emitModernHover;
+        this.compatShowAchievement = compatShowAchievement; // packetevents patch
+        this.emitValueFieldHover = emitValueFieldHover;
+        this.emitCamelCaseHover = emitCamelCaseHover;
+        this.emitSnakeCaseHover = emitSnakeCaseHover;
+        this.emitCamelCaseClick = emitCamelCaseClick;
+        this.emitSnakeCaseClick = emitSnakeCaseClick;
         this.strictEventValues = strictEventValues;
+        this.emitShadowColor = emitShadowColor;
+        this.emitStringPage = emitStringPage;
+        this.emitClickUrlHttps = emitClickUrlHttps;
         this.gson = gson;
     }
-    // packetevents patch end
 
     @Override
     public Style read(final JsonReader in) throws IOException {
@@ -139,32 +171,75 @@ final class StyleSerializer extends TypeAdapter<Style> {
                 } else if (color.decoration != null) {
                     style.decoration(color.decoration, TextDecoration.State.TRUE);
                 }
+            } else if (BackwardCompatUtil.IS_4_18_0_OR_NEWER && fieldName.equals(SHADOW_COLOR)) { // packetevents patch
+                style.shadowColor(this.gson.fromJson(in, SerializerFactory.SHADOW_COLOR_TYPE));
             } else if (TextDecoration.NAMES.keys().contains(fieldName)) {
                 style.decoration(TextDecoration.NAMES.value(fieldName), GsonHacks.readBoolean(in));
             } else if (fieldName.equals(INSERTION)) {
                 style.insertion(in.nextString());
-            } else if (fieldName.equals(CLICK_EVENT)) {
+            } else if (fieldName.equals(CLICK_EVENT_SNAKE) || fieldName.equals(CLICK_EVENT_CAMEL)) {
                 in.beginObject();
                 ClickEvent.Action action = null;
                 String value = null;
+                Key key = null;
+                Integer page = null;
                 while (in.hasNext()) {
                     final String clickEventField = in.nextName();
                     if (clickEventField.equals(CLICK_EVENT_ACTION)) {
                         action = this.gson.fromJson(in, SerializerFactory.CLICK_ACTION_TYPE);
-                    } else if (clickEventField.equals(CLICK_EVENT_VALUE)) {
-                        if (in.peek() == JsonToken.NULL && this.strictEventValues) {
-                            throw ComponentSerializerImpl.notSureHowToDeserialize(CLICK_EVENT_VALUE);
+                    } else if (clickEventField.equals(CLICK_EVENT_PAGE)) {
+                        if (in.peek() == JsonToken.NUMBER) {
+                            page = in.nextInt();
+                        } else if (in.peek() == JsonToken.STRING) {
+                            page = Integer.parseInt(in.nextString());
+                        } else if (in.peek() == JsonToken.NULL) {
+                            throw ComponentSerializerImpl.notSureHowToDeserialize(clickEventField);
+                        } else {
+                            in.skipValue();
                         }
-                        value = in.peek() == JsonToken.NULL ? null : in.nextString();
+                    } else if (clickEventField.equals(CLICK_EVENT_VALUE) || clickEventField.equals(CLICK_EVENT_URL) || clickEventField.equals(CLICK_EVENT_PATH) || clickEventField.equals(CLICK_EVENT_COMMAND) || clickEventField.equals(CLICK_EVENT_PAYLOAD)) {
+                        if (in.peek() == JsonToken.NULL) {
+                            if (this.strictEventValues) {
+                                throw ComponentSerializerImpl.notSureHowToDeserialize(clickEventField);
+                            }
+                            in.nextNull();
+                        } else {
+                            value = in.nextString();
+                        }
+                    } else if (clickEventField.equals(CLICK_EVENT_ID)) {
+                        key = Key.key(in.nextString());
                     } else {
                         in.skipValue();
                     }
                 }
-                if (action != null && action.readable() && value != null) {
-                    style.clickEvent(ClickEvent.clickEvent(action, value));
+                if (action != null && action.readable()) {
+                    switch (action) {
+                        case OPEN_URL:
+                            if (value != null) style.clickEvent(ClickEvent.openUrl(value));
+                            break;
+                        case RUN_COMMAND:
+                            if (value != null) style.clickEvent(ClickEvent.runCommand(value));
+                            break;
+                        case SUGGEST_COMMAND:
+                            if (value != null) style.clickEvent(ClickEvent.suggestCommand(value));
+                            break;
+                        case CHANGE_PAGE:
+                            if (page != null) style.clickEvent(ClickEvent.changePage(page));
+                            break;
+                        case COPY_TO_CLIPBOARD:
+                            if (value != null) style.clickEvent(ClickEvent.copyToClipboard(value));
+                            break;
+                        case CUSTOM:
+                            if (key != null && value != null) style.clickEvent(ClickEvent.custom(key, value));
+                            break;
+                        // Not readable.
+                        case SHOW_DIALOG:
+                        case OPEN_FILE:
+                            break;
+                    }
                 }
                 in.endObject();
-            } else if (fieldName.equals(HOVER_EVENT)) {
+            } else if (fieldName.equals(HOVER_EVENT_SNAKE) || fieldName.equals(HOVER_EVENT_CAMEL)) {
                 final JsonObject hoverEventObject = this.gson.fromJson(in, JsonObject.class);
                 if (hoverEventObject != null) {
                     final JsonPrimitive serializedAction = hoverEventObject.getAsJsonPrimitive(HOVER_EVENT_ACTION);
@@ -198,11 +273,11 @@ final class StyleSerializer extends TypeAdapter<Style> {
                                     throw ComponentSerializerImpl.notSureHowToDeserialize(rawValue);
                                 }
                                 value = null;
-                            } else if (Component.class.isAssignableFrom(actionType)) {
+                            } else if (SerializerFactory.COMPONENT_TYPE.isAssignableFrom(actionType)) {
                                 value = this.gson.fromJson(rawValue, SerializerFactory.COMPONENT_TYPE);
-                            } else if (HoverEvent.ShowItem.class.isAssignableFrom(actionType)) {
+                            } else if (SerializerFactory.SHOW_ITEM_TYPE.isAssignableFrom(actionType)) {
                                 value = this.gson.fromJson(rawValue, SerializerFactory.SHOW_ITEM_TYPE);
-                            } else if (HoverEvent.ShowEntity.class.isAssignableFrom(actionType)) {
+                            } else if (SerializerFactory.SHOW_ENTITY_TYPE.isAssignableFrom(actionType)) {
                                 value = this.gson.fromJson(rawValue, SerializerFactory.SHOW_ENTITY_TYPE);
                             } else {
                                 value = null;
@@ -216,9 +291,9 @@ final class StyleSerializer extends TypeAdapter<Style> {
                                 value = null;
                             } else if (Component.class.isAssignableFrom(actionType)) {
                                 // packetevents patch begin
-                                if (isShowAchievement && compatShowAchievement != null) {
+                                if (isShowAchievement && this.compatShowAchievement != null) {
                                     final String id = this.gson.fromJson(element, SerializerFactory.STRING_TYPE);
-                                    value = compatShowAchievement.convert(id);
+                                    value = this.compatShowAchievement.convert(id);
                                 } else {
                                     final Component rawValue = this.gson.fromJson(element, SerializerFactory.COMPONENT_TYPE);
                                     value = this.legacyHoverEventContents(action, rawValue);
@@ -229,6 +304,10 @@ final class StyleSerializer extends TypeAdapter<Style> {
                             } else {
                                 value = null;
                             }
+                        } else if (SerializerFactory.SHOW_ITEM_TYPE.isAssignableFrom(actionType)) {
+                            value = this.gson.fromJson(hoverEventObject, SerializerFactory.SHOW_ITEM_TYPE);
+                        } else if (SerializerFactory.SHOW_ENTITY_TYPE.isAssignableFrom(actionType)) {
+                            value = this.gson.fromJson(hoverEventObject, SerializerFactory.SHOW_ENTITY_TYPE);
                         } else {
                             if (this.strictEventValues) {
                                 throw ComponentSerializerImpl.notSureHowToDeserialize(hoverEventObject);
@@ -269,11 +348,11 @@ final class StyleSerializer extends TypeAdapter<Style> {
     }
 
     private Codec.Decoder<Component, String, JsonParseException> decoder() {
-        return string -> this.gson.fromJson(string, Component.class);
+        return string -> this.gson.fromJson(string, SerializerFactory.COMPONENT_TYPE);
     }
 
     private Codec.Encoder<Component, String, JsonParseException> encoder() {
-        return component -> this.gson.toJson(component, Component.class);
+        return component -> this.gson.toJson(component, SerializerFactory.COMPONENT_TYPE);
     }
 
     @Override
@@ -297,6 +376,16 @@ final class StyleSerializer extends TypeAdapter<Style> {
             this.gson.toJson(color, SerializerFactory.COLOR_TYPE, out);
         }
 
+        // packetevents patch start
+        if (BackwardCompatUtil.IS_4_18_0_OR_NEWER) {
+            final @Nullable ShadowColor shadowColor = value.shadowColor();
+            if (shadowColor != null && this.emitShadowColor) {
+                out.name(SHADOW_COLOR);
+                this.gson.toJson(shadowColor, SerializerFactory.SHADOW_COLOR_TYPE, out);
+            }
+        }
+        // packetevents patch end
+
         final @Nullable String insertion = value.insertion();
         if (insertion != null) {
             out.name(INSERTION);
@@ -305,44 +394,128 @@ final class StyleSerializer extends TypeAdapter<Style> {
 
         final @Nullable ClickEvent clickEvent = value.clickEvent();
         if (clickEvent != null) {
-            out.name(CLICK_EVENT);
-            out.beginObject();
-            out.name(CLICK_EVENT_ACTION);
-            this.gson.toJson(clickEvent.action(), SerializerFactory.CLICK_ACTION_TYPE, out);
-            out.name(CLICK_EVENT_VALUE);
-            out.value(clickEvent.value());
-            out.endObject();
+            final ClickEvent.Action action = clickEvent.action();
+
+            if (this.emitSnakeCaseClick) {
+                out.name(CLICK_EVENT_SNAKE);
+                out.beginObject();
+                out.name(CLICK_EVENT_ACTION);
+                this.gson.toJson(action, SerializerFactory.CLICK_ACTION_TYPE, out);
+
+                if (action.readable()) {
+                    final Object payload = BackwardCompatUtil.IS_4_22_0_OR_NEWER ? clickEvent.payload() : clickEvent.value(); // packetevents patch
+
+                    if (payload instanceof String || payload instanceof ClickEvent.Payload.Text) { // packetevents patch
+                        switch (action) {
+                            case OPEN_URL:
+                                out.name(CLICK_EVENT_URL);
+                                break;
+                            case RUN_COMMAND:
+                            case SUGGEST_COMMAND:
+                                out.name(CLICK_EVENT_COMMAND);
+                                break;
+                            case COPY_TO_CLIPBOARD:
+                                out.name(CLICK_EVENT_VALUE);
+                                break;
+                        }
+                        String payloadValue = payload instanceof String ? (String) payload : ((ClickEvent.Payload.Text) payload).value(); // packetevents patch
+                        if (action == ClickEvent.Action.OPEN_URL && this.emitClickUrlHttps && !StyleSerializer.isValidUrlScheme(payloadValue)) {
+                            payloadValue = StyleSerializer.FALLBACK_URL_PROTOCOL + payloadValue;
+                        }
+                        out.value(payloadValue);
+                    } else if (payload instanceof ClickEvent.Payload.Custom) {
+                        final ClickEvent.Payload.Custom customPayload = (ClickEvent.Payload.Custom) payload;
+                        out.name(CLICK_EVENT_ID);
+                        this.gson.toJson(customPayload.key(), SerializerFactory.KEY_TYPE, out);
+                        out.name(CLICK_EVENT_PAYLOAD);
+                        out.value(customPayload.data());
+                    } else if (payload instanceof ClickEvent.Payload.Int) {
+                        final ClickEvent.Payload.Int intPayload = (ClickEvent.Payload.Int) payload;
+                        out.name(CLICK_EVENT_PAGE);
+                        if (this.emitStringPage) {
+                            out.value(String.valueOf(intPayload.integer()));
+                        } else {
+                            out.value(intPayload.integer());
+                        }
+                    }
+                }
+
+                out.endObject();
+            }
+
+            if (this.emitCamelCaseClick && (BackwardCompatUtil.IS_4_22_0_OR_NEWER || action.payloadType() == ClickEvent.Payload.Text.class)) { // packetevents patch
+                out.name(CLICK_EVENT_CAMEL);
+                out.beginObject();
+                out.name(CLICK_EVENT_ACTION);
+                this.gson.toJson(action, SerializerFactory.CLICK_ACTION_TYPE, out);
+                out.name(CLICK_EVENT_VALUE);
+                String payloadValue = clickEvent.value();
+                if (action == ClickEvent.Action.OPEN_URL && this.emitClickUrlHttps && !StyleSerializer.isValidUrlScheme(payloadValue)) {
+                    payloadValue = StyleSerializer.FALLBACK_URL_PROTOCOL + payloadValue;
+                }
+                out.value(payloadValue);
+                out.endObject();
+            }
         }
 
         final @Nullable HoverEvent<?> hoverEvent = value.hoverEvent();
-        // packetevents patch begin
-        if (hoverEvent != null && ((this.emitModernHover && !hoverEvent.action().toString().equals("show_achievement")) || this.emitLegacyHover)) {
-        // packetevents patch end
-            out.name(HOVER_EVENT);
-            out.beginObject();
-            out.name(HOVER_EVENT_ACTION);
+        if (hoverEvent != null && (((this.emitSnakeCaseHover || this.emitCamelCaseHover) && !hoverEvent.action().toString().equals("show_achievement")) || this.emitValueFieldHover)) { // packetevents patch
             final HoverEvent.Action<?> action = hoverEvent.action();
-            this.gson.toJson(action, SerializerFactory.HOVER_ACTION_TYPE, out);
-            // packetevents patch begin
-            if (this.emitModernHover && !action.toString().equals("show_achievement")) { // legacy action has no modern contents value
-            // packetevents patch end
-                out.name(HOVER_EVENT_CONTENTS);
+
+            if (this.emitSnakeCaseHover && !action.toString().equals("show_achievement")) { // packetevents patch
+                out.name(HOVER_EVENT_SNAKE);
+                out.beginObject();
+
+                out.name(HOVER_EVENT_ACTION);
+                this.gson.toJson(action, SerializerFactory.HOVER_ACTION_TYPE, out);
+
                 if (action == HoverEvent.Action.SHOW_ITEM) {
-                    this.gson.toJson(hoverEvent.value(), SerializerFactory.SHOW_ITEM_TYPE, out);
+                    for (final Map.Entry<String, JsonElement> entry : this.gson.toJsonTree(hoverEvent.value(), SerializerFactory.SHOW_ITEM_TYPE).getAsJsonObject().entrySet()) {
+                        out.name(entry.getKey());
+                        this.gson.toJson(entry.getValue(), out);
+                    }
                 } else if (action == HoverEvent.Action.SHOW_ENTITY) {
-                    this.gson.toJson(hoverEvent.value(), SerializerFactory.SHOW_ENTITY_TYPE, out);
+                    for (final Map.Entry<String, JsonElement> entry : this.gson.toJsonTree(hoverEvent.value(), SerializerFactory.SHOW_ENTITY_TYPE).getAsJsonObject().entrySet()) {
+                        out.name(entry.getKey());
+                        this.gson.toJson(entry.getValue(), out);
+                    }
                 } else if (action == HoverEvent.Action.SHOW_TEXT) {
+                    out.name(HOVER_EVENT_VALUE);
                     this.gson.toJson(hoverEvent.value(), SerializerFactory.COMPONENT_TYPE, out);
                 } else {
                     throw new JsonParseException("Don't know how to serialize " + hoverEvent.value());
                 }
-            }
-            if (this.emitLegacyHover) {
-                out.name(HOVER_EVENT_VALUE);
-                this.serializeLegacyHoverEvent(hoverEvent, out);
+
+                out.endObject();
             }
 
-            out.endObject();
+            if (this.emitCamelCaseHover || this.emitValueFieldHover) {
+                out.name(HOVER_EVENT_CAMEL);
+                out.beginObject();
+
+                out.name(HOVER_EVENT_ACTION);
+                this.gson.toJson(action, SerializerFactory.HOVER_ACTION_TYPE, out);
+
+                if (this.emitCamelCaseHover && !action.toString().equals("show_achievement")) { // legacy action has no modern contents value // packetevents patch
+                    out.name(HOVER_EVENT_CONTENTS);
+                    if (action == HoverEvent.Action.SHOW_ITEM) {
+                        this.gson.toJson(hoverEvent.value(), SerializerFactory.SHOW_ITEM_TYPE, out);
+                    } else if (action == HoverEvent.Action.SHOW_ENTITY) {
+                        this.gson.toJson(hoverEvent.value(), SerializerFactory.SHOW_ENTITY_TYPE, out);
+                    } else if (action == HoverEvent.Action.SHOW_TEXT) {
+                        this.gson.toJson(hoverEvent.value(), SerializerFactory.COMPONENT_TYPE, out);
+                    } else {
+                        throw new JsonParseException("Don't know how to serialize " + hoverEvent.value());
+                    }
+                }
+
+                if (this.emitValueFieldHover) {
+                    out.name(HOVER_EVENT_VALUE);
+                    this.serializeLegacyHoverEvent(hoverEvent, out);
+                }
+
+                out.endObject();
+            }
         }
 
         final @Nullable Key font = value.font();
@@ -357,9 +530,7 @@ final class StyleSerializer extends TypeAdapter<Style> {
     private void serializeLegacyHoverEvent(final HoverEvent<?> hoverEvent, final JsonWriter out) throws IOException {
         if (hoverEvent.action() == HoverEvent.Action.SHOW_TEXT) { // serialization is the same
             this.gson.toJson(hoverEvent.value(), SerializerFactory.COMPONENT_TYPE, out);
-        // packetevents patch begin
-        } else if (hoverEvent.action().toString().equals("show_achievement")) {
-        // packetevents patch end
+        } else if (hoverEvent.action().toString().equals("show_achievement")) { // packetevents patch
             this.gson.toJson(hoverEvent.value(), SerializerFactory.STRING_TYPE, out);
         } else if (this.legacyHover != null) { // for data formats that require knowledge of SNBT
             Component serialized = null;
@@ -380,5 +551,10 @@ final class StyleSerializer extends TypeAdapter<Style> {
         } else {
             out.nullValue();
         }
+    }
+
+    @SuppressWarnings({"BooleanMethodIsAlwaysInverted", "HttpUrlsUsage"})
+    private static boolean isValidUrlScheme(final String url) {
+        return url.startsWith("http://") || url.startsWith("https://");
     }
 }

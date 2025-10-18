@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure, licensed under the MIT License.
  *
- * Copyright (c) 2017-2024 KyoriPowered
+ * Copyright (c) 2017-2025 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,33 +37,60 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.*;
+import net.kyori.adventure.text.BlockNBTComponent;
+import net.kyori.adventure.text.BuildableComponent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.text.EntityNBTComponent;
+import net.kyori.adventure.text.KeybindComponent;
+import net.kyori.adventure.text.NBTComponent;
+import net.kyori.adventure.text.NBTComponentBuilder;
+import net.kyori.adventure.text.ObjectComponent;
+import net.kyori.adventure.text.ScoreComponent;
+import net.kyori.adventure.text.SelectorComponent;
+import net.kyori.adventure.text.StorageNBTComponent;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.TranslationArgument;
+import net.kyori.adventure.text.object.ObjectContents;
+import net.kyori.adventure.text.object.PlayerHeadObjectContents;
+import net.kyori.adventure.text.object.SpriteObjectContents;
 import net.kyori.adventure.text.serializer.json.JSONOptions;
 import net.kyori.option.OptionState;
 import org.jetbrains.annotations.Nullable;
 
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.EXTRA;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.KEYBIND;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.NBT;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.NBT_BLOCK;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.NBT_ENTITY;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.NBT_INTERPRET;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.NBT_STORAGE;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.SCORE;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.SCORE_NAME;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.SCORE_OBJECTIVE;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.SCORE_VALUE;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.SELECTOR;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.SEPARATOR;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.TEXT;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.TRANSLATE;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.TRANSLATE_FALLBACK;
-import static net.kyori.adventure.text.serializer.json.JSONComponentConstants.TRANSLATE_WITH;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.EXTRA;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.KEYBIND;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.NBT;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.NBT_BLOCK;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.NBT_ENTITY;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.NBT_INTERPRET;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.NBT_STORAGE;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.OBJECT_ATLAS;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.OBJECT_HAT;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.OBJECT_PLAYER;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.OBJECT_PLAYER_ID;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.OBJECT_PLAYER_NAME;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.OBJECT_PLAYER_PROPERTIES;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.OBJECT_PLAYER_TEXTURE;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.OBJECT_SPRITE;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.SCORE;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.SCORE_NAME;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.SCORE_OBJECTIVE;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.SCORE_VALUE;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.SELECTOR;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.SEPARATOR;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.TEXT;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.TRANSLATE;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.TRANSLATE_FALLBACK;
+import static net.kyori.adventure.text.serializer.commons.ComponentTreeConstants.TRANSLATE_WITH;
 
 final class ComponentSerializerImpl extends TypeAdapter<Component> {
     static final Type COMPONENT_LIST_TYPE = new TypeToken<List<Component>>() {}.getType();
     static final Type TRANSLATABLE_ARGUMENT_LIST_TYPE = new TypeToken<List<TranslationArgument>>() {}.getType();
+    static final Type PROPERTY_LIST_TYPE = new TypeToken<List<PlayerHeadObjectContents.ProfileProperty>>() {}.getType();
 
     static TypeAdapter<Component> create(final OptionState features, final Gson gson) {
         return new ComponentSerializerImpl(features.value(JSONOptions.EMIT_COMPACT_TEXT_COMPONENT), gson).nullSafe();
@@ -110,9 +137,7 @@ final class ComponentSerializerImpl extends TypeAdapter<Component> {
         String text = null;
         String translate = null;
         String translateFallback = null;
-        // packetevents patch start
-        List<? extends ComponentLike> translateWith = null;
-        // packetevents patch end
+        List<? extends net.kyori.adventure.text.ComponentLike> translateWith = null; // packetevents patch
         String scoreName = null;
         String scoreObjective = null;
         String scoreValue = null;
@@ -124,6 +149,10 @@ final class ComponentSerializerImpl extends TypeAdapter<Component> {
         String nbtEntity = null;
         Key nbtStorage = null;
         Component separator = null;
+        Key atlas = null;
+        Key sprite = null;
+        Object playerHeadContents0 = null; // packetevents patch
+        boolean playerHeadContentsHasProfile = false;
 
         in.beginObject();
         while (in.hasNext()) {
@@ -178,6 +207,63 @@ final class ComponentSerializerImpl extends TypeAdapter<Component> {
                 extra = this.gson.fromJson(in, COMPONENT_LIST_TYPE);
             } else if (fieldName.equals(SEPARATOR)) {
                 separator = this.read(in);
+            } else if (fieldName.equals(OBJECT_ATLAS)) {
+                atlas = this.gson.fromJson(in, SerializerFactory.KEY_TYPE);
+            } else if (fieldName.equals(OBJECT_SPRITE)) {
+                sprite = this.gson.fromJson(in, SerializerFactory.KEY_TYPE);
+                // packetevents patch start
+            } else if (BackwardCompatUtil.IS_4_25_0_OR_NEWER && fieldName.equals(OBJECT_PLAYER)) {
+                PlayerHeadObjectContents.Builder playerHeadContents = (PlayerHeadObjectContents.Builder) playerHeadContents0;
+                if (playerHeadContents == null) playerHeadContents = ObjectContents.playerHead();
+                playerHeadContents0 = playerHeadContents;
+                // packetevents patch end
+                final JsonToken playerToken = in.peek();
+                // `player` can be either just the name or a partial profile
+                if (playerToken == JsonToken.STRING) {
+                    playerHeadContentsHasProfile = true;
+                    playerHeadContents.name(in.nextString());
+                } else if (playerToken == JsonToken.BEGIN_OBJECT) {
+                    playerHeadContentsHasProfile = true;
+                    in.beginObject();
+                    while (in.hasNext()) {
+                        final String playerHeadFieldName = in.nextName();
+                        if (playerHeadFieldName.equals(OBJECT_PLAYER_NAME)) {
+                            playerHeadContents.name(in.nextString());
+                        } else if (playerHeadFieldName.equals(OBJECT_PLAYER_ID)) {
+                            playerHeadContents.id(this.gson.fromJson(in, SerializerFactory.UUID_TYPE));
+                        } else if (playerHeadFieldName.equals(OBJECT_PLAYER_PROPERTIES)) {
+                            final JsonToken propertyToken = in.peek();
+                            if (propertyToken == JsonToken.BEGIN_ARRAY) {
+                                playerHeadContents.profileProperties(this.gson.fromJson(in, PROPERTY_LIST_TYPE));
+                            } else if (propertyToken == JsonToken.BEGIN_OBJECT) {
+                                in.beginObject();
+                                while (in.hasNext()) {
+                                    final String propertyName = in.nextName();
+                                    in.beginArray();
+                                    while (in.hasNext()) {
+                                        playerHeadContents.profileProperty(PlayerHeadObjectContents.property(propertyName, in.nextString()));
+                                    }
+                                    in.endArray();
+                                }
+                                in.endObject();
+                            } else {
+                                in.skipValue();
+                            }
+                        } else if (playerHeadFieldName.equals(OBJECT_PLAYER_TEXTURE)) {
+                            playerHeadContents.texture(this.gson.fromJson(in, SerializerFactory.KEY_TYPE));
+                        } else {
+                            in.skipValue();
+                        }
+                    }
+                    in.endObject();
+                } else {
+                    in.skipValue();
+                }
+                // packetevents patch start
+            } else if (BackwardCompatUtil.IS_4_25_0_OR_NEWER && fieldName.equals(OBJECT_HAT)) {
+                if (playerHeadContents0 == null) playerHeadContents0 = ObjectContents.playerHead();
+                ((PlayerHeadObjectContents.Builder) playerHeadContents0).hat(in.nextBoolean());
+                // packetevents patch end
             } else {
                 style.add(fieldName, this.gson.fromJson(in, JsonElement.class));
             }
@@ -221,6 +307,15 @@ final class ComponentSerializerImpl extends TypeAdapter<Component> {
             } else {
                 throw notSureHowToDeserialize(in.getPath());
             }
+        } else if (sprite != null) {
+            builder = Component.object().contents(ObjectContents.sprite(
+                    atlas != null ? atlas : SpriteObjectContents.DEFAULT_ATLAS,
+                    sprite
+            ));
+            // packetevents patch start
+        } else if (playerHeadContents0 != null && playerHeadContentsHasProfile) {
+            builder = Component.object().contents(((PlayerHeadObjectContents.Builder) playerHeadContents0).build());
+            // packetevents patch end
         } else {
             throw notSureHowToDeserialize(in.getPath());
         }
@@ -334,6 +429,51 @@ final class ComponentSerializerImpl extends TypeAdapter<Component> {
             } else if (value instanceof StorageNBTComponent) {
                 out.name(NBT_STORAGE);
                 this.gson.toJson(((StorageNBTComponent) value).storage(), SerializerFactory.KEY_TYPE, out);
+            } else {
+                throw notSureHowToSerialize(value);
+            }
+        } else if (BackwardCompatUtil.IS_4_25_0_OR_NEWER && value instanceof ObjectComponent) { // packetevents patch
+            final ObjectComponent objectComponent = (ObjectComponent) value;
+            final ObjectContents contents = objectComponent.contents();
+            if (contents instanceof SpriteObjectContents) {
+                final SpriteObjectContents spriteContents = (SpriteObjectContents) contents;
+                if (!spriteContents.atlas().equals(SpriteObjectContents.DEFAULT_ATLAS)) {
+                    out.name(OBJECT_ATLAS);
+                    this.gson.toJson(spriteContents.atlas(), SerializerFactory.KEY_TYPE, out);
+                }
+                out.name(OBJECT_SPRITE);
+                this.gson.toJson(spriteContents.sprite(), SerializerFactory.KEY_TYPE, out);
+            } else if (contents instanceof PlayerHeadObjectContents) {
+                final PlayerHeadObjectContents playerHeadContents = (PlayerHeadObjectContents) contents;
+                out.name(OBJECT_HAT);
+                out.value(playerHeadContents.hat());
+                final String playerName = playerHeadContents.name();
+                final UUID playerId = playerHeadContents.id();
+                final List<PlayerHeadObjectContents.ProfileProperty> properties = playerHeadContents.profileProperties();
+                final Key texture = playerHeadContents.texture();
+                out.name(OBJECT_PLAYER);
+                if (playerName != null && playerId == null && properties.isEmpty() && texture == null) {
+                    out.value(playerName);
+                } else {
+                    out.beginObject();
+                    if (playerName != null) {
+                        out.name(OBJECT_PLAYER_NAME);
+                        out.value(playerName);
+                    }
+                    if (playerId != null) {
+                        out.name(OBJECT_PLAYER_ID);
+                        this.gson.toJson(playerId, SerializerFactory.UUID_TYPE, out);
+                    }
+                    if (!properties.isEmpty()) {
+                        out.name(OBJECT_PLAYER_PROPERTIES);
+                        this.gson.toJson(properties, PROPERTY_LIST_TYPE, out);
+                    }
+                    if (texture != null) {
+                        out.name(OBJECT_PLAYER_TEXTURE);
+                        this.gson.toJson(texture, SerializerFactory.KEY_TYPE, out);
+                    }
+                    out.endObject();
+                }
             } else {
                 throw notSureHowToSerialize(value);
             }

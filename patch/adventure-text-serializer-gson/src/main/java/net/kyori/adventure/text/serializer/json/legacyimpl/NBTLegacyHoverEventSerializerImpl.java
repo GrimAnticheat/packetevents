@@ -1,3 +1,26 @@
+/*
+ * This file is part of adventure, licensed under the MIT License.
+ *
+ * Copyright (c) 2017-2025 KyoriPowered
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package net.kyori.adventure.text.serializer.json.legacyimpl;
 
 import java.io.IOException;
@@ -18,9 +41,7 @@ import org.jetbrains.annotations.Nullable;
 final class NBTLegacyHoverEventSerializerImpl implements LegacyHoverEventSerializer {
     static final NBTLegacyHoverEventSerializerImpl INSTANCE = new NBTLegacyHoverEventSerializerImpl();
     private static final TagStringIO SNBT_IO = TagStringIO.get();
-    // packetevents patch start
-    private static final Codec<CompoundBinaryTag, String, IOException, IOException> SNBT_CODEC = BackwardCompatUtil.createCodec(SNBT_IO::asCompound, SNBT_IO::asString);
-    // packetevents patch end
+    private static final Codec<CompoundBinaryTag, String, IOException, IOException> SNBT_CODEC = BackwardCompatUtil.createCodec(SNBT_IO::asCompound, SNBT_IO::asString); // packetevents patch
 
     static final String ITEM_TYPE = "id";
     static final String ITEM_COUNT = "Count";
@@ -38,13 +59,11 @@ final class NBTLegacyHoverEventSerializerImpl implements LegacyHoverEventSeriali
         assertTextComponent(input);
         final CompoundBinaryTag contents = SNBT_CODEC.decode(((TextComponent) input).content());
         final CompoundBinaryTag tag = contents.getCompound(ITEM_TAG);
-        // packetevents patch start
-        return BackwardCompatUtil.createShowItem(
+        return BackwardCompatUtil.createShowItem( // packetevents patch
                 Key.key(contents.getString(ITEM_TYPE)),
                 contents.getByte(ITEM_COUNT, (byte) 1),
                 tag == CompoundBinaryTag.empty() ? null : BinaryTagHolder.encode(tag, SNBT_CODEC)
         );
-        // packetevents patch end
     }
 
     @Override
@@ -63,13 +82,11 @@ final class NBTLegacyHoverEventSerializerImpl implements LegacyHoverEventSeriali
     public HoverEvent.@NotNull ShowEntity deserializeShowEntity(final @NotNull Component input, final Codec.Decoder<Component, String, ? extends RuntimeException> componentCodec) throws IOException {
         assertTextComponent(input);
         final CompoundBinaryTag contents = SNBT_CODEC.decode(((TextComponent) input).content());
-        // packetevents patch start
-        return BackwardCompatUtil.createShowEntity(
+        return BackwardCompatUtil.createShowEntity( // packetevents patch
                 Key.key(contents.getString(ENTITY_TYPE)),
                 UUID.fromString(contents.getString(ENTITY_ID)),
                 componentCodec.decode(contents.getString(ENTITY_NAME))
         );
-        // packetevents patch end
     }
 
     @Override

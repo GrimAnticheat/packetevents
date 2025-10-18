@@ -23,6 +23,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.object.ObjectContents;
 import net.kyori.adventure.util.Codec;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,6 +40,7 @@ public final class BackwardCompatUtil {
     public static final boolean IS_4_17_0_OR_NEWER;
     public static final boolean IS_4_18_0_OR_NEWER;
     public static final boolean IS_4_22_0_OR_NEWER;
+    public static final boolean IS_4_25_0_OR_NEWER;
 
     static {
         boolean is4_10_0OrNewer = false;
@@ -93,6 +95,15 @@ public final class BackwardCompatUtil {
         } catch (Throwable ignored) {
         }
         IS_4_22_0_OR_NEWER = is4_22_0OrNewer;
+
+        boolean is4_25_0OrNewer = false;
+        try {
+            // object contents support was added in 4.25.0
+            ObjectContents.playerHead();
+            is4_25_0OrNewer = true;
+        } catch (Throwable ignored) {
+        }
+        IS_4_25_0_OR_NEWER = is4_25_0OrNewer;
     }
 
     private BackwardCompatUtil() {

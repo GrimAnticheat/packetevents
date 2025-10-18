@@ -5,6 +5,7 @@ plugins {
 dependencies {
     api(libs.adventure.text.serializer.gson)
     api(libs.adventure.text.serializer.json.legacy)
+    api(libs.adventure.text.serializer.commons)
 }
 
 tasks {
