@@ -33,6 +33,8 @@ import org.jetbrains.annotations.Range;
 
 public class Color implements RGBLike {
 
+    public static final Color WHITE = new Color(0xFFFFFFFF);
+
     protected static final int BIT_MASK = 0xFF;
 
     protected final int red, green, blue;
@@ -75,6 +77,11 @@ public class Color implements RGBLike {
         wrapper.writeByte(color.blue);
     }
 
+    public static Color decode(NBT nbt, PacketWrapper<?> wrapper) {
+        return decode(nbt, wrapper.getServerVersion().toClientVersion());
+    }
+
+    @Deprecated
     public static Color decode(NBT nbt, ClientVersion version) {
         if (nbt instanceof NBTNumber) {
             return new Color(((NBTNumber) nbt).getAsInt());
@@ -86,6 +93,11 @@ public class Color implements RGBLike {
         return new Color(red, green, blue);
     }
 
+    public static NBT encode(PacketWrapper<?> wrapper, Color color) {
+        return encode(color, wrapper.getServerVersion().toClientVersion());
+    }
+
+    @Deprecated
     public static NBT encode(Color color, ClientVersion version) {
         if (version.isNewerThanOrEquals(ClientVersion.V_1_21_2)) {
             return new NBTInt(color.asRGB());

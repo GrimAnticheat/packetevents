@@ -86,4 +86,9 @@ public class Particle<T extends ParticleData> {
     public void setData(T data) {
         this.data = data;
     }
+
+    @Override
+    public String toString() {
+        return "Particle[" + this.type.getName() + ", " + this.data + ']';
+    }
 }
