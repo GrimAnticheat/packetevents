@@ -76,6 +76,12 @@ tasks {
         archiveClassifier = "default"
     }
 
+    sequenceOf("sourcesJar", "javadocJar").forEach {
+        named<Jar>(it) {
+            destinationDirectory = rootProject.layout.buildDirectory.dir("libs")
+        }
+    }
+
     defaultTasks("build")
 }
 

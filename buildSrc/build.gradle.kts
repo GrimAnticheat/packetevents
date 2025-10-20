@@ -22,5 +22,10 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.java.diff.utils)
     implementation(libs.mod.publish)
-    implementation(libs.runtask)
+
+    // downgrade jackson module for publishing plugin to work
+    implementation(libs.runtask) {
+        exclude("com.fasterxml.jackson.module", "jackson-module-kotlin")
+    }
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.2")
 }
