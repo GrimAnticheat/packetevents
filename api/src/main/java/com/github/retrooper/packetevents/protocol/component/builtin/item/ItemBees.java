@@ -18,6 +18,7 @@
 
 package com.github.retrooper.packetevents.protocol.component.builtin.item;
 
+import com.github.retrooper.packetevents.protocol.component.builtin.TypedEntityData;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 
@@ -68,35 +69,48 @@ public class ItemBees {
 
     public static class BeeEntry {
 
-        private NBTCompound entityData;
+        private TypedEntityData entityData;
         private int ticksInHive;
         private int minTicksInHive;
 
+        @Deprecated
         public BeeEntry(NBTCompound entityData, int ticksInHive, int minTicksInHive) {
+            this(new TypedEntityData(entityData), ticksInHive, minTicksInHive);
+        }
+
+        public BeeEntry(TypedEntityData entityData, int ticksInHive, int minTicksInHive) {
             this.entityData = entityData;
             this.ticksInHive = ticksInHive;
             this.minTicksInHive = minTicksInHive;
         }
 
         public static BeeEntry read(PacketWrapper<?> wrapper) {
-            NBTCompound entityData = wrapper.readNBT();
+            TypedEntityData entityData = TypedEntityData.read(wrapper);
             int ticksInHive = wrapper.readVarInt();
             int minTicksInHive = wrapper.readVarInt();
             return new BeeEntry(entityData, ticksInHive, minTicksInHive);
         }
 
         public static void write(PacketWrapper<?> wrapper, BeeEntry bee) {
-            wrapper.writeNBT(bee.entityData);
+            TypedEntityData.write(wrapper, bee.entityData);
             wrapper.writeVarInt(bee.ticksInHive);
             wrapper.writeVarInt(bee.minTicksInHive);
         }
 
-        public NBTCompound getEntityData() {
+        public TypedEntityData getTypedEntityData() {
             return this.entityData;
         }
 
-        public void setEntityData(NBTCompound entityData) {
+        public void setTypedEntityData(TypedEntityData entityData) {
             this.entityData = entityData;
+        }
+
+        public NBTCompound getEntityData() {
+            return this.entityData.getCompound();
+        }
+
+        public void setEntityData(NBTCompound entityData) {
+            this.entityData = new TypedEntityData(entityData);
         }
 
         public int getTicksInHive() {
