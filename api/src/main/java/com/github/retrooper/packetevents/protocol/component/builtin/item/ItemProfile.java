@@ -21,6 +21,7 @@ package com.github.retrooper.packetevents.protocol.component.builtin.item;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.nbt.NBT;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
+import com.github.retrooper.packetevents.protocol.nbt.NBTList;
 import com.github.retrooper.packetevents.protocol.nbt.NBTString;
 import com.github.retrooper.packetevents.protocol.player.PlayerModelType;
 import com.github.retrooper.packetevents.protocol.util.NbtCodec;
@@ -254,6 +255,14 @@ public final class ItemProfile {
                         for (String value : NbtCodecs.STRING_LIST.decode(entry.getValue(), wrapper)) {
                             properties.add(new ItemProfile.Property(entry.getKey(), value, null));
                         }
+                    }
+                    return properties;
+                } else if (nbt instanceof NBTList<?>) {
+                    NBTList<?> listTag = (NBTList<?>) nbt;
+                    List<ItemProfile.Property> properties = new ArrayList<>(listTag.size());
+                    for (NBT nbtElement : listTag.getTags()) {
+                        ItemProfile.Property property = CODEC.decode(nbtElement, wrapper);
+                        properties.add(property);
                     }
                     return properties;
                 }
