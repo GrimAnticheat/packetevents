@@ -36,6 +36,9 @@ public class VelocityChannelInitializer extends ChannelInitializer<Channel> {
 
     @Override
     protected void initChannel(@NotNull Channel channel) throws Exception {
+        if (!channel.isActive()) {
+            return;
+        }
         if (INIT_CHANNEL == null) {
             INIT_CHANNEL = ChannelInitializer.class.getDeclaredMethod("initChannel", Channel.class);
             INIT_CHANNEL.setAccessible(true);
