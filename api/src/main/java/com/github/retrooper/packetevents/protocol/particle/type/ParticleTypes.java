@@ -145,7 +145,6 @@ public final class ParticleTypes {
     public static final ParticleType<ParticleData> SCULK_CHARGE_POP = define("sculk_charge_pop");
     public static final ParticleType<ParticleData> SOUL_FIRE_FLAME = define("soul_fire_flame");
     public static final ParticleType<ParticleData> SOUL = define("soul");
-    // TODO this is horrible
     public static final ParticleType<ParticleColorData> FLASH = define("flash",
             wrapper -> {
                 if (wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_21_9)) {
