@@ -33,6 +33,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 
@@ -102,6 +103,32 @@ public class ServerConnectionInitializer {
             String encoderName = preVia ? "pre-" + PacketEvents.ENCODER_NAME : PacketEvents.ENCODER_NAME;
             String decoderName = preVia ? "pre-" + PacketEvents.DECODER_NAME : PacketEvents.DECODER_NAME;
 
+            // Determine where we WANT to be.
+            String targetDecoderName;
+            String targetEncoderName;
+
+            if (preVia) {
+                targetEncoderName = "via-encoder";
+                targetDecoderName = "via-decoder";
+            } else {
+                targetDecoderName = ctx.pipeline().names().contains("inbound_config") ? "inbound_config" : "decoder";
+                targetEncoderName = ctx.pipeline().names().contains("outbound_config") ? "outbound_config" : "encoder";
+            }
+
+            // If we are forced (by the event), we check if we actually NEED to move.
+            // If we are already physically located BEFORE the target in the pipeline list,
+            // we satisfy the requirement and should exit to prevent infinite loops.
+            if (force) {
+                boolean decoderGood = isAlreadyBefore(ctx, decoderName, targetDecoderName);
+                boolean encoderGood = isAlreadyBefore(ctx, encoderName, targetEncoderName);
+
+                if (decoderGood && encoderGood) {
+                    // We are already in the correct spot relative to Via/Vanilla.
+                    // Do not touch the pipeline.
+                    return;
+                }
+            }
+
             PacketEventsDecoder existingDecoder = (PacketEventsDecoder) ctx.pipeline().get(decoderName);
             ChannelHandler encoder;
             PacketEventsDecoder decoder;
@@ -112,7 +139,7 @@ public class ServerConnectionInitializer {
 
                 decoder = new PacketEventsDecoder((PacketEventsDecoder) ctx.pipeline().remove(decoderName));
                 encoder = new PacketEventsEncoder(ctx.pipeline().remove(encoderName));
-            } else { // Decoder == null means we haven't made handlers for the user yet
+            } else {
                 encoder = new PacketEventsEncoder(user, preVia);
                 decoder = new PacketEventsDecoder(user, preVia);
             }
@@ -125,18 +152,9 @@ public class ServerConnectionInitializer {
                         .addBefore("via-encoder", encoderName, encoder)
                         .addBefore("via-decoder", decoderName, decoder);
             } else {
-                // We are targeting the encoder and decoder since we don't want to target specific plugins
-                // (ProtocolSupport has changed its handler name in the past)
-                // I don't like the hacks required for compression but that's on vanilla, we can't fix it.
-                // TODO: i think this will only work for server-side packetevents?
-                String decoderTarget = ctx.pipeline().names().contains("inbound_config")
-                        ? "inbound_config" : "decoder";
-                String encoderTarget = ctx.pipeline().names().contains("outbound_config")
-                        ? "outbound_config" : "encoder";
-
                 ctx.pipeline()
-                        .addBefore(decoderTarget, decoderName, decoder)
-                        .addBefore(encoderTarget, encoderName, encoder);
+                        .addBefore(targetDecoderName, decoderName, decoder)
+                        .addBefore(targetEncoderName, encoderName, encoder);
             }
 
             if (PacketEvents.getAPI().getSettings().isDebugEnabled())
@@ -145,5 +163,25 @@ public class ServerConnectionInitializer {
             String handlers = ChannelHelper.pipelineHandlerNamesAsString(ctx);
             throw new IllegalStateException("PacketEvents failed to add a decoder to the netty pipeline. Pipeline handlers: " + handlers, ex);
         }
+    }
+
+    /**
+     * Checks if 'myHandler' exists and is currently at a lower index (upstream) than 'targetHandler'.
+     */
+    private static boolean isAlreadyBefore(Channel ctx, String myHandler, String targetHandler) {
+        List<String> names = ctx.pipeline().names();
+        int myIndex = names.indexOf(myHandler);
+        int targetIndex = names.indexOf(targetHandler);
+
+        // If we aren't in the pipeline, we aren't before anything. We need to be added.
+        if (myIndex == -1) return false;
+
+        // If the target (e.g., Via) isn't in the pipeline, we can't compare.
+        // Usually implies we should just stay put or let the standard logic run.
+        // Returning true here is safe because if Via isn't there, we don't need to fight it.
+        if (targetIndex == -1) return true;
+
+        // We are good if we are earlier in the list than the target.
+        return myIndex < targetIndex;
     }
 }
