@@ -33,17 +33,22 @@ import com.github.retrooper.packetevents.protocol.particle.data.ParticleSpellDat
 import com.github.retrooper.packetevents.protocol.particle.data.ParticleTrailData;
 import com.github.retrooper.packetevents.protocol.particle.data.ParticleVibrationData;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
+import com.github.retrooper.packetevents.protocol.util.NbtCodec;
+import com.github.retrooper.packetevents.protocol.util.NbtCodecs;
 import com.github.retrooper.packetevents.util.mappings.VersionedRegistry;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper.Reader;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper.Writer;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Collection;
 
+@NullMarked
 public final class ParticleTypes {
 
     private static final VersionedRegistry<ParticleType<?>> REGISTRY = new VersionedRegistry<>("particle_type");
+    public static final NbtCodec<ParticleType<?>> CODEC = NbtCodecs.forRegistry(REGISTRY);
 
     private ParticleTypes() {
     }

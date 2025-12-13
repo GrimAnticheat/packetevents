@@ -25,7 +25,9 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTList;
 import com.github.retrooper.packetevents.protocol.nbt.NBTString;
 import com.github.retrooper.packetevents.protocol.player.PlayerModelType;
 import com.github.retrooper.packetevents.protocol.util.NbtCodec;
+import com.github.retrooper.packetevents.protocol.util.NbtCodecException;
 import com.github.retrooper.packetevents.protocol.util.NbtCodecs;
+import com.github.retrooper.packetevents.protocol.util.NbtMapCodec;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import net.kyori.adventure.text.object.PlayerHeadObjectContents;
@@ -221,10 +223,9 @@ public final class ItemProfile {
 
     public static class Property {
 
-        public static final NbtCodec<Property> CODEC = new NbtCodec<ItemProfile.Property>() {
+        public static final NbtCodec<Property> CODEC = new NbtMapCodec<Property>() {
             @Override
-            public ItemProfile.Property decode(NBT nbt, PacketWrapper<?> wrapper) {
-                NBTCompound compound = (NBTCompound) nbt;
+            public Property decode(NBTCompound compound, PacketWrapper<?> wrapper) throws NbtCodecException {
                 String name = compound.getStringTagValueOrThrow("name");
                 String value = compound.getStringTagValueOrThrow("value");
                 String signature = compound.getStringTagValueOrNull("signature");
@@ -232,16 +233,14 @@ public final class ItemProfile {
             }
 
             @Override
-            public NBT encode(PacketWrapper<?> wrapper, ItemProfile.Property value) {
-                NBTCompound compound = new NBTCompound();
+            public void encode(NBTCompound compound, PacketWrapper<?> wrapper, Property value) throws NbtCodecException {
                 compound.setTag("name", new NBTString(value.getName()));
                 compound.setTag("value", new NBTString(value.getValue()));
                 if (value.getSignature() != null) {
                     compound.setTag("signature", new NBTString(value.getSignature()));
                 }
-                return compound;
             }
-        };
+        }.codec();
 
         public static final NbtCodec<List<ItemProfile.Property>> PROPERTY_MAP = new NbtCodec<List<ItemProfile.Property>>() {
             private final NbtCodec<List<ItemProfile.Property>> propertyList = CODEC.applyList();

@@ -28,7 +28,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * @version 1.21.9+
+ * @versions 1.21.9+
  */
 @NullMarked
 public class ParticleSpellData extends ParticleData {
