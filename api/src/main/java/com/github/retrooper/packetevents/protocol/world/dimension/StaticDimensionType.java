@@ -198,7 +198,7 @@ public class StaticDimensionType extends AbstractMappedEntity implements Dimensi
     @Override
     public DimensionType copy(@Nullable TypesBuilderData newData) {
         return new StaticDimensionType(
-                this.data, this.hasFixedTime, this.skybox, this.cardinalLight, this.attributes, this.timelinesRef,
+                newData, this.hasFixedTime, this.skybox, this.cardinalLight, this.attributes, this.timelinesRef,
                 this.fixedTime, this.natural, this.bedWorks, this.respawnAnchorWorks, this.effects, this.coordinateScale,
                 this.minY, this.height, this.monsterSpawnLightLevel, this.monsterSpawnBlockLightLimit, this.hasSkylight,
                 this.hasCeiling, this.logicalHeight, this.infiniburn, this.ambientLight

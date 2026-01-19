@@ -203,7 +203,11 @@ public final class SynchronizedRegistriesHandler {
     @FunctionalInterface
     public interface NbtEntryDecoder<T> {
 
-        T decode(NBT nbt, PacketWrapper<?> version, @Nullable TypesBuilderData data);
+        static <T extends MappedEntity & CopyableEntity<T>> NbtEntryDecoder<T> fromDecoder(NbtDecoder<T> decoder) {
+            return (tag, wrapper, data) -> decoder.decode(tag, wrapper).copy(data);
+        }
+
+        T decode(NBT tag, PacketWrapper<?> wrapper, @Nullable TypesBuilderData data);
     }
 
     @ApiStatus.Internal
@@ -229,8 +233,7 @@ public final class SynchronizedRegistriesHandler {
                 IRegistry<T> baseRegistry,
                 NbtDecoder<T> decoder
         ) {
-            this(baseRegistry, (NbtEntryDecoder<T>) (tag, wrapper, data) ->
-                    decoder.decode(tag, wrapper).copy(data));
+            this(baseRegistry, NbtEntryDecoder.fromDecoder(decoder));
         }
 
         public RegistryEntry(
