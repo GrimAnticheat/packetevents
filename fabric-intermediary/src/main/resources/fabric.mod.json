@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "packetevents-fabric-intermediary",
+  "version": "${version}",
+  "name": "PacketEvents Fabric (Intermediary Mappings)",
+  "description": "Intermediary-mapped fabric support for MC 1.14 - 1.21.x with chain-loading.",
+  "authors": [
+    "retrooper",
+    "Axionize"
+  ],
+  "contact": {},
+  "license": "GPL-3.0",
+  "icon": "assets/packetevents/icon.png",
+  "environment": "*",
+  "accessWidener": "packetevents.accesswidener",
+  "depends": {
+    "fabricloader": "*",
+    "minecraft": ">=1.14 <=1.21.11",
+    "java": ">=17",
+    "packetevents-fabric-common": "*"
+  },
+
+  "custom": {
+    "modmenu": {
+      "badges": [
+        "library"
+      ],
+      "parent": "packetevents-fabric-common",
+      "update_checker": false
+    }
+  }
+}

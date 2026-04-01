@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "packetevents-fabric-common",
+  "version": "${version}",
+  "name": "PacketEvents Fabric (Common)",
+  "description": "Shared fabric-loader code for PacketEvents. No mapping-specific dependencies.",
+  "authors": [
+    "retrooper",
+    "Axionize"
+  ],
+  "contact": {},
+  "license": "GPL-3.0",
+  "icon": "assets/packetevents/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "preLaunch": [
+      "io.github.retrooper.packetevents.PacketEventsMod"
+    ],
+    "main": [
+      "io.github.retrooper.packetevents.PacketEventsMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.0"
+  }
+}
