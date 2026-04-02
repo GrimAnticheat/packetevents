@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "packetevents-fabric-official",
+  "version": "${version}",
+  "name": "PacketEvents Fabric (Official Mappings)",
+  "description": "Official-mapped fabric support for MC 26.1+ (unobfuscated names).",
+  "authors": [
+    "retrooper",
+    "Axionize"
+  ],
+  "contact": {},
+  "license": "GPL-3.0",
+  "icon": "assets/packetevents/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "peMainChainLoad": [
+      "io.github.retrooper.packetevents.FabricOfficialChainLoadEntrypoint"
+    ]
+  },
+  "mixins": [
+    "packetevents-official.mixins.json"
+  ],
+  "accessWidener": "packetevents.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "minecraft": ">1.21.11",
+    "java": ">=25",
+    "packetevents-fabric-common": "*"
+  },
+
+  "custom": {
+    "modmenu": {
+      "badges": [
+        "library"
+      ],
+      "parent": "packetevents-fabric-common",
+      "update_checker": false
+    }
+  }
+}

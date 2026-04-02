@@ -1,0 +1,7 @@
+accessWidener v2 named
+
+# fields
+accessible field net/minecraft/network/ClientConnection side Lnet/minecraft/network/NetworkSide;
+# methods
+
+# classes
