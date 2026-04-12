@@ -24,6 +24,13 @@ dependencies {
     compileOnly(libs.via.version)
 }
 
+// we compile against latest paper, which requires a newer java version than we target
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
 tasks {
     shadowJar {
         // Paper doesn't need to map spigot -> mojang since we support both
@@ -37,8 +44,8 @@ tasks {
     // 1.18 - 1.20.4    = Java 17
     // 1.20.5 - 1.21.11 = Java 21
     // 26.1+            = Java 25
-    val version = "1.21.11"
-    val javaVersion = JavaLanguageVersion.of(21)
+    val version = "26.1.1"
+    val javaVersion = JavaLanguageVersion.of(25)
 
     val jvmArgsExternal = listOf(
         "-Dcom.mojang.eula.agree=true"
