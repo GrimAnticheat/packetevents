@@ -20,8 +20,6 @@ package com.github.retrooper.packetevents.protocol.component.builtin;
 
 import com.github.retrooper.packetevents.protocol.world.painting.PaintingVariant;
 import com.github.retrooper.packetevents.protocol.world.painting.PaintingVariants;
-import com.github.retrooper.packetevents.protocol.world.painting.StaticPaintingVariant;
-import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 
 import java.util.Objects;
@@ -35,49 +33,12 @@ public class PaintingVariantComponent {
     }
 
     public static PaintingVariantComponent read(PacketWrapper<?> wrapper) {
-        PaintingVariant variant = wrapper.readMappedEntityOrDirect(PaintingVariants.getRegistry(), w -> {
-            // This is the direct/inline reader (when id == 0)
-            int width = w.readVarInt();
-            int height = w.readVarInt();
-            ResourceLocation assetId = w.readIdentifier();
-
-            // Title (trusted optional component -> boolean followed by component)
-            if (w.readBoolean()) {
-                w.readComponent();
-            }
-
-            // Author (trusted optional component)
-            if (w.readBoolean()) {
-                w.readComponent();
-            }
-
-            // Return a direct instance (data is null because it has no registry key)
-            return new StaticPaintingVariant(null, width, height, assetId);
-        });
-
+        PaintingVariant variant = PaintingVariant.read(wrapper);
         return new PaintingVariantComponent(variant);
     }
 
     public static void write(PacketWrapper<?> wrapper, PaintingVariantComponent component) {
-        wrapper.writeMappedEntityOrDirect(component.variant, (w, v) -> {
-            // This is the direct/inline writer (when the variant isn't in the registry)
-            // Note: Update these getters based on what's available in your PaintingVariant interface.
-            if (v instanceof StaticPaintingVariant) {
-                StaticPaintingVariant staticVar = (StaticPaintingVariant) v;
-                w.writeVarInt(staticVar.getWidth());
-                w.writeVarInt(staticVar.getHeight());
-                w.writeIdentifier(staticVar.getAssetId());
-            } else {
-                // Safe fallback just in case
-                w.writeVarInt(1);
-                w.writeVarInt(1);
-                w.writeIdentifier(new ResourceLocation("minecraft", "custom"));
-            }
-
-            // Write false for optional Title and Author as they aren't currently stored in PE
-            w.writeBoolean(false);
-            w.writeBoolean(false);
-        });
+        PaintingVariant.write(wrapper, component.variant);
     }
 
     public PaintingVariant getVariant() {
