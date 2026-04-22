@@ -244,6 +244,13 @@ public class PacketEventsEncoder extends ChannelOutboundHandlerAdapter {
         }
     }
 
+    // called by the decoder after a pipeline relocation, so the next outbound
+    // write runs the lazy pipeline-layout check in handleCompression() again
+    // instead of trusting the preset latch
+    void markCompressionUnverified() {
+        this.handledCompression = false;
+    }
+
     private boolean handleCompression(ChannelHandlerContext ctx, ByteBuf buffer) throws InvocationTargetException {
         if (handledCompression) return false;
         int compressIndex = ctx.pipeline().names().indexOf("compress");

@@ -142,8 +142,21 @@ public class PacketEventsDecoder extends MessageToMessageDecoder<ByteBuf> {
         if (!preViaVersion) {
             // 1.20.4 has a bug where userEventTriggered is called twice, so Via relocates twice uselessly and we must do so
             ServerConnectionInitializer.relocateHandlers(ctx.channel(), user, false, true);
-            if (PacketEvents.getAPI().getSettings().isPreViaInjection() && ViaVersionUtil.isAvailable())
+            // reset the encoder's compression latch so the next outbound write
+            // re-verifies its position relative to compress: relocateHandlers'
+            // isAlreadyBefore only compares against "encoder" and silently
+            // bails when compress lands between PE and vanilla, the lazy check
+            // in PacketEventsEncoder.write catches that case
+            //
+            // relies on relocateHandlers bailing before setting hasBeenRelocated;
+            // if that order ever changes this fallback goes silent
+            PacketEventsEncoder enc = (PacketEventsEncoder) ctx.channel().pipeline().get(PacketEvents.ENCODER_NAME);
+            if (enc != null) enc.markCompressionUnverified();
+            if (PacketEvents.getAPI().getSettings().isPreViaInjection() && ViaVersionUtil.isAvailable()) {
                 ServerConnectionInitializer.relocateHandlers(ctx.channel(), user, true, true);
+                PacketEventsEncoder preEnc = (PacketEventsEncoder) ctx.channel().pipeline().get("pre-" + PacketEvents.ENCODER_NAME);
+                if (preEnc != null) preEnc.markCompressionUnverified();
+            }
         }
         super.userEventTriggered(ctx, event);
     }
