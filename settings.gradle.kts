@@ -41,3 +41,5 @@ include(":fabric:mc1211")
 include(":fabric:mc1216")
 // Patch modules
 include(":patch:adventure-text-serializer-gson")
+
+if (file("workspace.gradle.kts").exists()) apply(from = "workspace.gradle.kts")

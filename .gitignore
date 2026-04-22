@@ -129,3 +129,4 @@ run/
 /buildSrc/.kotlin/
 
 .env
+/workspace.gradle.kts
