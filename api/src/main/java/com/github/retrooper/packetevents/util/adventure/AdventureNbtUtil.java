@@ -70,26 +70,41 @@ public final class AdventureNbtUtil {
 
     @SuppressWarnings("unchecked")
     private static BinaryTagType<?>[] buildNbtTagTypes() {
-        // initialize class
-        try {
-            BinaryTagTypes.class.getField("BYTE").get(null);
-        } catch (ReflectiveOperationException exception) {
-            throw new RuntimeException("Error while initializing adventure binary tag types");
+        BinaryTagTypes.BYTE.id(); // initialize types
+
+        // v4 keeps TYPES on BinaryTagType; v5 moves it to a subclass reachable via BYTE.
+        List<BinaryTagType<? extends BinaryTag>> types = null;
+
+        List<Class<?>> candidates = new java.util.ArrayList<>();
+        candidates.add(BinaryTagType.class);
+        for (Class<?> c = BinaryTagTypes.BYTE.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+            if (!candidates.contains(c)) candidates.add(c);
         }
 
-        // there is no way to get all registered types...
-        List<BinaryTagType<? extends BinaryTag>> types;
         try {
-            // adventure v4
-            Field typesField = Reflection.getField(BinaryTagType.class, "TYPES");
-            if (typesField == null) {
-                // adventure v5
-                Class<?> binaryTagTypeImpl = Class.forName("net.kyori.adventure.nbt.BinaryTagTypeImpl");
-                typesField = Reflection.getField(binaryTagTypeImpl, "TYPES");
+            outer:
+            for (Class<?> candidate : candidates) {
+                for (Field field : candidate.getDeclaredFields()) {
+                    if (java.lang.reflect.Modifier.isStatic(field.getModifiers())
+                            && List.class.isAssignableFrom(field.getType())) {
+
+                        field.setAccessible(true);
+                        Object value = field.get(null);
+
+                        // Validate content so we don't grab some unrelated cache list.
+                        if (value instanceof List && ((List<?>) value).contains(BinaryTagTypes.BYTE)) {
+                            types = (List<BinaryTagType<? extends BinaryTag>>) value;
+                            break outer;
+                        }
+                    }
+                }
             }
-            types = (List<BinaryTagType<? extends BinaryTag>>) typesField.get(null);
-        } catch (ReflectiveOperationException exception) {
-            throw new RuntimeException("Error while accessing registered binary tag types", exception);
+        } catch (Exception e) {
+            throw new RuntimeException("Error scanning for Adventure NBT registry", e);
+        }
+
+        if (types == null) {
+            throw new RuntimeException("Could not locate Adventure NBT registry field (mapping mismatch?)");
         }
 
         // accessing by array index is a lot faster than looping through a list
