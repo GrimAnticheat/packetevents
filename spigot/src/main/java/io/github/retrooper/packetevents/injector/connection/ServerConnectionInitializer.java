@@ -116,14 +116,25 @@ public class ServerConnectionInitializer {
             }
 
             // If we are forced (by the event), we check if we actually NEED to move.
-            // If we are already physically located BEFORE the target in the pipeline list,
-            // we satisfy the requirement and should exit to prevent infinite loops.
+            // If we are already correctly positioned in the pipeline list, exit to avoid
+            // an infinite relocate loop.
+            //
+            // Both passes also have to sit AFTER the compression handlers (compress /
+            // decompress) in pipeline-list order. Outbound executes tail→head, so being
+            // later in the list means PE runs before compress does and reads raw bytes.
+            // The compression handlers are added lazily once the compression-threshold
+            // packet arrives — if they land between PE and the vanilla codec, the next
+            // outbound write reads already-compressed bytes as the next packet ID and
+            // throws a garbage-VarInt PacketProcessException. Absent compression handlers
+            // are no-constraint so first-time injection is unchanged.
             if (force) {
-                boolean decoderGood = isAlreadyBefore(ctx, decoderName, targetDecoderName);
-                boolean encoderGood = isAlreadyBefore(ctx, encoderName, targetEncoderName);
+                boolean decoderGood = isAlreadyBefore(ctx, decoderName, targetDecoderName)
+                        && isAlreadyAfter(ctx, decoderName, "decompress");
+                boolean encoderGood = isAlreadyBefore(ctx, encoderName, targetEncoderName)
+                        && isAlreadyAfter(ctx, encoderName, "compress");
 
                 if (decoderGood && encoderGood) {
-                    // We are already in the correct spot relative to Via/Vanilla.
+                    // We are already in the correct spot relative to Via/Vanilla/compression.
                     // Do not touch the pipeline.
                     return;
                 }
@@ -166,7 +177,8 @@ public class ServerConnectionInitializer {
     }
 
     /**
-     * Checks if 'myHandler' exists and is currently at a lower index (upstream) than 'targetHandler'.
+     * Checks if 'myHandler' exists and is currently at a lower index than 'targetHandler'.
+     * If 'targetHandler' isn't in the pipeline this returns true (no constraint to satisfy).
      */
     private static boolean isAlreadyBefore(Channel ctx, String myHandler, String targetHandler) {
         List<String> names = ctx.pipeline().names();
@@ -176,12 +188,26 @@ public class ServerConnectionInitializer {
         // If we aren't in the pipeline, we aren't before anything. We need to be added.
         if (myIndex == -1) return false;
 
-        // If the target (e.g., Via) isn't in the pipeline, we can't compare.
-        // Usually implies we should just stay put or let the standard logic run.
-        // Returning true here is safe because if Via isn't there, we don't need to fight it.
+        // Target absent: nothing to fight, leave us where we are.
         if (targetIndex == -1) return true;
 
-        // We are good if we are earlier in the list than the target.
         return myIndex < targetIndex;
+    }
+
+    /**
+     * Checks if 'myHandler' exists and is currently at a higher index than 'targetHandler'.
+     * Used to gate against a handler that should run before us in outbound order (e.g.
+     * compress); higher list index = earlier in outbound execution. If 'targetHandler' isn't
+     * in the pipeline this returns true (no constraint to satisfy).
+     */
+    private static boolean isAlreadyAfter(Channel ctx, String myHandler, String targetHandler) {
+        List<String> names = ctx.pipeline().names();
+        int myIndex = names.indexOf(myHandler);
+        int targetIndex = names.indexOf(targetHandler);
+
+        if (myIndex == -1) return false;
+        if (targetIndex == -1) return true;
+
+        return myIndex > targetIndex;
     }
 }
