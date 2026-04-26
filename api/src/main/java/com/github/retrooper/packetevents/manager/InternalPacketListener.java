@@ -43,51 +43,93 @@ import org.jetbrains.annotations.ApiStatus;
 @ApiStatus.Internal
 public class InternalPacketListener extends PacketListenerAbstract {
 
+    private final boolean preVia;
+
     public InternalPacketListener() {
-        this(PacketListenerPriority.LOWEST);
+        this(PacketListenerPriority.LOWEST, false);
     }
 
     public InternalPacketListener(PacketListenerPriority priority) {
+        this(priority, false);
+    }
+
+    public InternalPacketListener(PacketListenerPriority priority, boolean preVia) {
         super(priority);
+        this.preVia = preVia;
+    }
+
+    @Override
+    public boolean isPreVia() {
+        return preVia;
     }
 
     @Override
     public void onPacketSend(PacketSendEvent event) {
         User user = event.getUser();
         if (event.getPacketType() == PacketType.Login.Server.LOGIN_SUCCESS) {
-            Object channel = event.getChannel();
-            //Process outgoing login success packet
-            WrapperLoginServerLoginSuccess loginSuccess = new WrapperLoginServerLoginSuccess(event);
-            UserProfile profile = loginSuccess.getUserProfile();
+            // The post-Via listener owns shared state that must only be updated once per channel:
+            // user-profile mirroring, channel→UUID mapping, and (for the legacy non-config-aware
+            // path) the encoder transition. Skip these on the pre-Via pass to avoid double-writes.
+            if (!preVia) {
+                Object channel = event.getChannel();
+                //Process outgoing login success packet
+                WrapperLoginServerLoginSuccess loginSuccess = new WrapperLoginServerLoginSuccess(event);
+                UserProfile profile = loginSuccess.getUserProfile();
 
-            //Update user profile
-            user.getProfile().setUUID(profile.getUUID());
-            user.getProfile().setName(profile.getName());
-            //Texture properties are passed in login success on 1.19
-            user.getProfile().setTextureProperties(profile.getTextureProperties());
+                //Update user profile
+                user.getProfile().setUUID(profile.getUUID());
+                user.getProfile().setName(profile.getName());
+                //Texture properties are passed in login success on 1.19
+                user.getProfile().setTextureProperties(profile.getTextureProperties());
 
-            //Map username with channel
-            synchronized (channel) {
-                PacketEvents.getAPI().getProtocolManager().setChannel(profile.getUUID(), channel);
+                //Map username with channel
+                synchronized (channel) {
+                    PacketEvents.getAPI().getProtocolManager().setChannel(profile.getUUID(), channel);
+                }
+
+                if (PacketEvents.getAPI().getLogManager().isDebug()) {
+                    PacketEvents.getAPI().getLogManager().debug("Mapped player UUID with their channel " + profile.getUUID() + " " + channel);
+                }
             }
 
-            if (PacketEvents.getAPI().getLogManager().isDebug()) {
-                PacketEvents.getAPI().getLogManager().debug("Mapped player UUID with their channel " + profile.getUUID() + " " + channel);
-            }
-
-            // Switch the user's connection state to new state, but the variable event.getConnectionState() remains LOGIN
-            // We switch user state immediately to remain in sync with vanilla, allowing you to encode packets immediately
+            // Switch the user's connection state immediately so subsequent packets encode in the right
+            // protocol state. Pre-Via and post-Via may transition into different states when ViaVersion
+            // bridges a client whose protocol doesn't have the configuration phase to a server whose
+            // protocol does (or vice-versa), so handle the four cases independently.
             boolean proxy = PacketEvents.getAPI().getInjector().isProxy();
-            if (proxy ? event.getUser().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_20_2)
-                    : event.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_20_2)) {
+            ClientVersion peerVersion = event.getUser().getClientVersion();
+            boolean clientHasConfiguration = peerVersion != null && peerVersion.isNewerThanOrEquals(ClientVersion.V_1_20_2);
+            boolean serverHasConfiguration = proxy
+                    ? clientHasConfiguration
+                    : event.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_20_2);
+
+            if (clientHasConfiguration && serverHasConfiguration) {
                 user.setEncoderState(ConnectionState.CONFIGURATION);
+            } else if (clientHasConfiguration) {
+                user.setPreViaEncoderState(ConnectionState.CONFIGURATION);
+                user.setPostViaEncoderState(ConnectionState.PLAY);
+            } else if (serverHasConfiguration) {
+                user.setPreViaEncoderState(ConnectionState.PLAY);
+                user.setPostViaEncoderState(ConnectionState.CONFIGURATION);
             } else {
                 user.setConnectionState(ConnectionState.PLAY);
             }
         }
 
+        // The remaining handlers operate on the post-Via stream only — they read packet bodies in
+        // the server's protocol and update post-Via state. The pre-Via listener handles its own
+        // configuration transitions below.
+        if (preVia) {
+            if (event.getPacketType() == PacketType.Play.Server.CONFIGURATION_START) {
+                user.setPreViaEncoderState(ConnectionState.CONFIGURATION);
+            } else if (event.getPacketType() == PacketType.Configuration.Server.CONFIGURATION_END) {
+                user.setPreViaEncoderState(ConnectionState.PLAY);
+            }
+            return;
+        }
+
         // The server sends dimension information in configuration phase, since 1.20.2
-        else if (event.getPacketType() == PacketType.Configuration.Server.REGISTRY_DATA) {
+        if (event.getPacketType() == PacketType.Configuration.Server.REGISTRY_DATA) {
             WrapperConfigServerRegistryData packet = new WrapperConfigServerRegistryData(event);
 
             if (packet.getElements() != null) { // 1.20.2 to 1.20.5
@@ -118,9 +160,9 @@ public class InternalPacketListener extends PacketListenerAbstract {
             WrapperPlayServerRespawn packet = new WrapperPlayServerRespawn(event);
             user.setDimensionType(packet.getDimensionType());
         } else if (event.getPacketType() == PacketType.Play.Server.CONFIGURATION_START) {
-            user.setEncoderState(ConnectionState.CONFIGURATION);
+            user.setPostViaEncoderState(ConnectionState.CONFIGURATION);
         } else if (event.getPacketType() == PacketType.Configuration.Server.CONFIGURATION_END) {
-            user.setEncoderState(ConnectionState.PLAY);
+            user.setPostViaEncoderState(ConnectionState.PLAY);
             user.finalizeRegistries(new WrapperConfigServerConfigurationEnd(event));
         }
     }
@@ -129,6 +171,9 @@ public class InternalPacketListener extends PacketListenerAbstract {
     public void onPacketReceive(PacketReceiveEvent event) {
         User user = event.getUser();
         if (event.getPacketType() == PacketType.Handshaking.Client.HANDSHAKE) {
+            // Handshake arrives once per channel before any Via translation could exist; the post-Via
+            // listener is responsible for parsing the wrapper and seeding both directions.
+            if (preVia) return;
             WrapperHandshakingClientHandshake packet = new WrapperHandshakingClientHandshake(event);
             ClientVersion clientVersion = packet.getClientVersion();
             ConnectionState state = packet.getNextConnectionState();
@@ -142,11 +187,23 @@ public class InternalPacketListener extends PacketListenerAbstract {
             user.setClientVersion(clientVersion);
             user.setConnectionState(state);
         } else if (event.getPacketType() == PacketType.Login.Client.LOGIN_SUCCESS_ACK) {
-            user.setDecoderState(ConnectionState.CONFIGURATION);
+            if (preVia) {
+                user.setPreViaDecoderState(ConnectionState.CONFIGURATION);
+            } else {
+                user.setPostViaDecoderState(ConnectionState.CONFIGURATION);
+            }
         } else if (event.getPacketType() == PacketType.Play.Client.CONFIGURATION_ACK) {
-            user.setDecoderState(ConnectionState.CONFIGURATION);
+            if (preVia) {
+                user.setPreViaDecoderState(ConnectionState.CONFIGURATION);
+            } else {
+                user.setPostViaDecoderState(ConnectionState.CONFIGURATION);
+            }
         } else if (event.getPacketType() == PacketType.Configuration.Client.CONFIGURATION_END_ACK) {
-            user.setDecoderState(ConnectionState.PLAY);
+            if (preVia) {
+                user.setPreViaDecoderState(ConnectionState.PLAY);
+            } else {
+                user.setPostViaDecoderState(ConnectionState.PLAY);
+            }
         }
     }
 }

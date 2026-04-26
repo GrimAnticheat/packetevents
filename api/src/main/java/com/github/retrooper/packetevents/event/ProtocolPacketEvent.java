@@ -72,7 +72,8 @@ public abstract class ProtocolPacketEvent extends PacketEvent implements PlayerE
         this.user = user;
         this.player = player;
 
-        if(autoProtocolTranslation || user.getClientVersion() == null) {
+        boolean serverProtocolView = autoProtocolTranslation || user.getClientVersion() == null;
+        if (serverProtocolView) {
             this.serverVersion = PacketEvents.getAPI().getServerManager().getVersion();
         } else {
             this.serverVersion = user.getClientVersion().toServerVersion();
@@ -90,14 +91,18 @@ public abstract class ProtocolPacketEvent extends PacketEvent implements PlayerE
         }
 
         ClientVersion version = serverVersion.toClientVersion();
-        this.connectionState = packetSide == PacketSide.CLIENT ? user.getDecoderState() : user.getEncoderState();
+        if (packetSide == PacketSide.CLIENT) {
+            this.connectionState = serverProtocolView ? user.getPostViaDecoderState() : user.getPreViaDecoderState();
+        } else {
+            this.connectionState = serverProtocolView ? user.getPostViaEncoderState() : user.getPreViaEncoderState();
+        }
         PacketTypeCommon packetType = PacketType.getById(packetSide, this.connectionState, version, this.packetID);
         if (packetType == null) {
             // mojang messed up and keeps sending disconnect packets in the wrong protocol state
             if (PacketType.getById(packetSide, ConnectionState.PLAY, version, packetID) == PacketType.Play.Server.DISCONNECT) {
                 throw new InvalidDisconnectPacketSend();
             }
-            throw new PacketProcessException("Failed to map the Packet ID " + packetID + " to a PacketType constant. Bound: " + packetSide.getOpposite() + ", Connection state: " + user.getDecoderState() + ", Server version: " + serverVersion.getReleaseName());
+            throw new PacketProcessException("Failed to map the Packet ID " + packetID + " to a PacketType constant. Bound: " + packetSide.getOpposite() + ", Connection state: " + this.connectionState + ", Server version: " + serverVersion.getReleaseName());
         }
         this.packetType = packetType;
     }

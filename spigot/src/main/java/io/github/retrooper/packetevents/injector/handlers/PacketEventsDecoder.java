@@ -95,10 +95,12 @@ public class PacketEventsDecoder extends MessageToMessageDecoder<ByteBuf> {
         }
 
         boolean debug = PacketEvents.getAPI().getSettings().isDebugEnabled() || SpigotReflectionUtil.isMinecraftServerInstanceDebugging();
+        ConnectionState decoderState = user == null ? null
+                : (preViaVersion ? user.getPreViaDecoderState() : user.getPostViaDecoderState());
         // We log exceptions only if the server is in debug mode or the player is fully connected to the server.
-        if (debug || (user != null && user.getDecoderState() != ConnectionState.HANDSHAKING)) {
+        if (debug || (user != null && decoderState != ConnectionState.HANDSHAKING)) {
             if (PacketEvents.getAPI().getSettings().isFullStackTraceEnabled()) {
-                String state = user != null ? user.getDecoderState().name() : "null";
+                String state = decoderState != null ? decoderState.name() : "null";
                 String clientVersion = user != null ? user.getClientVersion().getReleaseName() : "null";
                 String username = user != null && user.getProfile().getName() != null ? user.getProfile().getName() : player != null ? player.getName() : "null";
 

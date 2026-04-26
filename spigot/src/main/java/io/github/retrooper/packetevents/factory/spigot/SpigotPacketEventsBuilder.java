@@ -135,6 +135,11 @@ public class SpigotPacketEventsBuilder {
                     //Register internal packet listener (should be the first listener)
                     //This listener doesn't do any modifications to the packets, just reads data
                     getEventManager().registerListener(new InternalBukkitPacketListener());
+                    // The pre-Via instance maintains its own per-direction state on the pre-Via
+                    // pipeline so a Via-bridged client and the underlying server can observe
+                    // independent configuration-phase transitions without aliasing each other.
+                    getEventManager().registerListener(new InternalBukkitPacketListener(
+                            com.github.retrooper.packetevents.event.PacketListenerPriority.LOWEST, true));
                 }
             }
 

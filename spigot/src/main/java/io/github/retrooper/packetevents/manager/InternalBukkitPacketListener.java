@@ -25,11 +25,22 @@ import java.util.UUID;
 @ApiStatus.Internal
 public class InternalBukkitPacketListener extends com.github.retrooper.packetevents.manager.InternalPacketListener {
 
+    public InternalBukkitPacketListener() {
+        super();
+    }
+
+    public InternalBukkitPacketListener(com.github.retrooper.packetevents.event.PacketListenerPriority priority, boolean preVia) {
+        super(priority, preVia);
+    }
+
     @Override
     public void onPacketSend(PacketSendEvent event) {
         super.onPacketSend(event);
 
-        // process after generic internal listener has processed this packet
+        // process after generic internal listener has processed this packet — but only on the
+        // post-Via pass; otherwise we'd resolve the player twice per join.
+        if (isPreVia()) return;
+
         if (event.getPacketType() == PacketType.Login.Server.LOGIN_SUCCESS) {
             WrapperLoginServerLoginSuccess packet = new WrapperLoginServerLoginSuccess(event);
             this.tryUpdatePlayerReference(event, event.getUser(), packet.getUserProfile().getUUID());
@@ -60,24 +71,24 @@ public class InternalBukkitPacketListener extends com.github.retrooper.packeteve
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Handshaking.Client.HANDSHAKE) {
+            // Only the post-Via listener owns handshake processing; pre-Via fires after Via has
+            // already chosen the translated protocol version and would clobber that choice.
+            if (isPreVia()) return;
+
             User user = event.getUser();
             WrapperHandshakingClientHandshake packet = new WrapperHandshakingClientHandshake(event);
             ClientVersion clientVersion = packet.getClientVersion();
             ConnectionState state = packet.getNextConnectionState();
 
             String feature;
-            if (!isPreVia()) {
-                if (ViaVersionUtil.isAvailable()) {
-                    clientVersion = ClientVersion.getById(ViaVersionUtil.getProtocolVersion(user));
-                    feature = "ViaVersion";
-                } else if (ProtocolSupportUtil.isAvailable()) {
-                    clientVersion = ClientVersion.getById(ProtocolSupportUtil.getProtocolVersion(user.getAddress()));
-                    feature = "ProtocolSupport";
-                } else {
-                    feature = null;
-                }
+            if (ViaVersionUtil.isAvailable()) {
+                clientVersion = ClientVersion.getById(ViaVersionUtil.getProtocolVersion(user));
+                feature = "ViaVersion";
+            } else if (ProtocolSupportUtil.isAvailable()) {
+                clientVersion = ClientVersion.getById(ProtocolSupportUtil.getProtocolVersion(user.getAddress()));
+                feature = "ProtocolSupport";
             } else {
-                feature = "Client Version Handshake";
+                feature = null;
             }
 
             LogManager logger = PacketEvents.getAPI().getLogManager();
