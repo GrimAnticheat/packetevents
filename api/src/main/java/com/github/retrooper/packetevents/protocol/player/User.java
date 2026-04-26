@@ -61,8 +61,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class User implements IRegistryHolder {
 
     private final Object channel;
+    // The post-Via states (server's protocol view).
     private ConnectionState decoderState;
     private ConnectionState encoderState;
+    // The pre-Via states (client's protocol view). When ViaVersion is bridging a client whose
+    // protocol entered CONFIGURATION at a different point than the server, these diverge from
+    // the post-Via fields above and decide which PacketType table to look up against.
+    private ConnectionState preViaDecoderState;
+    private ConnectionState preViaEncoderState;
     private ClientVersion clientVersion;
     private final UserProfile profile;
     private int entityId = -1;
@@ -76,6 +82,8 @@ public class User implements IRegistryHolder {
         this.channel = channel;
         this.decoderState = connectionState;
         this.encoderState = connectionState;
+        this.preViaDecoderState = connectionState;
+        this.preViaEncoderState = connectionState;
         this.clientVersion = clientVersion;
         this.profile = profile;
     }
@@ -137,26 +145,84 @@ public class User implements IRegistryHolder {
         this.setEncoderState(connectionState);
     }
 
+    /**
+     * Returns the post-Via decoder state (server's protocol view).
+     * <p>
+     * For most users — including any code path with no ViaVersion translation — pre-Via and
+     * post-Via decoder states are identical. They diverge only when a client whose protocol
+     * doesn't have the configuration phase is bridged to a server whose protocol does (or
+     * vice-versa); in that case use {@link #getPreViaDecoderState()} for the client-protocol view.
+     */
     public ConnectionState getDecoderState() {
         return this.decoderState;
     }
 
     @ApiStatus.Internal
     public void setDecoderState(ConnectionState decoderState) {
-        this.decoderState = decoderState;
-        PacketEvents.getAPI().getLogManager().debug(
-                "Transitioned " + this.getName() + "'s decoder into " + decoderState + " state!");
+        this.setPreViaDecoderState(decoderState);
+        this.setPostViaDecoderState(decoderState);
     }
 
+    /**
+     * Returns the post-Via encoder state (server's protocol view).
+     * <p>
+     * For most users — including any code path with no ViaVersion translation — pre-Via and
+     * post-Via encoder states are identical. They diverge only when a client whose protocol
+     * doesn't have the configuration phase is bridged to a server whose protocol does (or
+     * vice-versa); in that case use {@link #getPreViaEncoderState()} for the client-protocol view.
+     */
     public ConnectionState getEncoderState() {
         return this.encoderState;
     }
 
     @ApiStatus.Internal
     public void setEncoderState(ConnectionState encoderState) {
-        this.encoderState = encoderState;
+        this.setPreViaEncoderState(encoderState);
+        this.setPostViaEncoderState(encoderState);
+    }
+
+    public ConnectionState getPostViaDecoderState() {
+        return this.decoderState;
+    }
+
+    public ConnectionState getPostViaEncoderState() {
+        return this.encoderState;
+    }
+
+    public ConnectionState getPreViaDecoderState() {
+        return this.preViaDecoderState;
+    }
+
+    public ConnectionState getPreViaEncoderState() {
+        return this.preViaEncoderState;
+    }
+
+    @ApiStatus.Internal
+    public void setPostViaDecoderState(ConnectionState connectionState) {
+        this.decoderState = connectionState;
         PacketEvents.getAPI().getLogManager().debug(
-                "Transitioned " + this.getName() + "'s encoder into " + encoderState + " state!");
+                "Transitioned " + this.getName() + "'s post-Via decoder into " + connectionState + " state!");
+    }
+
+    @ApiStatus.Internal
+    public void setPostViaEncoderState(ConnectionState connectionState) {
+        this.encoderState = connectionState;
+        PacketEvents.getAPI().getLogManager().debug(
+                "Transitioned " + this.getName() + "'s post-Via encoder into " + connectionState + " state!");
+    }
+
+    @ApiStatus.Internal
+    public void setPreViaDecoderState(ConnectionState connectionState) {
+        this.preViaDecoderState = connectionState;
+        PacketEvents.getAPI().getLogManager().debug(
+                "Transitioned " + this.getName() + "'s pre-Via decoder into " + connectionState + " state!");
+    }
+
+    @ApiStatus.Internal
+    public void setPreViaEncoderState(ConnectionState connectionState) {
+        this.preViaEncoderState = connectionState;
+        PacketEvents.getAPI().getLogManager().debug(
+                "Transitioned " + this.getName() + "'s pre-Via encoder into " + connectionState + " state!");
     }
 
     public ClientVersion getClientVersion() {
