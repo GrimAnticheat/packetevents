@@ -83,9 +83,13 @@ tasks {
     }
 
     processResources {
-        inputs.property("version", project.version)
+        // Capture project.version at configuration time. Reading project.version
+        // inside the filesMatching closure invokes Task.project at execution time,
+        // which org.gradle.configuration-cache=true forbids.
+        val projectVersion = project.version
+        inputs.property("version", projectVersion)
         filesMatching(listOf("plugin.yml", "bungee.yml", "velocity-plugin.json", "fabric.mod.json")) {
-            expand("version" to project.version)
+            expand("version" to projectVersion)
         }
     }
 
