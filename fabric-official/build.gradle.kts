@@ -84,12 +84,20 @@ allprojects {
 
         remapJar {
             destinationDirectory = rootProject.layout.buildDirectory.dir("libs")
-            archiveBaseName = "${rootProject.name}-fabric${if (project.name != "fabric-official") "-${project.name}" else "-official"}"
+            archiveBaseName = if (project == project(":fabric-official")) {
+                "${rootProject.name}-fabric-official"
+            } else {
+                "${rootProject.name}-fabric-${project.name}"
+            }
             archiveVersion = rootProject.ext["artifactVersion"] as String
         }
 
         remapSourcesJar {
-            archiveBaseName = "${rootProject.name}-fabric${if (project.name != "fabric-official") "-${project.name}" else "-official"}"
+            archiveBaseName = if (project == project(":fabric-official")) {
+                "${rootProject.name}-fabric-official"
+            } else {
+                "${rootProject.name}-fabric-${project.name}"
+            }
             archiveVersion = rootProject.ext["artifactVersion"] as String
         }
     }

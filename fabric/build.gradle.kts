@@ -27,11 +27,11 @@ dependencies {
     mappings("net.fabricmc:yarn:$yarn_mappings")
     modImplementation("net.fabricmc:fabric-loader:$loader_version")
 
-    // The aggregator does not contribute MC-typed code itself, but pulls the variants
-    // and fabric-common in as nested JiJ dependencies.
+    // The aggregator does not contribute MC-typed code itself. fabric-common is a
+    // regular Java library so it's pulled via Loom's `include(...)` JiJ mechanism.
+    // The variant mods (fabric-intermediary, fabric-official) are nested below via
+    // `nestedJars.from(remapJar)` to avoid the double-JiJ of dev + remapped artifacts.
     include(project(":fabric-common"))
-    include(project(":fabric-intermediary", configuration = "namedElements"))
-    include(project(":fabric-official", configuration = "namedElements"))
 }
 
 loom {
@@ -41,9 +41,6 @@ loom {
         }
     }
 }
-
-evaluationDependsOn(":fabric-intermediary")
-evaluationDependsOn(":fabric-official")
 
 tasks {
     withType<JavaCompile> {
@@ -55,14 +52,14 @@ tasks {
         archiveBaseName = "${rootProject.name}-fabric"
         archiveVersion = rootProject.ext["artifactVersion"] as String
 
-        // Pull the variant remapJars as nested mods. evaluationDependsOn above
-        // guarantees the Loom tasks in the variant projects are registered before
-        // this configuration block runs.
-        val intermediaryRemap = project(":fabric-intermediary").tasks.named<RemapJarTask>("remapJar")
-        val officialRemap = project(":fabric-official").tasks.named<RemapJarTask>("remapJar")
-        dependsOn(intermediaryRemap)
-        dependsOn(officialRemap)
-        nestedJars.from(intermediaryRemap)
-        nestedJars.from(officialRemap)
+        // Nest the variant remapJars without triggering full project configuration
+        // (which would inject dev/namedElements jars into the include config).
+        dependsOn(":fabric-intermediary:remapJar", ":fabric-official:remapJar")
+        nestedJars.from(
+            rootProject.layout.buildDirectory.file("libs/${rootProject.name}-fabric-intermediary-${rootProject.ext["artifactVersion"]}.jar")
+        )
+        nestedJars.from(
+            rootProject.layout.buildDirectory.file("libs/${rootProject.name}-fabric-official-${rootProject.ext["artifactVersion"]}.jar")
+        )
     }
 }

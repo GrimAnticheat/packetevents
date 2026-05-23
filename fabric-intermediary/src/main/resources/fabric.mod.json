@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "packetevents",
+  "id": "packetevents-fabric-intermediary",
   "version": "${version}",
   "name": "PacketEvents",
   "description": "",
@@ -24,6 +24,8 @@
   ],
   "accessWidener": "packetevents.accesswidener",
   "depends": {
-    "fabricloader": "*"
+    "minecraft": ">=1.16.1 <26",
+    "java": ">=17",
+    "fabricloader": ">=0.16"
   }
 }
