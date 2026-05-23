@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "packetevents-fabric-official",
+  "version": "${version}",
+  "name": "PacketEvents (Fabric, official mappings)",
+  "description": "PacketEvents variant for Minecraft 26.X (Mojang's new version scheme, Java 25+). Currently a structural stub — Mojang has stopped publishing official mappings, and Yarn has no 26.X build, so meaningful MC-typed code awaits mapping availability.",
+  "authors": ["retrooper", "GrimAnticheat"],
+  "contact": {
+    "homepage": "https://github.com/GrimAnticheat/packetevents"
+  },
+  "license": "GPL-3.0",
+  "environment": "*",
+  "depends": {
+    "minecraft": ">=26.1",
+    "java": ">=25",
+    "fabricloader": ">=0.19"
+  }
+}
