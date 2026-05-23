@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "packetevents-fabric-mc261",
+  "version": "${version}",
+  "name": "${modName}",
+  "description": "Per-version source root for Minecraft 26.1+. Currently a structural stub; meaningful entrypoints await usable mappings.",
+  "license": "GPL-3.0",
+  "environment": "*",
+  "depends": {
+    "minecraft": ">=26.1",
+    "java": ">=25",
+    "fabricloader": ">=0.19"
+  }
+}

@@ -1,18 +1,20 @@
-import me.modmuss50.mpp.ModPublishExtension
-import me.modmuss50.mpp.PublishModTask
 import net.fabricmc.loom.task.RemapJarTask
-import net.fabricmc.loom.task.RemapSourcesJarTask
-import net.fabricmc.loom.task.prod.ServerProductionRunTask
+
+// Top-level fabric aggregator — produces the published `packetevents-fabric-<version>.jar`
+// by JiJ-nesting the intermediary and official variant outputs along with the shared
+// fabric-common library. This jar is a "meta" Fabric mod: its own fabric.mod.json carries
+// the version + depends declarations, and Fabric Loader extracts the nested per-variant
+// mods at runtime and gates them by their declared minecraft version ranges.
 
 plugins {
     packetevents.`library-conventions`
+    packetevents.`publish-conventions`
     net.fabricmc.`fabric-loom-remap`
 }
 
 repositories {
     mavenCentral()
     maven("https://repo.viaversion.com/")
-    maven("https://jitpack.io") // Conditional Mixin
 }
 
 val minecraft_version: String by project
@@ -20,147 +22,47 @@ val yarn_mappings: String by project
 val loader_version: String by project
 
 dependencies {
-    api(libs.bundles.adventure)
-    api(project(":api", "shadow"))
-    api(project(":netty-common"))
-    modApi("com.github.Fallen-Breath.conditional-mixin:conditional-mixin-fabric:0.6.4")
-
-    include(libs.bundles.adventure)
-    include(project(":api", "shadow"))
-    include(project(":netty-common"))
-    include("com.github.Fallen-Breath.conditional-mixin:conditional-mixin-fabric:0.6.4")
-
-    // To change the versions, see the gradle.properties file
+    // Bind to the oldest MC version we support so Loom remap is happy with a 1.16.1 floor.
     minecraft("com.mojang:minecraft:$minecraft_version")
     mappings("net.fabricmc:yarn:$yarn_mappings")
+    modImplementation("net.fabricmc:fabric-loader:$loader_version")
 
-    compileOnly(libs.via.version)
-    compileOnly("org.slf4j:slf4j-simple:2.0.16")
+    // The aggregator does not contribute MC-typed code itself, but pulls the variants
+    // and fabric-common in as nested JiJ dependencies.
+    include(project(":fabric-common"))
+    include(project(":fabric-intermediary", configuration = "namedElements"))
+    include(project(":fabric-official", configuration = "namedElements"))
 }
 
 loom {
     mods {
-        register("packetevents-${project.name}") {
+        register("packetevents") {
             sourceSet(sourceSets.main.get())
         }
     }
 }
 
-allprojects {
-    apply(plugin = "fabric-loom")
-    apply(plugin = "packetevents.publish-conventions")
+evaluationDependsOn(":fabric-intermediary")
+evaluationDependsOn(":fabric-official")
 
-    repositories {
-        maven("https://repo.codemc.io/repository/maven-snapshots/")
+tasks {
+    withType<JavaCompile> {
+        options.release = 17
     }
 
-    dependencies {
-        modImplementation("net.fabricmc:fabric-loader:$loader_version")
+    remapJar {
+        destinationDirectory = rootProject.layout.buildDirectory.dir("libs")
+        archiveBaseName = "${rootProject.name}-fabric"
+        archiveVersion = rootProject.ext["artifactVersion"] as String
+
+        // Pull the variant remapJars as nested mods. evaluationDependsOn above
+        // guarantees the Loom tasks in the variant projects are registered before
+        // this configuration block runs.
+        val intermediaryRemap = project(":fabric-intermediary").tasks.named<RemapJarTask>("remapJar")
+        val officialRemap = project(":fabric-official").tasks.named<RemapJarTask>("remapJar")
+        dependsOn(intermediaryRemap)
+        dependsOn(officialRemap)
+        nestedJars.from(intermediaryRemap)
+        nestedJars.from(officialRemap)
     }
-
-    tasks {
-        withType<JavaCompile> {
-            val targetJavaVersion = 17
-            if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible) {
-                options.release = targetJavaVersion
-            }
-        }
-
-        remapJar {
-            destinationDirectory = rootProject.layout.buildDirectory.dir("libs")
-            archiveBaseName = "${rootProject.name}-fabric${if (project.name != "fabric") "-${project.name}" else ""}"
-            archiveVersion = rootProject.ext["artifactVersion"] as String
-        }
-
-        remapSourcesJar {
-            archiveBaseName = "${rootProject.name}-fabric${if (project.name != "fabric") "-${project.name}" else ""}"
-            archiveVersion = rootProject.ext["artifactVersion"] as String
-        }
-    }
-
-    loom {
-        mixin {
-            // Replaces strings in annotations instead of using refmap
-            // This allows us to write mixins that target methodName* and have them work across versions
-            // Even as the signature changes without having to use @Dynamic and intermediary names
-            // This preserves some compile-time safety, reduces jar size but be careful to not inject into wrong methods
-            useLegacyMixinAp.set(false)
-        }
-
-        val accessWidenerFile = sourceSets["main"].resources.srcDirs.first()
-            .resolve("${rootProject.name}.accesswidener")
-
-        if (accessWidenerFile.exists()) {
-            accessWidenerPath.set(accessWidenerFile)
-        }
-    }
-}
-
-subprojects {
-    version = rootProject.version
-    val minecraft_version: String by project
-
-    repositories {
-        maven {
-            name = "ParchmentMC"
-            url = uri("https://maven.parchmentmc.org")
-        }
-    }
-
-    dependencies {
-        compileOnly(project(":api", "shadow"))
-        compileOnly(project(":netty-common"))
-        compileOnly(project(":fabric", configuration = "namedElements"))
-    }
-
-    // version replacement already processed for :fabric in packetevents.`library-conventions`
-    tasks {
-        processResources {
-            // Declare the inputs to allow Gradle to track changes
-            inputs.property("version", project.version)
-            inputs.property("modName", "packetevents-${project.name}")
-            inputs.property("minecraft_version", minecraft_version) // Add if you use this
-
-            // Match and expand variables in fabric.mod.json
-            filesMatching("fabric.mod.json") {
-                expand(
-                    mapOf(
-                        "version" to project.version,
-                        "modName" to "packetevents-${project.name}",
-                        "minecraft_version" to minecraft_version // Or pull from a variable
-                    )
-                )
-            }
-        }
-    }
-
-    tasks.register<ServerProductionRunTask>("prodServer") {
-        javaLauncher = javaToolchains.launcherFor {
-            languageVersion = JavaLanguageVersion.of(21)
-        }
-    }
-}
-
-subprojects.forEach {
-    tasks.named("remapJar").configure {
-        dependsOn("${it.path}:remapJar")
-    }
-}
-
-tasks.remapJar.configure {
-    subprojects.forEach { subproject ->
-        subproject.tasks.matching { it.name == "remapJar" }.configureEach {
-            nestedJars.from(this)
-        }
-    }
-}
-
-tasks.withType<PublishModTask> {
-    dependsOn(tasks.named<RemapJarTask>("remapJar"))
-    dependsOn(tasks.named<RemapSourcesJarTask>("remapSourcesJar"))
-}
-
-configure<ModPublishExtension> {
-    file = tasks.named<RemapJarTask>("remapJar").flatMap { it.archiveFile }
-    additionalFiles.from(tasks.named<RemapSourcesJarTask>("remapSourcesJar").flatMap { it.archiveFile })
 }

@@ -3,27 +3,16 @@
   "id": "packetevents",
   "version": "${version}",
   "name": "PacketEvents",
-  "description": "",
-  "authors": [
-    "retrooper"
-  ],
-  "contact": {},
-  "license": "GPL-3.0",
-  "icon": "assets/packetevents/icon.png",
-  "environment": "*",
-  "entrypoints": {
-    "preLaunch": [
-      "io.github.retrooper.packetevents.PacketEventsMod"
-    ],
-    "main": [
-      "io.github.retrooper.packetevents.PacketEventsMod"
-    ]
+  "description": "PacketEvents — Fabric meta-mod aggregator (loads intermediary or official variant by MC range).",
+  "authors": ["retrooper", "GrimAnticheat"],
+  "contact": {
+    "homepage": "https://github.com/GrimAnticheat/packetevents"
   },
-  "mixins": [
-    "packetevents.mixins.json"
-  ],
-  "accessWidener": "packetevents.accesswidener",
+  "license": "GPL-3.0",
+  "environment": "*",
   "depends": {
-    "fabricloader": "*"
+    "minecraft": ">=1.16.1",
+    "java": ">=17",
+    "fabricloader": ">=0.16"
   }
 }
