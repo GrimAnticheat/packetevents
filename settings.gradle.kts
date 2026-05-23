@@ -25,7 +25,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-rootProject.name = "packetevents"
+rootProject.name = "packetevents-public"
 include("api")
 include("netty-common")
 // Platform modules
@@ -34,13 +34,15 @@ include("bungeecord")
 include("velocity")
 include("sponge")
 include("fabric")
-include(":fabric:mc1140")
-include(":fabric:mc1194")
-include(":fabric:mc1202")
-include(":fabric:mc1211")
-include(":fabric:mc1216")
+include("fabric-common")
+include("fabric-intermediary")
+include(":fabric-intermediary:mc1140")
+include(":fabric-intermediary:mc1194")
+include(":fabric-intermediary:mc1202")
+include(":fabric-intermediary:mc1211")
+include(":fabric-intermediary:mc1216")
+include("fabric-official")
+include(":fabric-official:mc261")
 // Patch modules
 include(":patch:adventure-text-serializer-gson")
 include(":patch:adventure-text-serializer-legacy")
-
-if (file("workspace.gradle.kts").exists()) apply(from = "workspace.gradle.kts")

@@ -70,12 +70,22 @@ allprojects {
 
         remapJar {
             destinationDirectory = rootProject.layout.buildDirectory.dir("libs")
-            archiveBaseName = "${rootProject.name}-fabric${if (project.name != "fabric") "-${project.name}" else ""}"
+            archiveBaseName = if (project == project(":fabric-intermediary")) {
+                "${rootProject.name}-fabric-intermediary"
+            } else {
+                // mcXXXX subprojects keep their own short name (e.g. mc1140) so the
+                // nested jars stay `packetevents-fabric-mc1140-<ver>.jar`.
+                "${rootProject.name}-fabric-${project.name}"
+            }
             archiveVersion = rootProject.ext["artifactVersion"] as String
         }
 
         remapSourcesJar {
-            archiveBaseName = "${rootProject.name}-fabric${if (project.name != "fabric") "-${project.name}" else ""}"
+            archiveBaseName = if (project == project(":fabric-intermediary")) {
+                "${rootProject.name}-fabric-intermediary"
+            } else {
+                "${rootProject.name}-fabric-${project.name}"
+            }
             archiveVersion = rootProject.ext["artifactVersion"] as String
         }
     }
