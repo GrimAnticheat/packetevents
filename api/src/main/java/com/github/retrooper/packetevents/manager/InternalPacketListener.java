@@ -23,7 +23,6 @@ import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
-import com.github.retrooper.packetevents.manager.protocol.ProtocolManager;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -96,23 +95,20 @@ public class InternalPacketListener extends PacketListenerAbstract {
             // protocol state. Pre-Via and post-Via may transition into different states when ViaVersion
             // bridges a client whose protocol doesn't have the configuration phase to a server whose
             // protocol does (or vice-versa), so handle the four cases independently.
-            boolean proxy = PacketEvents.getAPI().getInjector().isProxy();
-            ClientVersion peerVersion = event.getUser().getClientVersion();
-            boolean clientHasConfiguration = peerVersion != null && peerVersion.isNewerThanOrEquals(ClientVersion.V_1_20_2);
-            boolean serverHasConfiguration = proxy
-                    ? clientHasConfiguration
-                    : event.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_20_2);
-
-            if (clientHasConfiguration && serverHasConfiguration) {
-                user.setEncoderState(ConnectionState.CONFIGURATION);
-            } else if (clientHasConfiguration) {
-                user.setPreViaEncoderState(ConnectionState.CONFIGURATION);
-                user.setPostViaEncoderState(ConnectionState.PLAY);
-            } else if (serverHasConfiguration) {
-                user.setPreViaEncoderState(ConnectionState.PLAY);
-                user.setPostViaEncoderState(ConnectionState.CONFIGURATION);
+            if (event.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_20_2)) {
+                if (preVia) {
+                    user.setPreViaEncoderState(ConnectionState.CONFIGURATION);
+                } else {
+                    user.setPostViaEncoderState(ConnectionState.CONFIGURATION);
+                }
             } else {
-                user.setConnectionState(ConnectionState.PLAY);
+                if (preVia) {
+                    user.setPreViaEncoderState(ConnectionState.PLAY);
+                    user.setPreViaDecoderState(ConnectionState.PLAY);
+                } else {
+                    user.setPostViaEncoderState(ConnectionState.PLAY);
+                    user.setPostViaDecoderState(ConnectionState.PLAY);
+                }
             }
         }
 
