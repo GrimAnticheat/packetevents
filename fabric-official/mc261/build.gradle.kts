@@ -1,7 +1,7 @@
 val minecraft_version: String by project
 
 plugins {
-    net.fabricmc.`fabric-loom-remap`
+    net.fabricmc.`fabric-loom`
 }
 
 repositories {
@@ -10,8 +10,9 @@ repositories {
 
 dependencies {
     minecraft("com.mojang:minecraft:$minecraft_version")
-    // See fabric-official/build.gradle.kts for why this isn't officialMojangMappings().
-    mappings("net.fabricmc:intermediary:0.0.0:v2")
+    // No mappings(): LoomNoRemap uses the pre-deobfuscated 26.1.2 jar's Mojang names
+    // directly. Source code in this subproject references net.minecraft.* names that
+    // exist verbatim in the server.jar (net.minecraft.world.item.Item, etc.).
 }
 
 loom {

@@ -3,7 +3,7 @@
   "id": "packetevents-fabric-official",
   "version": "${version}",
   "name": "PacketEvents (Fabric, official mappings)",
-  "description": "PacketEvents variant for Minecraft 26.X. Reuses the MC-erased PacketEventsMod entrypoint from fabric-common; concrete per-version player managers and Mojang-named mixins land once a 26.X intermediary mapping is available.",
+  "description": "PacketEvents variant for Minecraft 26.X built against Mojang's official names directly (no remap). Hosts the chain entrypoint that wires fabric-common's bridge classes; mc261 contributes the concrete FabricOfficialPlayerManager.",
   "authors": ["retrooper", "GrimAnticheat"],
   "contact": {
     "homepage": "https://github.com/GrimAnticheat/packetevents"
@@ -18,6 +18,10 @@
       "io.github.retrooper.packetevents.PacketEventsMod"
     ]
   },
+  "mixins": [
+    "packetevents.mixins.json"
+  ],
+  "accessWidener": "packetevents.accesswidener",
   "depends": {
     "minecraft": ">=26.1",
     "java": ">=25",

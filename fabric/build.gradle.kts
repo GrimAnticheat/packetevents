@@ -62,9 +62,11 @@ tasks {
         archiveBaseName = "${rootProject.name}-fabric"
         archiveVersion = rootProject.ext["artifactVersion"] as String
 
-        // Nest the variant remapJars without triggering full project configuration
+        // Nest the variant outputs without triggering full project configuration
         // (which would inject dev/namedElements jars into the include config).
-        dependsOn(":fabric-intermediary:remapJar", ":fabric-official:remapJar")
+        // fabric-intermediary uses LoomRemap and publishes via remapJar.
+        // fabric-official uses LoomNoRemap and publishes via the plain jar task.
+        dependsOn(":fabric-intermediary:remapJar", ":fabric-official:jar")
         nestedJars.from(
             rootProject.layout.buildDirectory.file("libs/${rootProject.name}-fabric-intermediary-${rootProject.ext["artifactVersion"]}.jar")
         )
