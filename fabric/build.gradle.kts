@@ -1,3 +1,4 @@
+import me.modmuss50.mpp.ModPublishExtension
 import net.fabricmc.loom.task.RemapJarTask
 
 // Top-level fabric aggregator — produces the published `packetevents-fabric-<version>.jar`
@@ -78,4 +79,12 @@ tasks {
             rootProject.layout.buildDirectory.file("libs/${rootProject.name}-fabric-official-${rootProject.ext["artifactVersion"]}.jar")
         )
     }
+}
+
+// publishing.skip_files=true keeps the platform branch in publish-conventions from
+// auto-wiring file = shadowJar. But the publishMods task still demands `file` set,
+// so point it at our aggregator's remapJar output. `--dry-run` and Modrinth runs
+// both need this when CI exercises them.
+configure<ModPublishExtension> {
+    file = tasks.named<RemapJarTask>("remapJar").flatMap { it.archiveFile }
 }
