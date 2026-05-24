@@ -6,7 +6,7 @@
  * project root or <http://www.gnu.org/licenses/>).
  */
 
-package io.github.retrooper.packetevents.factory.fabric;
+package io.github.retrooper.packetevents.mc261.factory.fabric;
 
 import com.github.retrooper.packetevents.PacketEventsAPI;
 import io.github.retrooper.packetevents.manager.AbstractFabricPlayerManager;
@@ -14,12 +14,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 
-// Concrete player manager for the 26.X (Mojang-named) branch. Mirror of the
-// fabric-intermediary mc-version managers but bound against the official names that
-// the deobfuscated 26.1.2 jar already uses.
-public class FabricOfficialPlayerManager extends AbstractFabricPlayerManager {
+// 26.1.2-pinned concrete player manager. Per-version sibling of mc1140/mc1194/mc1202
+// in the chain, but Mojang-named (against the pre-deobfuscated 26.X jar) instead of
+// yarn-named. Lives in mc261 because the underlying MC signatures
+// (ServerPlayer.connection.connection.channel, ServerLevel.getServer()) will shift
+// in future 26.X minor releases — each release gets its own mc26X subproject.
+public class Fabric261PlayerManager extends AbstractFabricPlayerManager {
 
-    public FabricOfficialPlayerManager(PacketEventsAPI<?> packetEventsAPI) {
+    public Fabric261PlayerManager(PacketEventsAPI<?> packetEventsAPI) {
         super(packetEventsAPI);
     }
 

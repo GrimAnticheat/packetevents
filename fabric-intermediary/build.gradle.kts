@@ -20,17 +20,15 @@ val yarn_mappings: String by project
 val loader_version: String by project
 
 dependencies {
+    // api() puts these on the compile + runtime classpath of this module and its
+    // consumers (the mcXXXX subprojects), but DELIBERATELY no include(): shared deps
+    // are JiJ'd once at the top-level fabric/ aggregator. Bundling them here too
+    // would duplicate ~5MB of api/adventure/common bytes inside every nested mod jar.
     api(libs.bundles.adventure)
     api(project(":api", "shadow"))
     api(project(":netty-common"))
     api(project(":fabric-common"))
     modApi("com.github.Fallen-Breath.conditional-mixin:conditional-mixin-fabric:0.6.4")
-
-    include(libs.bundles.adventure)
-    include(project(":api", "shadow"))
-    include(project(":netty-common"))
-    include(project(":fabric-common"))
-    include("com.github.Fallen-Breath.conditional-mixin:conditional-mixin-fabric:0.6.4")
 
     // To change the versions, see the gradle.properties file
     minecraft("com.mojang:minecraft:$minecraft_version")

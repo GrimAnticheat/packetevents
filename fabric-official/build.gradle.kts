@@ -20,16 +20,14 @@ val minecraft_version: String by project
 val loader_version: String by project
 
 dependencies {
+    // api() but NO include() for shared deps — the top-level fabric/ aggregator
+    // JiJs api/adventure/common/conditional-mixin once for the whole distribution.
+    // Only the per-version variants (mc261, future mc26X) are JiJ'd here.
     api(project(":api", "shadow"))
     api(project(":netty-common"))
     api(project(":fabric-common"))
     api("com.github.Fallen-Breath.conditional-mixin:conditional-mixin-fabric:0.6.4")
 
-    include(project(":api", "shadow"))
-    include(project(":netty-common"))
-    include(project(":fabric-common"))
-    include("com.github.Fallen-Breath.conditional-mixin:conditional-mixin-fabric:0.6.4")
-    // Nest the per-version variants (mc261, future mc26X) directly inside fabric-official.
     include(project(":fabric-official:mc261"))
 
     minecraft("com.mojang:minecraft:$minecraft_version")

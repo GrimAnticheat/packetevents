@@ -11,6 +11,10 @@
       "io.github.retrooper.packetevents.mc261.Fabric261ChainLoadEntrypoint"
     ]
   },
+  "mixins": [
+    "packetevents.mixins.json"
+  ],
+  "accessWidener": "packetevents.accesswidener",
   "depends": {
     "minecraft": ">=26.1",
     "java": ">=25",

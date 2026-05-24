@@ -15,6 +15,7 @@ plugins {
 repositories {
     mavenCentral()
     maven("https://repo.viaversion.com/")
+    maven("https://jitpack.io")
 }
 
 val minecraft_version: String by project
@@ -42,6 +43,9 @@ dependencies {
     include(libs.bundles.adventure)
     include(project(":api", "shadow"))
     include(project(":netty-common"))
+    // conditional-mixin was previously JiJ'd inside both fabric-intermediary and
+    // fabric-official, doubling its 28KB. Bring it up here once.
+    include("com.github.Fallen-Breath.conditional-mixin:conditional-mixin-fabric:0.6.4")
 }
 
 loom {

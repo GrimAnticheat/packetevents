@@ -6,7 +6,7 @@
  * project root or <http://www.gnu.org/licenses/>).
  */
 
-package io.github.retrooper.packetevents.mixin;
+package io.github.retrooper.packetevents.mc261.mixin;
 
 import com.github.retrooper.packetevents.protocol.PacketSide;
 import io.github.retrooper.packetevents.util.FabricInjectionUtil;
