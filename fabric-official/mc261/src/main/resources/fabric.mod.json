@@ -3,9 +3,14 @@
   "id": "packetevents-fabric-mc261",
   "version": "${version}",
   "name": "${modName}",
-  "description": "Per-version source root for Minecraft 26.1+. Currently a structural stub; meaningful entrypoints await usable mappings.",
+  "description": "Per-version chain participant for Minecraft 26.1+. Registers peMainChainLoad so fabric-common's PacketEventsMod can dispatch the chain.",
   "license": "GPL-3.0",
   "environment": "*",
+  "entrypoints": {
+    "peMainChainLoad": [
+      "io.github.retrooper.packetevents.mc261.Fabric261ChainLoadEntrypoint"
+    ]
+  },
   "depends": {
     "minecraft": ">=26.1",
     "java": ">=25",
