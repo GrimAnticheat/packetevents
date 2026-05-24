@@ -22,9 +22,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.List;
 
@@ -32,12 +29,10 @@ public class FabricInjectionUtil {
     private static final String VIA_DECODER_NAME = "via-decoder";
     private static final String VIA_ENCODER_NAME = "via-encoder";
 
-    public static void injectAtPipelineBuilder(ChannelPipeline pipeline, NetworkSide flow) {
-        PacketSide pipelineSide = switch (flow) {
-            case CLIENTBOUND -> PacketSide.CLIENT;
-            case SERVERBOUND -> PacketSide.SERVER;
-        };
-
+    // pipelineSide is already PacketSide because each branch's mixin entrypoint converts
+    // from its native NetworkSide/PacketFlow enum before calling in. Keeping the enum
+    // out of fabric-common is what frees this class from yarn vs. Mojang chat.network.*.
+    public static void injectAtPipelineBuilder(ChannelPipeline pipeline, PacketSide pipelineSide) {
         FabricPacketEventsAPI fabricPacketEventsAPI = FabricPacketEventsAPI.getAPI(pipelineSide);
         fabricPacketEventsAPI.getLogManager().debug("Game connected!");
 
@@ -352,7 +347,7 @@ public class FabricInjectionUtil {
         return latest;
     }
 
-    public static void fireUserLoginEvent(ServerPlayerEntity player) {
+    public static void fireUserLoginEvent(Object player) {
         FabricPacketEventsAPI api = FabricPacketEventsAPI.getServerAPI();
 
         User user = api.getPlayerManager().getUser(player);

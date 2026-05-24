@@ -31,7 +31,7 @@ public class Fabric1190ServerPlayerManager extends Fabric1140ServerPlayerManager
 
     // new TextComponent -> Text.literal in 1.19
     @Override
-    public void disconnectPlayer(ServerPlayerEntity serverPlayerEntity, String message) {
-        serverPlayerEntity.networkHandler.disconnect(Text.literal(message));
+    public void disconnectPlayer(@org.jetbrains.annotations.NotNull Object player, @org.jetbrains.annotations.NotNull String message) {
+        ((ServerPlayerEntity) player).networkHandler.disconnect(Text.literal(message));
     }
 }

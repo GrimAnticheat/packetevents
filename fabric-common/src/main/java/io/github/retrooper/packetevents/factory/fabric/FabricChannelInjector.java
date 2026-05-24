@@ -26,7 +26,6 @@ import io.github.retrooper.packetevents.handler.PacketDecoder;
 import io.github.retrooper.packetevents.handler.PacketEncoder;
 import io.netty.channel.Channel;
 import net.fabricmc.api.EnvType;
-import net.minecraft.entity.player.PlayerEntity;
 
 import static com.github.retrooper.packetevents.PacketEvents.DECODER_NAME;
 import static com.github.retrooper.packetevents.PacketEvents.ENCODER_NAME;
@@ -81,8 +80,8 @@ public class FabricChannelInjector implements ChannelInjector {
             return; // this channel isn't injected by packetevents
         }
         Channel ch = (Channel) channel;
-        ((PacketDecoder) ch.pipeline().get(DECODER_NAME)).player = (PlayerEntity) player;
-        ((PacketEncoder) ch.pipeline().get(ENCODER_NAME)).player = (PlayerEntity) player;
+        ((PacketDecoder) ch.pipeline().get(DECODER_NAME)).player = player;
+        ((PacketEncoder) ch.pipeline().get(ENCODER_NAME)).player = player;
     }
 
     @Override

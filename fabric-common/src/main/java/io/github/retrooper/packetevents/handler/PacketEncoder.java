@@ -24,8 +24,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,7 +44,9 @@ public class PacketEncoder extends ChannelOutboundHandlerAdapter {
 
     private final PacketSide side;
     public User user;
-    public PlayerEntity player;
+    // Platform-typed player: yarn ServerPlayerEntity on intermediary, Mojang ServerPlayer
+    // on official. Concrete-only handling is delegated to AbstractFabricPlayerManager.
+    public Object player;
     private ChannelPromise promise;
     private final boolean preViaVersion;
 
@@ -107,7 +107,7 @@ public class PacketEncoder extends ChannelOutboundHandlerAdapter {
         if (didWeCauseThis && (user == null || user.getEncoderState() != ConnectionState.HANDSHAKING)) {
             if (PacketEvents.getAPI().getSettings().isKickOnPacketExceptionEnabled()) {
                 try {
-                    if (user != null && player instanceof ServerPlayerEntity) {
+                    if (user != null && player != null) {
                         WrapperPlayServerDisconnect disconnectPacket = new WrapperPlayServerDisconnect(
                                 net.kyori.adventure.text.Component.text("Invalid packet")
                         );
@@ -115,10 +115,9 @@ public class PacketEncoder extends ChannelOutboundHandlerAdapter {
                     }
                 } catch (Exception ignored) {}
                 ctx.channel().close();
-                if (player instanceof ServerPlayerEntity serverPlayer) {
-                    serverPlayer.getServer().execute(() -> {
-                        FabricPacketEventsAPI.getServerAPI().getPlayerManager().disconnectPlayer(serverPlayer, "Invalid packet");
-                    });
+                if (player != null) {
+                    FabricPacketEventsAPI.getServerAPI().getPlayerManager()
+                            .kickOnException(player, "Invalid packet");
                 }
             }
         }

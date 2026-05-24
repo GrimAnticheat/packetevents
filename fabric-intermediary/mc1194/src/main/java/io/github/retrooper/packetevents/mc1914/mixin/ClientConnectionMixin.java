@@ -1,5 +1,6 @@
 package io.github.retrooper.packetevents.mc1914.mixin;
 
+import com.github.retrooper.packetevents.protocol.PacketSide;
 import com.llamalad7.mixinextras.sugar.Local;
 import io.github.retrooper.packetevents.util.FabricInjectionUtil;
 import io.netty.channel.ChannelPipeline;
@@ -29,6 +30,10 @@ public class ClientConnectionMixin {
             @Local(ordinal = 0, argsOnly = true) ChannelPipeline pipeline,
             @Local(ordinal = 0, argsOnly = true) NetworkSide flow
     ) {
-        FabricInjectionUtil.injectAtPipelineBuilder(pipeline, flow);
+        PacketSide side = switch (flow) {
+            case CLIENTBOUND -> PacketSide.CLIENT;
+            case SERVERBOUND -> PacketSide.SERVER;
+        };
+        FabricInjectionUtil.injectAtPipelineBuilder(pipeline, side);
     }
 }

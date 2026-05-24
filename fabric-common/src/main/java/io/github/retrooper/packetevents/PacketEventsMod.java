@@ -25,12 +25,9 @@ import io.github.retrooper.packetevents.factory.fabric.FabricPacketEventsAPIMana
 import io.github.retrooper.packetevents.loader.ChainLoadData;
 import io.github.retrooper.packetevents.loader.ChainLoadEntryPoint;
 import net.fabricmc.api.EnvType;
-import com.github.retrooper.packetevents.protocol.PacketSide;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.NetworkSide;
 
 import java.util.List;
 
@@ -38,21 +35,6 @@ public class PacketEventsMod implements PreLaunchEntrypoint, ModInitializer {
 
     public static PacketEventsMod INSTANCE;
     public static final String MOD_ID = "packetevents";
-
-
-    // isOurConnection() overloads are unused by our fork internally
-    // Methods kept for true ABI compatability with upstream PacketEvents
-    public static boolean isOurConnection(ClientConnection connection) {
-        return isOurConnection(connection.side);
-    }
-    public static boolean isOurConnection(NetworkSide flow) {
-        PacketSide connectionSide = switch (flow) {
-            case CLIENTBOUND -> PacketSide.CLIENT;
-            case SERVERBOUND -> PacketSide.SERVER;
-        };
-        PacketEventsAPI<?> api = PacketEvents.getAPI();
-        return api != null && api.getInjector().getPacketSide() == connectionSide;
-    }
 
     @Override
     public void onPreLaunch() {

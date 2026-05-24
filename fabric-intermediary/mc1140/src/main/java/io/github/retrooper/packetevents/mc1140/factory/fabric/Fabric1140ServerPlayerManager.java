@@ -47,7 +47,13 @@ public class Fabric1140ServerPlayerManager extends AbstractFabricPlayerManager {
     }
 
     @Override
-    public void disconnectPlayer(ServerPlayerEntity serverPlayerEntity, String message) {
-        serverPlayerEntity.networkHandler.disconnect(new TextComponent(message));
+    public void disconnectPlayer(@NotNull Object player, @NotNull String message) {
+        ((ServerPlayerEntity) player).networkHandler.disconnect(new TextComponent(message));
+    }
+
+    @Override
+    public void kickOnException(@NotNull Object player, @NotNull String message) {
+        ServerPlayerEntity sp = (ServerPlayerEntity) player;
+        sp.getServer().execute(() -> disconnectPlayer(sp, message));
     }
 }

@@ -5,6 +5,8 @@ plugins {
 repositories {
     maven("https://maven.fabricmc.net/")
     maven("https://repo.viaversion.com/")
+    maven("https://repo.spongepowered.org/repository/maven-public/")
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -16,6 +18,16 @@ dependencies {
     compileOnly(libs.via.version)
     compileOnly("org.slf4j:slf4j-api:2.0.16")
     compileOnly("org.apache.logging.log4j:log4j-api:2.24.3")
+    // PacketEventsMixinManager extends a conditional-mixin base class, which itself
+    // extends Sponge Mixin's IMixinConfigPlugin.
+    compileOnly("com.github.Fallen-Breath.conditional-mixin:conditional-mixin-fabric:0.6.4")
+    compileOnly("org.spongepowered:mixin:0.8.7")
+}
+
+// library-conventions defaults to release=8; the moved bridge code uses switch
+// expressions and pattern-matching instanceof that require Java 17+.
+tasks.withType<JavaCompile> {
+    options.release = 17
 }
 
 java {

@@ -28,7 +28,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
-import net.minecraft.entity.player.PlayerEntity;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
@@ -38,7 +37,8 @@ public class PacketDecoder extends MessageToMessageDecoder<ByteBuf> {
 
     private final PacketSide side;
     public User user;
-    public PlayerEntity player;
+    // Platform-typed player: see PacketEncoder.player for the rationale.
+    public Object player;
     private final boolean preViaVersion;
 
     public PacketDecoder(PacketSide side, User user, boolean preViaVersion) {
