@@ -27,11 +27,21 @@ dependencies {
     mappings("net.fabricmc:yarn:$yarn_mappings")
     modImplementation("net.fabricmc:fabric-loader:$loader_version")
 
-    // The aggregator does not contribute MC-typed code itself. fabric-common is a
-    // regular Java library so it's pulled via Loom's `include(...)` JiJ mechanism.
-    // The variant mods (fabric-intermediary, fabric-official) are nested below via
-    // `nestedJars.from(remapJar)` to avoid the double-JiJ of dev + remapped artifacts.
+    // Re-export everything the variant modules used to expose so downstream consumers
+    // (e.g. Grim) that depend on `packetevents-fabric` get the FQNs transitively.
+    // Without these api() entries the published POM lists only fabric-loader and
+    // mc-typed consumers fail to compile against the now-fabric-common bridge.
+    api(project(":fabric-common"))
+    api(libs.bundles.adventure)
+    api(project(":api", "shadow"))
+    api(project(":netty-common"))
+
+    // JiJ side: ship the same artifacts inside the published mod jar so Fabric Loader
+    // has them at runtime even when the consumer didn't pull the maven POM.
     include(project(":fabric-common"))
+    include(libs.bundles.adventure)
+    include(project(":api", "shadow"))
+    include(project(":netty-common"))
 }
 
 loom {
