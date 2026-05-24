@@ -97,6 +97,11 @@ public class FabricPacketEventsAPI extends PacketEventsAPI<ModInitializer> {
         // register internal packet listener (should be the first listener)
         // this listener doesn't do any modifications to the packets, just reads data
         this.getEventManager().registerListener(new InternalFabricPacketListener());
+        // The pre-Via instance maintains its own per-direction state on the pre-Via pipeline
+        // so a Via-bridged client and the underlying server can observe independent
+        // configuration-phase transitions without aliasing each other.
+        this.getEventManager().registerListener(new InternalFabricPacketListener(
+                com.github.retrooper.packetevents.event.PacketListenerPriority.LOWEST, true));
         this.loaded = true;
     }
 
