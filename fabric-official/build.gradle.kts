@@ -28,13 +28,12 @@ dependencies {
     include(project(":fabric-common"))
 
     minecraft("com.mojang:minecraft:$minecraft_version")
-    // Mojang stopped publishing official mappings starting with MC 26.X — manifest has
-    // neither client_mappings nor server_mappings, and Yarn hasn't published for 26.X.
-    // Fabric intermediary publishes a `0.0.0` empty mapping for 26.X. Until usable
-    // mappings land, fabric-official is a structural stub that loads on 26.X but
-    // cannot reference meaningful MC symbols. Re-enable officialMojangMappings() and
-    // pull in conditional-mixin/Adventure mod-deps the day Mojang or Yarn resume
-    // publishing — both fail Loom source-remap against the 0.0.0 mapping.
+    // MC 26.X jars are pre-deobfuscated with Mojang's official names, but neither
+    // Mojang's manifest nor FabricMC publishes a tiny intermediary mapping for 26.X.
+    // The 0.0.0:v2 stub is the only mapping the maven currently serves; Loom configures
+    // against it cleanly as long as source code references no MC types. Per-version
+    // source compiled against Mojang names lands once a real 26.X intermediary mapping
+    // (or first-class no-mapping Loom support) is available.
     mappings("net.fabricmc:intermediary:0.0.0:v2")
 }
 
