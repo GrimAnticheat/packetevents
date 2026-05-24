@@ -25,7 +25,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-rootProject.name = "packetevents-public"
+rootProject.name = "packetevents"
 include("api")
 include("netty-common")
 // Platform modules
@@ -46,3 +46,7 @@ include(":fabric-official:mc261")
 // Patch modules
 include(":patch:adventure-text-serializer-gson")
 include(":patch:adventure-text-serializer-legacy")
+
+// Workspace composite override (grim.sh writes this file on clone/pull to rename
+// rootProject when the workspace pulls multiple sibling repos with the same name).
+if (file("workspace.gradle.kts").exists()) apply(from = "workspace.gradle.kts")
