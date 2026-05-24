@@ -11,6 +11,7 @@ package io.github.retrooper.packetevents.mixin;
 import com.github.retrooper.packetevents.protocol.PacketSide;
 import io.github.retrooper.packetevents.util.FabricInjectionUtil;
 import io.netty.channel.ChannelPipeline;
+import net.minecraft.network.BandwidthDebugMonitor;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,7 +34,7 @@ public abstract class ConnectionMixin {
             ChannelPipeline pipeline,
             PacketFlow flow,
             boolean memoryOnly,
-            Object monitor,
+            BandwidthDebugMonitor monitor,
             CallbackInfo ci
     ) {
         PacketSide side = switch (flow) {
