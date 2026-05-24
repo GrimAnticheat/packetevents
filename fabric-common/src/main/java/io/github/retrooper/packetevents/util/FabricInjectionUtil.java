@@ -34,9 +34,21 @@ public class FabricInjectionUtil {
     // out of fabric-common is what frees this class from yarn vs. Mojang chat.network.*.
     public static void injectAtPipelineBuilder(ChannelPipeline pipeline, PacketSide pipelineSide) {
         FabricPacketEventsAPI fabricPacketEventsAPI = FabricPacketEventsAPI.getAPI(pipelineSide);
-        fabricPacketEventsAPI.getLogManager().debug("Game connected!");
 
         Channel channel = pipeline.channel();
+
+        // 26.X: configureSerialization fires for EVERY state transition (LOGIN,
+        // CONFIGURATION, PLAY). On the first call we create the User + fire
+        // UserConnectEvent. On subsequent calls we must NOT overwrite the User
+        // (it now has a name, UUID, and is keyed in PlayerDataManager). Instead
+        // delegate to reinjectPipelineHandlers which preserves the existing User.
+        User existing = fabricPacketEventsAPI.getProtocolManager().getUser(channel);
+        if (existing != null) {
+            reinjectPipelineHandlers(channel, pipelineSide);
+            return;
+        }
+
+        fabricPacketEventsAPI.getLogManager().debug("Game connected!");
         User user = new User(channel, ConnectionState.HANDSHAKING,
             null, new UserProfile(null, null));
 
@@ -347,12 +359,49 @@ public class FabricInjectionUtil {
         return latest;
     }
 
+    public static void reinjectPipelineHandlers(Channel channel, PacketSide side) {
+        FabricPacketEventsAPI api = FabricPacketEventsAPI.getAPI(side);
+        User user = api.getProtocolManager().getUser(channel);
+        if (user == null) return;
+
+        ChannelPipeline pipeline = channel.pipeline();
+
+        // 26.X: PE's state machine may not transition CONFIGURATION → PLAY
+        // automatically (CONFIGURATION_END_ACK not triggering the internal
+        // switch). Detect the PLAY transition by checking whether the pipeline
+        // now has "decoder" instead of "inbound_config" (MC uses "decoder"
+        // for PLAY and "inbound_config" for LOGIN/CONFIGURATION).
+        // 26.X: detect CONFIGURATION → PLAY transition. Only force when the
+        // User is in CONFIGURATION and the pipeline now has "decoder" (PLAY's
+        // handler) instead of "inbound_config" (CONFIGURATION's handler).
+        // Don't force on LOGIN → CONFIGURATION which also briefly shows "decoder".
+        boolean hasDecoder = pipeline.names().contains("decoder");
+        boolean hasInboundConfig = pipeline.names().contains("inbound_config");
+        if (hasDecoder && !hasInboundConfig
+                && user.getConnectionState() == ConnectionState.CONFIGURATION) {
+            user.setConnectionState(ConnectionState.PLAY);
+        }
+
+        removeIfExists(pipeline, PacketEvents.DECODER_NAME);
+        removeIfExists(pipeline, PacketEvents.ENCODER_NAME);
+
+        String decoderName = pipeline.names().contains("inbound_config") ? "inbound_config" : "decoder";
+        pipeline.addBefore(decoderName, PacketEvents.DECODER_NAME,
+                new io.github.retrooper.packetevents.handler.PacketDecoder(side, user, false));
+        String encoderName = pipeline.names().contains("outbound_config") ? "outbound_config" : "encoder";
+        pipeline.addBefore(encoderName, PacketEvents.ENCODER_NAME,
+                new io.github.retrooper.packetevents.handler.PacketEncoder(side, user, false));
+    }
+
     public static void fireUserLoginEvent(Object player) {
         FabricPacketEventsAPI api = FabricPacketEventsAPI.getServerAPI();
 
         User user = api.getPlayerManager().getUser(player);
+        // TEMP DIAG
+        System.out.println("[pe-inject-diag] fireUserLoginEvent: user=" + user + " player=" + player);
         if (user == null) {
             Object channelObj = api.getPlayerManager().getChannel(player);
+            System.out.println("[pe-inject-diag] user==null, channel=" + channelObj + " isFake=" + FakeChannelUtil.isFakeChannel(channelObj) + " terminated=" + api.isTerminated());
 
             // Check if it's a fake connection
             if (!FakeChannelUtil.isFakeChannel(channelObj) &&
@@ -364,6 +413,7 @@ public class FabricInjectionUtil {
             return;
         }
 
+        System.out.println("[pe-inject-diag] calling UserLoginEvent for user=" + user.getName());
         api.getEventManager().callEvent(new UserLoginEvent(user, player));
     }
 }
