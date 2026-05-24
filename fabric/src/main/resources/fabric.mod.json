@@ -11,7 +11,7 @@
   "license": "GPL-3.0",
   "environment": "*",
   "depends": {
-    "minecraft": ">=1.16.1",
+    "minecraft": [">=1.16.1 <26", ">=26.1.2 <26.2"],
     "java": ">=17",
     "fabricloader": ">=0.16"
   }
