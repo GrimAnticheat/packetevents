@@ -382,15 +382,11 @@ public class FabricInjectionUtil {
             user.setConnectionState(ConnectionState.PLAY);
         }
 
-        removeIfExists(pipeline, PacketEvents.DECODER_NAME);
-        removeIfExists(pipeline, PacketEvents.ENCODER_NAME);
-
-        String decoderName = pipeline.names().contains("inbound_config") ? "inbound_config" : "decoder";
-        pipeline.addBefore(decoderName, PacketEvents.DECODER_NAME,
-                new io.github.retrooper.packetevents.handler.PacketDecoder(side, user, false));
-        String encoderName = pipeline.names().contains("outbound_config") ? "outbound_config" : "encoder";
-        pipeline.addBefore(encoderName, PacketEvents.ENCODER_NAME,
-                new io.github.retrooper.packetevents.handler.PacketEncoder(side, user, false));
+        // Do NOT remove + re-add PE's handlers. They persist across MC's state
+        // transitions (configureSerialization replaces MC's "decoder"/"encoder"
+        // but not arbitrary handlers). Removing PE's handlers triggers
+        // handlerRemoved → PE interprets as disconnect → GrimPlayer eviction.
+        // The state fix above is all that's needed.
     }
 
     public static void fireUserLoginEvent(Object player) {
