@@ -98,9 +98,18 @@ public final class PacketEventsImplHelper {
         int preProcessIndex = ByteBufHelper.readerIndex(buffer);
         PacketReceiveEvent packetReceiveEvent = EventCreationUtil.createReceiveEvent(channel, user, player, buffer, autoProtocolTranslation);
         int processIndex = ByteBufHelper.readerIndex(buffer);
-        PacketEvents.getAPI().getEventManager().callEvent(packetReceiveEvent, () -> {
-            ByteBufHelper.readerIndex(buffer, processIndex);
-        }, !autoProtocolTranslation);
+        try {
+            PacketEvents.getAPI().getEventManager().callEvent(packetReceiveEvent, () -> {
+                ByteBufHelper.readerIndex(buffer, processIndex);
+            }, !autoProtocolTranslation);
+        } catch (IndexOutOfBoundsException e) {
+            // 26.X: some packet wrappers read past the buffer for packets whose
+            // serialization format changed. Catch here so the raw bytes still flow
+            // to MC's decoder and downstream listeners that can handle raw events
+            // aren't starved. Reset the reader index to let MC read the original.
+            ByteBufHelper.readerIndex(buffer, preProcessIndex);
+            return packetReceiveEvent;
+        }
         if (!packetReceiveEvent.isCancelled()) {
             //Did they ever use a wrapper?
             if (packetReceiveEvent.getLastUsedWrapper() != null) {
