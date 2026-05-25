@@ -43,7 +43,6 @@ public class ChunkReader_v1_8 implements ChunkReader {
             DimensionType dimensionType, BitSet chunkMask, BitSet secondaryChunkMask, boolean fullChunk,
             boolean hasBlockLight, boolean hasSkyLight, int chunkSize, int arrayLength, PacketWrapper<?> wrapper
     ) {
-        Chunk_v1_8[] chunks = new Chunk_v1_8[SECTION_COUNT];
         int chunkCount = 0;
         for (int ind = 0; ind < SECTION_COUNT; ind++) {
             if (chunkMask.get(ind)) {
@@ -53,9 +52,14 @@ public class ChunkReader_v1_8 implements ChunkReader {
         int expectedWithoutSky = (BLOCK_BYTES + LIGHT_BYTES) * chunkCount + (fullChunk ? BIOME_BYTES : 0);
         boolean sky = dataLengthHasSkyLight(arrayLength, expectedWithoutSky, hasSkyLight);
 
+        return readPayload(chunkMask, sky, wrapper);
+    }
+
+    public static BaseChunk[] readPayload(BitSet chunkMask, boolean hasSkyLight, PacketWrapper<?> wrapper) {
+        Chunk_v1_8[] chunks = new Chunk_v1_8[SECTION_COUNT];
         for (int ind = 0; ind < SECTION_COUNT; ind++) {
             if (chunkMask.get(ind)) {
-                chunks[ind] = new Chunk_v1_8(sky || hasBlockLight);
+                chunks[ind] = new Chunk_v1_8(hasSkyLight);
                 ShortArray3d blocks = chunks[ind].getBlocks();
                 int read = ByteBufHelper.readShortsLE(wrapper.buffer, blocks.getData(), 0, blocks.getData().length);
                 if (read < blocks.getData().length) {
@@ -71,7 +75,7 @@ public class ChunkReader_v1_8 implements ChunkReader {
             }
         }
 
-        if (sky || hasBlockLight) {
+        if (hasSkyLight) {
             for (int ind = 0; ind < SECTION_COUNT; ind++) {
                 if (chunkMask.get(ind)) {
                     NibbleArray3d skylight = chunks[ind].getSkyLight();

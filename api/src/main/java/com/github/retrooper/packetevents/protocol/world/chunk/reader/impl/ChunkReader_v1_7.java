@@ -43,10 +43,14 @@ public class ChunkReader_v1_7 implements ChunkReader {
             DimensionType dimensionType, BitSet chunkMask, BitSet secondaryChunkMask, boolean fullChunk,
             boolean hasBlockLight, boolean hasSkyLight, int chunkSize, int arrayLength, PacketWrapper<?> wrapper
     ) {
-        Chunk_v1_7[] chunks = new Chunk_v1_7[SECTION_COUNT];
         int expectedWithoutSky = getDataLength(chunkMask, secondaryChunkMask, fullChunk, false);
         boolean sky = dataLengthHasSkyLight(arrayLength, expectedWithoutSky, hasSkyLight);
 
+        return readPayload(chunkMask, secondaryChunkMask, sky, wrapper);
+    }
+
+    public static BaseChunk[] readPayload(BitSet chunkMask, BitSet secondaryChunkMask, boolean hasSkyLight, PacketWrapper<?> wrapper) {
+        Chunk_v1_7[] chunks = new Chunk_v1_7[SECTION_COUNT];
         // Fun fact, a mojang dev (forgot who) wanted to do the flattening in 1.8
         // So the extended block data was likely how mojang wanted to get around the 255 block id limit
         // Before they decided to quite using magic values and instead went with the new 1.13 solution
@@ -54,7 +58,7 @@ public class ChunkReader_v1_7 implements ChunkReader {
         // That's probably why extended block data exists, although yeah it was never used.
         for (int ind = 0; ind < SECTION_COUNT; ind++) {
             if (chunkMask.get(ind)) {
-                chunks[ind] = new Chunk_v1_7(sky, secondaryChunkMask.get(ind));
+                chunks[ind] = new Chunk_v1_7(hasSkyLight, secondaryChunkMask.get(ind));
                 ByteArray3d blocks = chunks[ind].getBlocks();
                 ByteBufHelper.readBytes(wrapper.buffer, blocks.getData());
             }
@@ -74,7 +78,7 @@ public class ChunkReader_v1_7 implements ChunkReader {
             }
         }
 
-        if (sky) {
+        if (hasSkyLight) {
             for (int ind = 0; ind < SECTION_COUNT; ind++) {
                 if (chunkMask.get(ind)) {
                     NibbleArray3d skylight = chunks[ind].getSkyLight();

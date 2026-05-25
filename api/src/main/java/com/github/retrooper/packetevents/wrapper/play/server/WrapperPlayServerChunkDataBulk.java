@@ -59,28 +59,22 @@ public class WrapperPlayServerChunkDataBulk extends PacketWrapper<WrapperPlaySer
     }
 
     private void read_1_8() {
-        boolean skylight = readBoolean();
+        boolean hasSkyLight = readBoolean();
         int columns = readVarInt();
         this.x = new int[columns];
         this.z = new int[columns];
         this.chunks = new BaseChunk[columns][];
         this.biomeData = new byte[columns][];
         int[] masks = new int[columns];
-        int[] payloadLengths = new int[columns];
         for (int column = 0; column < columns; column++) {
             this.x[column] = readInt();
             this.z[column] = readInt();
             int mask = readUnsignedShort();
-            int chunks = Integer.bitCount(mask);
             masks[column] = mask;
-            payloadLengths[column] = (chunks * ((4096 * 2) + 2048)) + (skylight ? chunks * 2048 : 0);
         }
         for (int column = 0; column < columns; column++) {
             BitSet mask = BitSet.valueOf(new long[]{masks[column]});
-            // pass wrapper through at the position where the data should be located
-            BaseChunk[] chunkData = new ChunkReader_v1_8().read(this.user.getDimensionType(), mask,
-                    null, true, false, skylight,
-                    16, payloadLengths[column] + 256, this);
+            BaseChunk[] chunkData = ChunkReader_v1_8.readPayload(mask, hasSkyLight, this);
             this.chunks[column] = chunkData;
             this.biomeData[column] = this.readBytes(16 * 16);
         }
@@ -90,7 +84,7 @@ public class WrapperPlayServerChunkDataBulk extends PacketWrapper<WrapperPlaySer
         // Read packet base data.
         short columns = readShort();
         int deflatedLength = readInt();
-        boolean skylight = readBoolean();
+        boolean hasSkyLight = readBoolean();
         byte[] deflatedBytes = readBytes(deflatedLength);
 
         this.x = new int[columns];
@@ -107,8 +101,8 @@ public class WrapperPlayServerChunkDataBulk extends PacketWrapper<WrapperPlaySer
             this.z[count] = readInt();
             chunkMasks[count] = BitSet.valueOf(new long[]{readUnsignedShort()});
             extendedChunkMasks[count] = BitSet.valueOf(new long[]{readUnsignedShort()});
-            payloadLengths[count] = ChunkReader_v1_7.getDataLength(chunkMasks[count], extendedChunkMasks[count], true, skylight);
-            inflatedLength += payloadLengths[count];
+            payloadLengths[count] = ChunkReader_v1_7.getDataLength(chunkMasks[count], extendedChunkMasks[count], false, hasSkyLight);
+            inflatedLength += payloadLengths[count] + 256;
         }
 
         byte[] inflated = new byte[inflatedLength];
@@ -129,9 +123,8 @@ public class WrapperPlayServerChunkDataBulk extends PacketWrapper<WrapperPlaySer
 
         try {
             for (int count = 0; count < columns; count++) {
-                BaseChunk[] chunkData = new ChunkReader_v1_7().read(this.user.getDimensionType(), chunkMasks[count],
-                        extendedChunkMasks[count], true, false, skylight,
-                        16, payloadLengths[count], this);
+                BaseChunk[] chunkData = ChunkReader_v1_7.readPayload(chunkMasks[count], extendedChunkMasks[count],
+                        hasSkyLight, this);
                 byte[] biomeDataBytes = this.readBytes(16 * 16);
 
                 this.chunks[count] = chunkData;
