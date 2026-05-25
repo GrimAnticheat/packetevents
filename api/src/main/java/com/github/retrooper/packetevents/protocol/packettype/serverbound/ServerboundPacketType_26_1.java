@@ -2,30 +2,20 @@
  * This file is part of packetevents - https://github.com/retrooper/packetevents
  * Copyright (C) 2025 retrooper and contributors
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Licensed under the GNU General Public License v3.0 (see the LICENSE file in
+ * the project root or <http://www.gnu.org/licenses/>).
  */
 
 package com.github.retrooper.packetevents.protocol.packettype.serverbound;
 
 // Packet ID order extracted from 26.1.2 GameProtocols.class bytecode
-// (javap -v GameProtocols | grep Serverbound, deduplicated, 0-indexed).
-// CLIENT_SETTINGS, COOKIE_RESPONSE, PLUGIN_MESSAGE moved to CONFIGURATION
-// in 26.X and are NOT in the PLAY state registration.
+// instruction sequence (javap -c -p | grep "getstatic.*Serverbound").
+// Includes cross-package packets (common, cookie, ping) that are also
+// registered in the PLAY state alongside game-package ones.
 public enum ServerboundPacketType_26_1 {
 
     TELEPORT_CONFIRM,            // 0  AcceptTeleportation
-    ATTACK,                      // 1  Attack (new in 26.X)
+    ATTACK,                      // 1  Attack
     QUERY_BLOCK_NBT,             // 2  BlockEntityTagQuery
     SELECT_BUNDLE_ITEM,          // 3  SelectBundleItem
     SET_DIFFICULTY,              // 4  ChangeDifficulty
@@ -38,51 +28,59 @@ public enum ServerboundPacketType_26_1 {
     CHUNK_BATCH_ACK,             // 11 ChunkBatchReceived
     CLIENT_STATUS,               // 12 ClientCommand
     CLIENT_TICK_END,             // 13 ClientTickEnd
-    TAB_COMPLETE,                // 14 CommandSuggestion
-    CONFIGURATION_ACK,           // 15 ConfigurationAcknowledged
-    CLICK_WINDOW_BUTTON,         // 16 ContainerButtonClick
-    CLICK_WINDOW,                // 17 ContainerClick
-    CLOSE_WINDOW,                // 18 ContainerClose
-    SLOT_STATE_CHANGE,           // 19 ContainerSlotStateChanged
-    DEBUG_SUBSCRIPTION_REQUEST,  // 20 DebugSubscriptionRequest (new in 26.X)
-    EDIT_BOOK,                   // 21 EditBook
-    QUERY_ENTITY_NBT,            // 22 EntityTagQuery
-    INTERACT_ENTITY,             // 23 Interact
-    GENERATE_STRUCTURE,          // 24 JigsawGenerate
-    LOCK_DIFFICULTY,             // 25 LockDifficulty
-    PLAYER_POSITION,             // 26 MovePlayer$Pos
-    PLAYER_POSITION_AND_ROTATION,// 27 MovePlayer$PosRot
-    PLAYER_ROTATION,             // 28 MovePlayer$Rot
-    PLAYER_FLYING,               // 29 MovePlayer$StatusOnly
-    VEHICLE_MOVE,                // 30 MoveVehicle
-    STEER_BOAT,                  // 31 PaddleBoat
-    PICK_ITEM_FROM_BLOCK,        // 32 PickItemFromBlock
-    PICK_ITEM_FROM_ENTITY,       // 33 PickItemFromEntity
-    CRAFT_RECIPE_REQUEST,        // 34 PlaceRecipe
-    PLAYER_ABILITIES,            // 35 PlayerAbilities
-    PLAYER_DIGGING,              // 36 PlayerAction
-    ENTITY_ACTION,               // 37 PlayerCommand
-    PLAYER_INPUT,                // 38 PlayerInput
-    PLAYER_LOADED,               // 39 PlayerLoaded
-    SET_RECIPE_BOOK_STATE,       // 40 RecipeBookChangeSettings
-    SET_DISPLAYED_RECIPE,        // 41 RecipeBookSeenRecipe
-    NAME_ITEM,                   // 42 RenameItem
-    ADVANCEMENT_TAB,             // 43 SeenAdvancements
-    SELECT_TRADE,                // 44 SelectTrade
-    SET_BEACON_EFFECT,           // 45 SetBeacon
-    HELD_ITEM_CHANGE,            // 46 SetCarriedItem
-    UPDATE_COMMAND_BLOCK,        // 47 SetCommandBlock
-    UPDATE_COMMAND_BLOCK_MINECART,// 48 SetCommandMinecart
-    CREATIVE_INVENTORY_ACTION,   // 49 SetCreativeModeSlot
-    SET_GAME_RULE,               // 50 SetGameRule (new in 26.X)
-    UPDATE_JIGSAW_BLOCK,         // 51 SetJigsawBlock
-    UPDATE_STRUCTURE_BLOCK,      // 52 SetStructureBlock
-    SET_TEST_BLOCK,              // 53 SetTestBlock (new in 26.X)
-    UPDATE_SIGN,                 // 54 SignUpdate
-    SPECTATE_ENTITY,             // 55 SpectateEntity (new name?)
-    ANIMATION,                   // 56 Swing
-    SPECTATE,                    // 57 TeleportToEntity
-    TEST_INSTANCE_BLOCK_ACTION,  // 58 TestInstanceBlockAction (new in 26.X)
-    PLAYER_BLOCK_PLACEMENT,      // 59 UseItemOn
-    USE_ITEM,                    // 60 UseItem
+    CLIENT_SETTINGS,             // 14 ClientInformation (common package)
+    TAB_COMPLETE,                // 15 CommandSuggestion
+    CONFIGURATION_ACK,           // 16 ConfigurationAcknowledged
+    CLICK_WINDOW_BUTTON,         // 17 ContainerButtonClick
+    CLICK_WINDOW,                // 18 ContainerClick
+    CLOSE_WINDOW,                // 19 ContainerClose
+    SLOT_STATE_CHANGE,           // 20 ContainerSlotStateChanged
+    COOKIE_RESPONSE,             // 21 CookieResponse (cookie package)
+    PLUGIN_MESSAGE,              // 22 CustomPayload (common package)
+    DEBUG_SUBSCRIPTION_REQUEST,  // 23 DebugSubscriptionRequest
+    EDIT_BOOK,                   // 24 EditBook
+    QUERY_ENTITY_NBT,            // 25 EntityTagQuery
+    INTERACT_ENTITY,             // 26 Interact
+    GENERATE_STRUCTURE,          // 27 JigsawGenerate
+    KEEP_ALIVE,                  // 28 KeepAlive (common package)
+    LOCK_DIFFICULTY,             // 29 LockDifficulty
+    PLAYER_POSITION,             // 30 MovePlayer$Pos
+    PLAYER_POSITION_AND_ROTATION,// 31 MovePlayer$PosRot
+    PLAYER_ROTATION,             // 32 MovePlayer$Rot
+    PLAYER_FLYING,               // 33 MovePlayer$StatusOnly
+    VEHICLE_MOVE,                // 34 MoveVehicle
+    STEER_BOAT,                  // 35 PaddleBoat
+    PICK_ITEM_FROM_BLOCK,        // 36 PickItemFromBlock
+    PICK_ITEM_FROM_ENTITY,       // 37 PickItemFromEntity
+    DEBUG_PING,                  // 38 PingRequest (ping package)
+    CRAFT_RECIPE_REQUEST,        // 39 PlaceRecipe
+    PLAYER_ABILITIES,            // 40 PlayerAbilities
+    PLAYER_DIGGING,              // 41 PlayerAction
+    ENTITY_ACTION,               // 42 PlayerCommand
+    PLAYER_INPUT,                // 43 PlayerInput
+    PLAYER_LOADED,               // 44 PlayerLoaded
+    PONG,                        // 45 Pong (common package)
+    SET_RECIPE_BOOK_STATE,       // 46 RecipeBookChangeSettings
+    SET_DISPLAYED_RECIPE,        // 47 RecipeBookSeenRecipe
+    NAME_ITEM,                   // 48 RenameItem
+    RESOURCE_PACK_STATUS,        // 49 ResourcePack (common package)
+    ADVANCEMENT_TAB,             // 50 SeenAdvancements
+    SELECT_TRADE,                // 51 SelectTrade
+    SET_BEACON_EFFECT,           // 52 SetBeacon
+    HELD_ITEM_CHANGE,            // 53 SetCarriedItem
+    UPDATE_COMMAND_BLOCK,        // 54 SetCommandBlock
+    UPDATE_COMMAND_BLOCK_MINECART,// 55 SetCommandMinecart
+    CREATIVE_INVENTORY_ACTION,   // 56 SetCreativeModeSlot
+    SET_GAME_RULE,               // 57 SetGameRule
+    UPDATE_JIGSAW_BLOCK,         // 58 SetJigsawBlock
+    UPDATE_STRUCTURE_BLOCK,      // 59 SetStructureBlock
+    SET_TEST_BLOCK,              // 60 SetTestBlock
+    UPDATE_SIGN,                 // 61 SignUpdate
+    SPECTATE_ENTITY,             // 62 SpectateEntity
+    ANIMATION,                   // 63 Swing
+    SPECTATE,                    // 64 TeleportToEntity
+    TEST_INSTANCE_BLOCK_ACTION,  // 65 TestInstanceBlockAction
+    PLAYER_BLOCK_PLACEMENT,      // 66 UseItemOn
+    USE_ITEM,                    // 67 UseItem
+    CUSTOM_CLICK_ACTION,         // 68 CustomClickAction (common package)
 }
