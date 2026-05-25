@@ -393,23 +393,16 @@ public class FabricInjectionUtil {
         FabricPacketEventsAPI api = FabricPacketEventsAPI.getServerAPI();
 
         User user = api.getPlayerManager().getUser(player);
-        // TEMP DIAG
-        System.out.println("[pe-inject-diag] fireUserLoginEvent: user=" + user + " player=" + player);
         if (user == null) {
             Object channelObj = api.getPlayerManager().getChannel(player);
-            System.out.println("[pe-inject-diag] user==null, channel=" + channelObj + " isFake=" + FakeChannelUtil.isFakeChannel(channelObj) + " terminated=" + api.isTerminated());
 
-            // Check if it's a fake connection
             if (!FakeChannelUtil.isFakeChannel(channelObj) &&
                     (!api.isTerminated() || api.getSettings().isKickIfTerminated())) {
-                // Kick the player if they're not a fake player
-                // player.connection.disconnect(Component.literal("PacketEvents 2.0 failed to inject"));
                 FabricPacketEventsAPI.getServerAPI().getPlayerManager().disconnectPlayer(player, "PacketEvents failed to inject into a channel.");
             }
             return;
         }
 
-        System.out.println("[pe-inject-diag] calling UserLoginEvent for user=" + user.getName());
         api.getEventManager().callEvent(new UserLoginEvent(user, player));
     }
 }

@@ -77,8 +77,6 @@ public abstract class ConnectionMixin {
             case CLIENTBOUND -> PacketSide.CLIENT;
             case SERVERBOUND -> PacketSide.SERVER;
         };
-        System.out.println("[pe-reinject-diag] BEFORE reinject: " + this.channel.pipeline().names());
         FabricInjectionUtil.reinjectPipelineHandlers(this.channel, side);
-        System.out.println("[pe-reinject-diag] AFTER reinject: " + this.channel.pipeline().names());
     }
 }
