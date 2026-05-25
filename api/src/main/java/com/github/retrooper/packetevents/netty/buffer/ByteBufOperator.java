@@ -39,6 +39,8 @@ public interface ByteBufOperator {
     int readInt(Object buffer);
     long readUnsignedInt(Object buffer);
     long readLong(Object buffer);
+    int readLongs(Object buffer, long[] destination, int destinationIndex, int length);
+    int readShortsLE(Object buffer, short[] destination, int destinationIndex, int length);
 
     void writeByte(Object buffer, int value);
     void writeShort(Object buffer, int value);
@@ -46,6 +48,8 @@ public interface ByteBufOperator {
     void writeMedium(Object buffer, int value);
     void writeInt(Object buffer, int value);
     void writeLong(Object buffer, long value);
+    void writeLongs(Object buffer, long[] source, int sourceIndex, int length);
+    void writeShortsLE(Object buffer, short[] source, int sourceIndex, int length);
 
     Object getBytes(Object buffer, int index, byte[] destination);
     short getUnsignedByte(Object buffer, int index);
@@ -65,6 +69,7 @@ public interface ByteBufOperator {
     Object writeBytes(Object buffer, Object src);
     Object writeBytes(Object buffer, byte[] bytes);
     Object writeBytes(Object buffer, byte[] bytes, int offset, int length);
+    Object writeZero(Object buffer, int length);
 
     boolean release(Object buffer);
     int refCnt(Object buffer);

@@ -23,17 +23,32 @@ public class NetworkChunkData {
     private int extendedChunkMask; // 1.7 only
     private final boolean fullChunk;
     private final boolean sky;
+    private final int dataLength;
     private byte[] data;
 
     public NetworkChunkData(int mask, boolean fullChunk, boolean sky, byte[] data) {
+        this(mask, fullChunk, sky, data.length, data);
+    }
+
+    public NetworkChunkData(int mask, boolean fullChunk, boolean sky, int dataLength) {
+        this(mask, fullChunk, sky, dataLength, null);
+    }
+
+    private NetworkChunkData(int mask, boolean fullChunk, boolean sky, int dataLength, byte[] data) {
         this.mask = mask;
         this.fullChunk = fullChunk;
         this.sky = sky;
+        this.dataLength = dataLength;
         this.data = data;
     }
 
     public NetworkChunkData(int chunkMask, int extendedChunkMask, boolean fullChunk, boolean sky, byte[] data) {
         this(chunkMask, fullChunk, sky, data);
+        this.extendedChunkMask = extendedChunkMask;
+    }
+
+    public NetworkChunkData(int chunkMask, int extendedChunkMask, boolean fullChunk, boolean sky, int dataLength) {
+        this(chunkMask, fullChunk, sky, dataLength);
         this.extendedChunkMask = extendedChunkMask;
     }
 
@@ -51,6 +66,14 @@ public class NetworkChunkData {
 
     public boolean hasSkyLight() {
         return this.sky;
+    }
+
+    public int getDataLength() {
+        return this.dataLength;
+    }
+
+    public boolean isIncluded(int section) {
+        return (this.mask & 1 << section) != 0;
     }
 
     public byte[] getData() {

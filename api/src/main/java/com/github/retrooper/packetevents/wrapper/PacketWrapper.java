@@ -805,9 +805,9 @@ public class PacketWrapper<T extends PacketWrapper<T>> {
 
     public long[] readLongArray(int size) {
         long[] array = new long[size];
-
-        for (int i = 0; i < array.length; i++) {
-            array[i] = readLong();
+        int read = ByteBufHelper.readLongs(buffer, array, 0, array.length);
+        if (read < array.length) {
+            throw new IllegalStateException();
         }
         return array;
     }
@@ -843,18 +843,16 @@ public class PacketWrapper<T extends PacketWrapper<T>> {
             throw new IllegalStateException("LongArray with size " + size + " is bigger than allowed " + readableBytes);
         }
         long[] array = new long[size];
-
-        for (int i = 0; i < array.length; i++) {
-            array[i] = readLong();
+        int read = ByteBufHelper.readLongs(buffer, array, 0, array.length);
+        if (read < array.length) {
+            throw new IllegalStateException();
         }
         return array;
     }
 
     public void writeLongArray(long[] array) {
         writeVarInt(array.length);
-        for (long l : array) {
-            writeLong(l);
-        }
+        ByteBufHelper.writeLongs(buffer, array, 0, array.length);
     }
 
     public UUID readUUID() {

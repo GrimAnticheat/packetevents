@@ -29,7 +29,6 @@ import com.github.retrooper.packetevents.protocol.world.chunk.ChunkBitMask;
 import com.github.retrooper.packetevents.protocol.world.chunk.Column;
 import com.github.retrooper.packetevents.protocol.world.chunk.HeightmapType;
 import com.github.retrooper.packetevents.protocol.world.chunk.LightData;
-import com.github.retrooper.packetevents.protocol.world.chunk.NetworkChunkData;
 import com.github.retrooper.packetevents.protocol.world.chunk.TileEntity;
 import com.github.retrooper.packetevents.protocol.world.chunk.impl.v1_16.Chunk_v1_9;
 import com.github.retrooper.packetevents.protocol.world.chunk.impl.v1_7.Chunk_v1_7;
@@ -46,7 +45,6 @@ import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import java.util.BitSet;
 import java.util.Map;
 import java.util.zip.DataFormatException;
-import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 public class WrapperPlayServerChunkData extends PacketWrapper<WrapperPlayServerChunkData> {
@@ -346,27 +344,10 @@ public class WrapperPlayServerChunkData extends PacketWrapper<WrapperPlayServerC
                 ByteBufHelper.writerIndex(dataBuffer, newWriterIndex);
             }
         } else if (v1_8) {
-            NetworkChunkData data = ChunkReader_v1_8.chunksToData((Chunk_v1_8[]) chunks, column.getBiomeDataBytes());
-            writeShort(data.getMask());
-            writeByteArray(data.getData());
+            ChunkReader_v1_8.writeColumn(this, (Chunk_v1_8[]) chunks, column.getBiomeDataBytes());
             return;
         } else {
-            NetworkChunkData data = ChunkReader_v1_7.chunksToData((Chunk_v1_7[]) chunks, column.getBiomeDataBytes());
-            Deflater deflater = new Deflater(-1);
-
-            byte[] deflated = new byte[data.getData().length];
-            int len;
-            try {
-                deflater.setInput(data.getData(), 0, data.getData().length);
-                deflater.finish();
-                len = deflater.deflate(deflated);
-            } finally {
-                deflater.end();
-            }
-            writeShort(data.getMask());
-            writeShort(data.getExtendedChunkMask());
-            writeInt(len);
-            ByteBufHelper.writeBytes(this.buffer, deflated, 0, len);
+            ChunkReader_v1_7.writeColumn(this, (Chunk_v1_7[]) chunks, column.getBiomeDataBytes());
             return;
         }
 

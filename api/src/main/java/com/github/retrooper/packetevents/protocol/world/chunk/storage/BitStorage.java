@@ -63,6 +63,11 @@ public class BitStorage extends BaseStorage {
         this(bitsPerEntry, size, null);
     }
 
+    public static int expectedLength(int bitsPerEntry, int size) {
+        int valuesPerLong = (char) (64 / bitsPerEntry);
+        return (size + valuesPerLong - 1) / valuesPerLong;
+    }
+
     public BitStorage(int bitsPerEntry, int size, long[] data) {
         if (bitsPerEntry < 1 || bitsPerEntry > 32) {
             throw new IllegalArgumentException("bitsPerEntry must be between 1 and 32, inclusive.");
@@ -73,7 +78,7 @@ public class BitStorage extends BaseStorage {
 
         this.maxValue = (1L << bitsPerEntry) - 1L;
         this.valuesPerLong = (char) (64 / bitsPerEntry);
-        int expectedLength = (size + this.valuesPerLong - 1) / this.valuesPerLong;
+        int expectedLength = expectedLength(bitsPerEntry, size);
         if (data != null) {
             if (data.length != expectedLength) {
                 throw new IllegalArgumentException("Expected " + expectedLength + " longs but got " + data.length + " longs");

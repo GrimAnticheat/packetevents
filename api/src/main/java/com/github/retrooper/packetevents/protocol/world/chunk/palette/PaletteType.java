@@ -19,8 +19,6 @@
 package com.github.retrooper.packetevents.protocol.world.chunk.palette;
 
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
-import com.github.retrooper.packetevents.protocol.stream.NetStreamInputWrapper;
-import com.github.retrooper.packetevents.protocol.stream.NetStreamOutputWrapper;
 import com.github.retrooper.packetevents.protocol.world.chunk.storage.BitStorage;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 
@@ -72,16 +70,20 @@ public enum PaletteType {
 
     public static void write(PacketWrapper<?> wrapper, DataPalette palette) {
         boolean lengthPrefix = wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_21_5);
-        DataPalette.write(new NetStreamOutputWrapper(wrapper), palette, lengthPrefix);
+        DataPalette.write(wrapper, palette, lengthPrefix);
     }
 
     public DataPalette read(PacketWrapper<?> wrapper) {
+        return this.read(wrapper, false);
+    }
+
+    public DataPalette read(PacketWrapper<?> wrapper, boolean zeroStorage) {
         if (wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_16)) {
-            return DataPalette.readLegacy(new NetStreamInputWrapper(wrapper));
+            return DataPalette.readLegacy(wrapper);
         }
         boolean allowSingletonPalette = wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_1_18);
         boolean lengthPrefix = wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_21_5);
-        return DataPalette.read(new NetStreamInputWrapper(wrapper), this, allowSingletonPalette, lengthPrefix);
+        return DataPalette.read(wrapper, this, allowSingletonPalette, lengthPrefix, zeroStorage);
     }
 
     public DataPalette create() {

@@ -22,9 +22,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.stream.NetStreamInput;
-import com.github.retrooper.packetevents.protocol.stream.NetStreamInputWrapper;
 import com.github.retrooper.packetevents.protocol.stream.NetStreamOutput;
-import com.github.retrooper.packetevents.protocol.stream.NetStreamOutputWrapper;
 import com.github.retrooper.packetevents.protocol.world.chunk.BaseChunk;
 import com.github.retrooper.packetevents.protocol.world.chunk.palette.DataPalette;
 import com.github.retrooper.packetevents.protocol.world.chunk.palette.PaletteType;
@@ -101,9 +99,12 @@ public class Chunk_v1_18 implements BaseChunk {
 
     public static Chunk_v1_18 read(PacketWrapper<?> wrapper) {
         ClientVersion version = wrapper.getServerVersion().toClientVersion();
-        boolean paletteLengthPrefix = version.isOlderThan(ClientVersion.V_1_21_5);
         boolean hasFluidCount = version.isNewerThanOrEquals(ClientVersion.V_26_1);
-        return read(version, new NetStreamInputWrapper(wrapper), paletteLengthPrefix, hasFluidCount);
+        int blockCount = wrapper.readShort();
+        int fluidCount = hasFluidCount ? wrapper.readShort() : 0;
+        DataPalette chunkPalette = PaletteType.CHUNK.read(wrapper, blockCount == 0);
+        DataPalette biomePalette = PaletteType.BIOME.read(wrapper);
+        return new Chunk_v1_18(version, blockCount, fluidCount, chunkPalette, biomePalette);
     }
 
     /**
@@ -145,9 +146,13 @@ public class Chunk_v1_18 implements BaseChunk {
     }
 
     public static void write(PacketWrapper<?> wrapper, Chunk_v1_18 section) {
-        boolean paletteLengthPrefix = wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_21_5);
         boolean hasFluidCount = wrapper.getServerVersion().isNewerThanOrEquals(ServerVersion.V_26_1);
-        write(new NetStreamOutputWrapper(wrapper), section, paletteLengthPrefix, hasFluidCount);
+        wrapper.writeShort(section.blockCount);
+        if (hasFluidCount) {
+            wrapper.writeShort(section.fluidCount);
+        }
+        PaletteType.write(wrapper, section.chunkData);
+        PaletteType.write(wrapper, section.biomeData);
     }
 
     /**

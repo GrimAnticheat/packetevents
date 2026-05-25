@@ -95,6 +95,10 @@ public class ByteBufHelper {
         return PacketEvents.getAPI().getNettyManager().getByteBufOperator().readShort(buffer);
     }
 
+    public static int readShortsLE(Object buffer, short[] destination, int destinationIndex, int length) {
+        return PacketEvents.getAPI().getNettyManager().getByteBufOperator().readShortsLE(buffer, destination, destinationIndex, length);
+    }
+
     public static int readUnsignedShort(Object buffer) {
         return PacketEvents.getAPI().getNettyManager().getByteBufOperator().readUnsignedShort(buffer);
     }
@@ -105,6 +109,10 @@ public class ByteBufHelper {
 
     public static void writeShortLE(Object buffer, int value) {
         PacketEvents.getAPI().getNettyManager().getByteBufOperator().writeShortLE(buffer, value);
+    }
+
+    public static void writeShortsLE(Object buffer, short[] source, int sourceIndex, int length) {
+        PacketEvents.getAPI().getNettyManager().getByteBufOperator().writeShortsLE(buffer, source, sourceIndex, length);
     }
 
     public static int readMedium(Object buffer) {
@@ -131,8 +139,16 @@ public class ByteBufHelper {
         return PacketEvents.getAPI().getNettyManager().getByteBufOperator().readLong(buffer);
     }
 
+    public static int readLongs(Object buffer, long[] destination, int destinationIndex, int length) {
+        return PacketEvents.getAPI().getNettyManager().getByteBufOperator().readLongs(buffer, destination, destinationIndex, length);
+    }
+
     public static void writeLong(Object buffer, long value) {
         PacketEvents.getAPI().getNettyManager().getByteBufOperator().writeLong(buffer, value);
+    }
+
+    public static void writeLongs(Object buffer, long[] source, int sourceIndex, int length) {
+        PacketEvents.getAPI().getNettyManager().getByteBufOperator().writeLongs(buffer, source, sourceIndex, length);
     }
 
     public static float readFloat(Object buffer) {
@@ -213,6 +229,10 @@ public class ByteBufHelper {
 
     public static void writeBytes(Object buffer, byte[] bytes, int offset, int length) {
         PacketEvents.getAPI().getNettyManager().getByteBufOperator().writeBytes(buffer, bytes, offset, length);
+    }
+
+    public static void writeZero(Object buffer, int length) {
+        PacketEvents.getAPI().getNettyManager().getByteBufOperator().writeZero(buffer, length);
     }
 
     public static boolean release(Object buffer) {
