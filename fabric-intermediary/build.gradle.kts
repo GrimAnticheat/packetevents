@@ -20,10 +20,8 @@ val yarn_mappings: String by project
 val loader_version: String by project
 
 dependencies {
-    // api() puts these on the compile + runtime classpath of this module and its
-    // consumers (the mcXXXX subprojects), but DELIBERATELY no include(): shared deps
-    // are JiJ'd once at the top-level fabric/ aggregator. Bundling them here too
-    // would duplicate ~5MB of api/adventure/common bytes inside every nested mod jar.
+    // api() (compile + runtime classpath) but NOT include(): shared deps are
+    // JiJ'd once at the fabric/ aggregator to avoid duplicating ~5MB per variant.
     api(libs.bundles.adventure)
     api(project(":api", "shadow"))
     api(project(":netty-common"))

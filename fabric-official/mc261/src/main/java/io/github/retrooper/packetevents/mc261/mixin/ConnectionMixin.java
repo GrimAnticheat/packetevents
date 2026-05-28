@@ -24,16 +24,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-// Injects PE's encoder/decoder into the netty pipeline. Three hooks:
-//
-//   configureSerialization (static, TAIL) — first pipeline setup at channel init.
-//   setupInboundProtocol (instance, TAIL) — fires on each state transition
-//     (LOGIN → CONFIGURATION → PLAY). MC replaces the decoder handler, which
-//     removes PE's pe-decoder. Re-inject here so PE captures PLAY packets.
-//   setupOutboundProtocol (instance, TAIL) — same for the outbound encoder.
-//
-// Without the setupInbound/Outbound hooks PE only captures LOGIN + CONFIGURATION
-// packets and the downstream consumer (Grim) never sees PLAY-state movement data.
+// Inject PE handlers at initial pipeline setup, then re-inject on each state
+// transition since MC replaces the decoder/encoder when switching protocols.
+// Without the setup{In,Out}boundProtocol hooks, PE loses PE-decoder/encoder
+// at the LOGIN/CONFIGURATION/PLAY transition and never sees PLAY packets.
 @Mixin(value = Connection.class, priority = 1500)
 public abstract class ConnectionMixin {
 

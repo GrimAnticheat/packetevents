@@ -24,8 +24,8 @@ dependencies {
     compileOnly("org.spongepowered:mixin:0.8.7")
 }
 
-// library-conventions defaults to release=8; the moved bridge code uses switch
-// expressions and pattern-matching instanceof that require Java 17+.
+// Override library-conventions' release=8 — bridge code uses switch expressions
+// and pattern-matching instanceof.
 tasks.withType<JavaCompile> {
     options.release = 17
 }

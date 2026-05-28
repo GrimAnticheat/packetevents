@@ -18,16 +18,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-// Mojang-named twin of fabric-intermediary's PlayerManagerMixin (mc1140). 26.X
-// renamed PlayerManager → PlayerList and onPlayerConnect → placeNewPlayer.
-//
-// Two injects:
-//   HEAD of placeNewPlayer: associate the netty Channel of the incoming Connection
-//     with the ServerPlayer object — required so subsequent PlayerManager.getUser
-//     lookups can resolve the User → ServerPlayer mapping.
-//   AFTER PlayerList.broadcastAll(Packet) call inside placeNewPlayer: the player
-//     has fully entered PLAY state, so fire UserLoginEvent. Without this, Grim's
-//     check engine never sees the player join and no checks run.
+// 26.X twin of fabric-intermediary's PlayerManagerMixin (mc1140).
+// HEAD: bind channel → ServerPlayer so getUser() can resolve the mapping.
+// TAIL: fire UserLoginEvent now that the player is in PLAY state.
 @Mixin(PlayerList.class)
 public abstract class PlayerListMixin {
 

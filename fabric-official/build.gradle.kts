@@ -1,8 +1,5 @@
-// fabric-official targets MC 26.X+, whose server/client jars ship pre-deobfuscated with
-// Mojang's official names. Loom's NoRemap variant (`net.fabricmc.fabric-loom`, distinct
-// from `-remap`) accepts the jar as already in the target namespace, so source code
-// references Mojang names directly (net.minecraft.world.item.Item, etc.). No mappings()
-// configuration is needed — intermediary == named == official == jar contents.
+// MC 26.X+ ships pre-deobfuscated, so this module uses LoomNoRemap and references
+// net.minecraft.* directly — no mappings() needed.
 
 plugins {
     packetevents.`library-conventions`
@@ -20,9 +17,8 @@ val minecraft_version: String by project
 val loader_version: String by project
 
 dependencies {
-    // api() but NO include() for shared deps — the top-level fabric/ aggregator
-    // JiJs api/adventure/common/conditional-mixin once for the whole distribution.
-    // Only the per-version variants (mc261, future mc26X) are JiJ'd here.
+    // Shared deps are JiJ'd once at the top-level fabric/ aggregator; only the
+    // per-version variants are included here.
     api(project(":api", "shadow"))
     api(project(":netty-common"))
     api(project(":fabric-common"))
@@ -31,8 +27,6 @@ dependencies {
     include(project(":fabric-official:mc261"))
 
     minecraft("com.mojang:minecraft:$minecraft_version")
-    // No mappings() block: LoomNoRemap uses the MC jar's own (Mojang) namespace
-    // throughout, so source can compile against net.minecraft.* directly.
 }
 
 java {

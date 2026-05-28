@@ -58,19 +58,9 @@ public final class PacketEventsImplHelper {
         int preProcessIndex = ByteBufHelper.readerIndex(buffer);
         PacketSendEvent packetSendEvent = EventCreationUtil.createSendEvent(channel, user, player, buffer, autoProtocolTranslation);
         int processIndex = ByteBufHelper.readerIndex(buffer);
-        try {
-            PacketEvents.getAPI().getEventManager().callEvent(packetSendEvent, () -> {
-                ByteBufHelper.readerIndex(buffer, processIndex);
-            }, !autoProtocolTranslation);
-        } catch (IndexOutOfBoundsException e) {
-            // 26.X: some packet wrappers (e.g. WrapperPlayServerSpawnEntity) read
-            // past the buffer because the serialization format changed. Catch here
-            // so the raw bytes still flow to MC's encoder (the packet was already
-            // serialized by MC). Without this, the encoder throws and Netty's error
-            // handler corrupts the pipeline state for all subsequent packets.
-            ByteBufHelper.readerIndex(buffer, preProcessIndex);
-            return packetSendEvent;
-        }
+        PacketEvents.getAPI().getEventManager().callEvent(packetSendEvent, () -> {
+            ByteBufHelper.readerIndex(buffer, processIndex);
+        }, !autoProtocolTranslation);
         if (!packetSendEvent.isCancelled()) {
             //Did they ever use a wrapper?
             if (packetSendEvent.getLastUsedWrapper() != null) {
@@ -108,18 +98,9 @@ public final class PacketEventsImplHelper {
         int preProcessIndex = ByteBufHelper.readerIndex(buffer);
         PacketReceiveEvent packetReceiveEvent = EventCreationUtil.createReceiveEvent(channel, user, player, buffer, autoProtocolTranslation);
         int processIndex = ByteBufHelper.readerIndex(buffer);
-        try {
-            PacketEvents.getAPI().getEventManager().callEvent(packetReceiveEvent, () -> {
-                ByteBufHelper.readerIndex(buffer, processIndex);
-            }, !autoProtocolTranslation);
-        } catch (IndexOutOfBoundsException e) {
-            // 26.X: a listener's wrapper read past the buffer because the packet
-            // format changed. Reset the buffer so MC can still read the raw bytes.
-            // The event already fired to some listeners before the throw; the rest
-            // missed it. This is acceptable — Grim's critical listeners (movement
-            // checks) don't wrap most packets eagerly, so they survive.
-            ByteBufHelper.readerIndex(buffer, preProcessIndex);
-        }
+        PacketEvents.getAPI().getEventManager().callEvent(packetReceiveEvent, () -> {
+            ByteBufHelper.readerIndex(buffer, processIndex);
+        }, !autoProtocolTranslation);
         if (!packetReceiveEvent.isCancelled()) {
             //Did they ever use a wrapper?
             if (packetReceiveEvent.getLastUsedWrapper() != null) {

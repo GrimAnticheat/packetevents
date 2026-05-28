@@ -1,11 +1,9 @@
 import me.modmuss50.mpp.ModPublishExtension
 import net.fabricmc.loom.task.RemapJarTask
 
-// Top-level fabric aggregator — produces the published `packetevents-fabric-<version>.jar`
-// by JiJ-nesting the intermediary and official variant outputs along with the shared
-// fabric-common library. This jar is a "meta" Fabric mod: its own fabric.mod.json carries
-// the version + depends declarations, and Fabric Loader extracts the nested per-variant
-// mods at runtime and gates them by their declared minecraft version ranges.
+// Aggregator: JiJ-nests fabric-intermediary + fabric-official + fabric-common into the
+// published packetevents-fabric jar. Fabric Loader gates each nested variant by its
+// declared minecraft range at runtime.
 
 plugins {
     packetevents.`library-conventions`
@@ -16,7 +14,7 @@ plugins {
 repositories {
     mavenCentral()
     maven("https://repo.viaversion.com/")
-    maven("https://jitpack.io")
+    maven("https://jitpack.io") // Conditional Mixin
 }
 
 val minecraft_version: String by project
@@ -24,28 +22,23 @@ val yarn_mappings: String by project
 val loader_version: String by project
 
 dependencies {
-    // Bind to the oldest MC version we support so Loom remap is happy with a 1.16.1 floor.
+    // Floor at oldest supported MC so Loom remap accepts 1.16.1.
     minecraft("com.mojang:minecraft:$minecraft_version")
     mappings("net.fabricmc:yarn:$yarn_mappings")
     modImplementation("net.fabricmc:fabric-loader:$loader_version")
 
-    // Re-export everything the variant modules used to expose so downstream consumers
-    // (e.g. Grim) that depend on `packetevents-fabric` get the FQNs transitively.
-    // Without these api() entries the published POM lists only fabric-loader and
-    // mc-typed consumers fail to compile against the now-fabric-common bridge.
+    // api(): re-export so consumers' POMs see them transitively.
+    // include(): JiJ at runtime. Both are needed.
     api(project(":fabric-common"))
     api(libs.bundles.adventure)
     api(project(":api", "shadow"))
     api(project(":netty-common"))
 
-    // JiJ side: ship the same artifacts inside the published mod jar so Fabric Loader
-    // has them at runtime even when the consumer didn't pull the maven POM.
     include(project(":fabric-common"))
     include(libs.bundles.adventure)
     include(project(":api", "shadow"))
     include(project(":netty-common"))
-    // conditional-mixin was previously JiJ'd inside both fabric-intermediary and
-    // fabric-official, doubling its 28KB. Bring it up here once.
+    // Hoisted from variant modules to avoid duplicating the 28KB JiJ.
     include("com.github.Fallen-Breath.conditional-mixin:conditional-mixin-fabric:0.6.4")
 }
 
@@ -67,10 +60,9 @@ tasks {
         archiveBaseName = "${rootProject.name}-fabric"
         archiveVersion = rootProject.ext["artifactVersion"] as String
 
-        // Nest the variant outputs without triggering full project configuration
-        // (which would inject dev/namedElements jars into the include config).
-        // fabric-intermediary uses LoomRemap and publishes via remapJar.
-        // fabric-official uses LoomNoRemap and publishes via the plain jar task.
+        // Nest via file path (not project deps) to skip variant project configuration,
+        // which would otherwise inject dev/namedElements jars into `include`.
+        // intermediary → remapJar (LoomRemap); official → jar (LoomNoRemap).
         dependsOn(":fabric-intermediary:remapJar", ":fabric-official:jar")
         nestedJars.from(
             rootProject.layout.buildDirectory.file("libs/${rootProject.name}-fabric-intermediary-${rootProject.ext["artifactVersion"]}.jar")
@@ -81,10 +73,7 @@ tasks {
     }
 }
 
-// publishing.skip_files=true keeps the platform branch in publish-conventions from
-// auto-wiring file = shadowJar. But the publishMods task still demands `file` set,
-// so point it at our aggregator's remapJar output. `--dry-run` and Modrinth runs
-// both need this when CI exercises them.
+// publishMods demands `file` set even when publishing.skip_files=true.
 configure<ModPublishExtension> {
     file = tasks.named<RemapJarTask>("remapJar").flatMap { it.archiveFile }
 }
