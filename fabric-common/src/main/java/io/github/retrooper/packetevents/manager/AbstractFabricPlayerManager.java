@@ -80,7 +80,7 @@ public abstract class AbstractFabricPlayerManager extends PlayerManagerAbstract 
 
     /**
      * Disconnect a player with the given message. The runtime object is the platform's
-     * server-player type (yarn {@code ServerPlayerEntity} on fabric-intermediary, Mojang
+     * server-player type (yarn {@code ServerPlayerEntity} on fabric-intermediary, official
      * {@code ServerPlayer} on fabric-official); common code should never inspect it.
      */
     public abstract void disconnectPlayer(@NotNull Object serverPlayer, @NotNull String message);

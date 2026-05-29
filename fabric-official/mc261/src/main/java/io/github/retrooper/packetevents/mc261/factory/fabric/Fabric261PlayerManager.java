@@ -15,7 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 
 // 26.1.2-pinned concrete player manager. Per-version sibling of mc1140/mc1194/mc1202
-// in the chain, but Mojang-named (against the pre-deobfuscated 26.X jar) instead of
+// in the chain, but official-named (against the pre-deobfuscated 26.X jar) instead of
 // yarn-named. Lives in mc261 because the underlying MC signatures
 // (ServerPlayer.connection.connection.channel, ServerLevel.getServer()) will shift
 // in future 26.X minor releases: each release gets its own mc26X subproject.
