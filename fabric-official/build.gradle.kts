@@ -1,5 +1,5 @@
 // MC 26.X+ ships pre-deobfuscated, so this module uses LoomNoRemap and references
-// net.minecraft.* directly — no mappings() needed.
+// net.minecraft.* directly, no mappings() needed.
 
 plugins {
     packetevents.`library-conventions`
@@ -144,7 +144,7 @@ subprojects {
 
 // Top-level fabric-official jar JiJs the mc261 (and future 26.X) variant jars beside
 // the common shell. LoomNoRemap exposes `Jar` (not `AbstractRemapJarTask`), so we
-// nest via fabric-loom's `include` instead — declared up in the dependencies block.
+// nest via fabric-loom's `include` instead, declared up in the dependencies block.
 subprojects.forEach { sub ->
     tasks.named("jar").configure {
         dependsOn("${sub.path}:jar")

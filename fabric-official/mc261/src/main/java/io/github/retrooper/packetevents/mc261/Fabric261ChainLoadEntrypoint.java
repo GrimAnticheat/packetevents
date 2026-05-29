@@ -21,7 +21,7 @@ public class Fabric261ChainLoadEntrypoint implements ChainLoadEntryPoint {
     // 26.X's BuiltInRegistries layout differs from yarn and a real Item ↔ ItemType
     // lookup needs its own implementation. Until that lands, register a null-returning
     // stub so FabricPacketEventsAPI.getRegistryManager() doesn't dereference a null
-    // LazyHolder — the intermediary chain can't fill this slot because fabric-
+    // LazyHolder: the intermediary chain can't fill this slot because fabric-
     // intermediary's mods are gated <26.
     private final LazyHolder<RegistryManager> registryManager =
             LazyHolder.simple(() -> new FabricRegistryManager(new ItemRegistry() {

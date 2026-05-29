@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 // in the chain, but Mojang-named (against the pre-deobfuscated 26.X jar) instead of
 // yarn-named. Lives in mc261 because the underlying MC signatures
 // (ServerPlayer.connection.connection.channel, ServerLevel.getServer()) will shift
-// in future 26.X minor releases — each release gets its own mc26X subproject.
+// in future 26.X minor releases: each release gets its own mc26X subproject.
 public class Fabric261PlayerManager extends AbstractFabricPlayerManager {
 
     public Fabric261PlayerManager(PacketEventsAPI<?> packetEventsAPI) {

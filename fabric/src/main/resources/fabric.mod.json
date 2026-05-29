@@ -3,7 +3,7 @@
   "id": "packetevents",
   "version": "${version}",
   "name": "PacketEvents",
-  "description": "PacketEvents — Fabric meta-mod aggregator (loads intermediary or official variant by MC range).",
+  "description": "PacketEvents - Fabric meta-mod aggregator (loads intermediary or official variant by MC range).",
   "authors": ["retrooper", "GrimAnticheat"],
   "contact": {
     "homepage": "https://github.com/GrimAnticheat/packetevents"
@@ -11,7 +11,7 @@
   "license": "GPL-3.0",
   "environment": "*",
   "depends": {
-    "minecraft": [">=1.16.1 <26", ">=26.1.2 <26.2"],
+    "minecraft": [">=1.14 <26", ">=26.1.2 <26.2"],
     "java": ">=17",
     "fabricloader": ">=0.16"
   }

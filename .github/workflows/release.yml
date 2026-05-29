@@ -20,9 +20,6 @@ jobs:
       - name: Setup java 25
         uses: actions/setup-java@v5
         with:
-          # fabric-official's LoomNoRemap setup needs Gradle on Java 25 because
-          # the MC 26.1.2 jar is Java 25 bytecode and Loom configures it during
-          # Gradle's config phase (before toolchain selection).
           java-version: 25
           distribution: temurin
 
@@ -34,16 +31,14 @@ jobs:
         run: |
           OUTPUT_DELIMITER="$(uuidgen)"
           echo "changelog<<$OUTPUT_DELIMITER" >> "$GITHUB_OUTPUT"
-          
-          # extract tag name and use it to get changelog section
+
           TAG_NAME="v$(./gradlew -q --no-daemon printVersion)"
           awk -v tag="${TAG_NAME}" '
             $1 == "!!!!!" && $2 == tag {found=1; next}
             $1 == "!!!!!" && found {exit}
             found
           ' CHANGELOG.md >> "$GITHUB_OUTPUT"
-          
-          # end output
+
           echo "$OUTPUT_DELIMITER" >> "$GITHUB_OUTPUT"
 
       - name: Publish plugin

@@ -24,7 +24,7 @@ dependencies {
     compileOnly("org.spongepowered:mixin:0.8.7")
 }
 
-// Override library-conventions' release=8 — bridge code uses switch expressions
+// Override library-conventions' release=8: bridge code uses switch expressions
 // and pattern-matching instanceof.
 tasks.withType<JavaCompile> {
     options.release = 17

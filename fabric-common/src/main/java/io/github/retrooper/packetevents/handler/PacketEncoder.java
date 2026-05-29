@@ -44,8 +44,8 @@ public class PacketEncoder extends ChannelOutboundHandlerAdapter {
 
     private final PacketSide side;
     public User user;
-    // Platform-typed player: yarn ServerPlayerEntity on intermediary, Mojang ServerPlayer
-    // on official. Concrete-only handling is delegated to AbstractFabricPlayerManager.
+    // Mapping-typed player: yarn ServerPlayerEntity on intermediary. ServerPlayer on official
+    //  Concrete-only handling is delegated to AbstractFabricPlayerManager.
     public Object player;
     private ChannelPromise promise;
     private final boolean preViaVersion;

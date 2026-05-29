@@ -30,8 +30,7 @@ public class FabricInjectionUtil {
     private static final String VIA_ENCODER_NAME = "via-encoder";
 
     // pipelineSide is already PacketSide because each branch's mixin entrypoint converts
-    // from its native NetworkSide/PacketFlow enum before calling in. Keeping the enum
-    // out of fabric-common is what frees this class from yarn vs. Mojang chat.network.*.
+    // from its native NetworkSide/PacketFlow enum before calling in.
     public static void injectAtPipelineBuilder(ChannelPipeline pipeline, PacketSide pipelineSide) {
         FabricPacketEventsAPI fabricPacketEventsAPI = FabricPacketEventsAPI.getAPI(pipelineSide);
 
@@ -42,6 +41,8 @@ public class FabricInjectionUtil {
         // UserConnectEvent. On subsequent calls we must NOT overwrite the User
         // (it now has a name, UUID, and is keyed in PlayerDataManager). Instead
         // delegate to reinjectPipelineHandlers which preserves the existing User.
+        // Only fires on 26.X: on 1.21.11 and below injectAtPipelineBuilder is called
+        // exactly once per connection from the ChInit mixin, so existing is always null there.
         User existing = fabricPacketEventsAPI.getProtocolManager().getUser(channel);
         if (existing != null) {
             reinjectPipelineHandlers(channel, pipelineSide);

@@ -10,9 +10,6 @@ repositories {
 
 dependencies {
     minecraft("com.mojang:minecraft:$minecraft_version")
-    // No mappings(): LoomNoRemap uses the pre-deobfuscated 26.1.2 jar's Mojang names
-    // directly. Source code in this subproject references net.minecraft.* names that
-    // exist verbatim in the server.jar (net.minecraft.world.item.Item, etc.).
 }
 
 loom {
