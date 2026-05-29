@@ -365,29 +365,12 @@ public class FabricInjectionUtil {
         User user = api.getProtocolManager().getUser(channel);
         if (user == null) return;
 
-        ChannelPipeline pipeline = channel.pipeline();
-
-        // 26.X: PE's state machine may not transition CONFIGURATION → PLAY
-        // automatically (CONFIGURATION_END_ACK not triggering the internal
-        // switch). Detect the PLAY transition by checking whether the pipeline
-        // now has "decoder" instead of "inbound_config" (MC uses "decoder"
-        // for PLAY and "inbound_config" for LOGIN/CONFIGURATION).
-        // 26.X: detect CONFIGURATION → PLAY transition. Only force when the
-        // User is in CONFIGURATION and the pipeline now has "decoder" (PLAY's
-        // handler) instead of "inbound_config" (CONFIGURATION's handler).
-        // Don't force on LOGIN → CONFIGURATION which also briefly shows "decoder".
-        boolean hasDecoder = pipeline.names().contains("decoder");
-        boolean hasInboundConfig = pipeline.names().contains("inbound_config");
-        if (hasDecoder && !hasInboundConfig
-                && user.getConnectionState() == ConnectionState.CONFIGURATION) {
-            user.setConnectionState(ConnectionState.PLAY);
-        }
-
-        // Do NOT remove + re-add PE's handlers. They persist across MC's state
-        // transitions (configureSerialization replaces MC's "decoder"/"encoder"
-        // but not arbitrary handlers). Removing PE's handlers triggers
-        // handlerRemoved → PE interprets as disconnect → GrimPlayer eviction.
-        // The state fix above is all that's needed.
+        // 26.X: configureSerialization fires again on each state transition, but PE's
+        // handlers persist across them (it replaces MC's "decoder"/"encoder", not
+        // arbitrary handlers) and PE's own state machine now advances CONFIGURATION to
+        // PLAY on its own once the serverbound packet IDs are read in the right order.
+        // So there is nothing to do here: do NOT remove and re-add PE's handlers, since
+        // handlerRemoved would be read as a disconnect and evict the GrimPlayer.
     }
 
     public static void fireUserLoginEvent(Object player) {
