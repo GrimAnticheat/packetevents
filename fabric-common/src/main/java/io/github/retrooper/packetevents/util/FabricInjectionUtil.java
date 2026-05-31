@@ -29,23 +29,13 @@ public class FabricInjectionUtil {
     private static final String VIA_DECODER_NAME = "via-decoder";
     private static final String VIA_ENCODER_NAME = "via-encoder";
 
-    // pipelineSide is already PacketSide because each branch's mixin entrypoint converts
-    // from its native NetworkSide/PacketFlow enum before calling in.
     public static void injectAtPipelineBuilder(ChannelPipeline pipeline, PacketSide pipelineSide) {
         FabricPacketEventsAPI fabricPacketEventsAPI = FabricPacketEventsAPI.getAPI(pipelineSide);
 
         Channel channel = pipeline.channel();
 
-        // 26.X: configureSerialization fires for EVERY state transition (LOGIN,
-        // CONFIGURATION, PLAY). On the first call we create the User + fire
-        // UserConnectEvent. On subsequent calls we must NOT overwrite the User
-        // (it now has a name, UUID, and is keyed in PlayerDataManager). Instead
-        // delegate to reinjectPipelineHandlers which preserves the existing User.
-        // Only fires on 26.X: on 1.21.11 and below injectAtPipelineBuilder is called
-        // exactly once per connection from the ChInit mixin, so existing is always null there.
         User existing = fabricPacketEventsAPI.getProtocolManager().getUser(channel);
         if (existing != null) {
-            reinjectPipelineHandlers(channel, pipelineSide);
             return;
         }
 
@@ -358,19 +348,6 @@ public class FabricInjectionUtil {
         }
 
         return latest;
-    }
-
-    public static void reinjectPipelineHandlers(Channel channel, PacketSide side) {
-        FabricPacketEventsAPI api = FabricPacketEventsAPI.getAPI(side);
-        User user = api.getProtocolManager().getUser(channel);
-        if (user == null) return;
-
-        // 26.X: configureSerialization fires again on each state transition, but PE's
-        // handlers persist across them (it replaces MC's "decoder"/"encoder", not
-        // arbitrary handlers) and PE's own state machine now advances CONFIGURATION to
-        // PLAY on its own once the serverbound packet IDs are read in the right order.
-        // So there is nothing to do here: do NOT remove and re-add PE's handlers, since
-        // handlerRemoved would be read as a disconnect and evict the GrimPlayer.
     }
 
     public static void fireUserLoginEvent(Object player) {
