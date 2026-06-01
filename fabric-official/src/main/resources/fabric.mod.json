@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "packetevents-fabric-official",
+  "version": "${version}",
+  "name": "PacketEvents (Fabric, official mappings)",
+  "description": "PacketEvents variant for Minecraft 26.X. Hosts the chain entrypoint that wires fabric-common's bridge classes; per-version subprojects (mc261, future mc26X) contribute the concrete FabricPlayerManager + injection mixin + access widener.",
+  "authors": ["retrooper", "GrimAnticheat"],
+  "contact": {
+    "homepage": "https://github.com/GrimAnticheat/packetevents"
+  },
+  "license": "GPL-3.0",
+  "environment": "*",
+  "entrypoints": {
+    "preLaunch": [
+      "io.github.retrooper.packetevents.PacketEventsMod"
+    ],
+    "main": [
+      "io.github.retrooper.packetevents.PacketEventsMod"
+    ]
+  },
+  "depends": {
+    "minecraft": ">=26.1.2 <26.2",
+    "java": ">=25",
+    "fabricloader": ">=0.19"
+  }
+}
