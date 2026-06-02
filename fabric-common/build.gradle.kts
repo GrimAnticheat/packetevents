@@ -17,7 +17,7 @@ dependencies {
     compileOnly("net.fabricmc:fabric-loader:${rootProject.findProperty("loader_version") ?: "0.16.14"}")
     compileOnly(libs.via.version)
     compileOnly("org.slf4j:slf4j-api:2.0.16")
-    compileOnly("org.apache.logging.log4j:log4j-api:2.24.3")
+    compileOnly(libs.log4j.api)
     // PacketEventsMixinManager extends a conditional-mixin base class, which itself
     // extends Sponge Mixin's IMixinConfigPlugin.
     compileOnly("com.github.Fallen-Breath.conditional-mixin:conditional-mixin-fabric:0.6.4")

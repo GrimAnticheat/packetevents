@@ -27,18 +27,14 @@ import com.github.retrooper.packetevents.manager.server.ServerManager;
 import com.github.retrooper.packetevents.netty.NettyManager;
 import com.github.retrooper.packetevents.protocol.PacketSide;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 import com.github.retrooper.packetevents.settings.PacketEventsSettings;
-import com.github.retrooper.packetevents.util.LogManager;
 import io.github.retrooper.packetevents.PacketEventsMod;
-import com.github.retrooper.packetevents.util.mappings.SynchronizedRegistriesHandler;
+import com.github.retrooper.packetevents.util.PEVersions;
 import io.github.retrooper.packetevents.impl.netty.NettyManagerImpl;
 import io.github.retrooper.packetevents.manager.AbstractFabricPlayerManager;
-import io.github.retrooper.packetevents.manager.FabricLoggerManager;
 import io.github.retrooper.packetevents.manager.FabricProtocolManager;
 import io.github.retrooper.packetevents.manager.FabricServerManager;
 import io.github.retrooper.packetevents.manager.InternalFabricPacketListener;
-import io.github.retrooper.packetevents.manager.logger.jul.JULoggerFactory;
 import io.github.retrooper.packetevents.util.viaversion.ViaVersionUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
@@ -55,8 +51,6 @@ public class FabricPacketEventsAPI extends PacketEventsAPI<ModInitializer> {
     private final ServerManager serverManager;
     private final ChannelInjector injector;
     private final NettyManager nettyManager = new NettyManagerImpl();
-    private final LogManager logManager = FabricLoggerManager.createModLogger("PacketEvents");
-    private final Logger logger = JULoggerFactory.createLogger("PacketEvents");
 
     private boolean loaded;
     private boolean initialized;
@@ -91,8 +85,14 @@ public class FabricPacketEventsAPI extends PacketEventsAPI<ModInitializer> {
         PacketEvents.CONNECTION_HANDLER_NAME = "pe-connection-handler-" + id;
         PacketEvents.SERVER_CHANNEL_HANDLER_NAME = "pe-connection-initializer-" + id;
 
-        WrappedBlockState.ensureLoad();
-        SynchronizedRegistriesHandler.init();
+        super.load();
+        this.loaded = true;
+
+        this.getLogManager().info("Loaded packetevents v" + PEVersions.RAW);
+    }
+
+    @Override
+    protected void registerInternalListener() {
 
         // register internal packet listener (should be the first listener)
         // this listener doesn't do any modifications to the packets, just reads data
@@ -102,7 +102,6 @@ public class FabricPacketEventsAPI extends PacketEventsAPI<ModInitializer> {
         // configuration-phase transitions without aliasing each other.
         this.getEventManager().registerListener(new InternalFabricPacketListener(
                 com.github.retrooper.packetevents.event.PacketListenerPriority.LOWEST, true));
-        this.loaded = true;
     }
 
     @Override
@@ -148,7 +147,7 @@ public class FabricPacketEventsAPI extends PacketEventsAPI<ModInitializer> {
         if (!this.initialized) {
             return;
         }
-        this.getEventManager().unregisterAllListeners();
+        super.terminate();
         this.initialized = false;
         this.terminated = true;
     }
@@ -173,16 +172,6 @@ public class FabricPacketEventsAPI extends PacketEventsAPI<ModInitializer> {
     @Override
     public ServerManager getServerManager() {
         return this.serverManager;
-    }
-
-    @Override
-    public LogManager getLogManager() {
-        return this.logManager;
-    }
-
-    @Override
-    public Logger getLogger() {
-        return this.logger;
     }
 
     @Override
