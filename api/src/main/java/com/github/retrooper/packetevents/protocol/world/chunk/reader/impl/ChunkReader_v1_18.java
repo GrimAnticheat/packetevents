@@ -22,8 +22,10 @@ import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.world.chunk.BaseChunk;
 import com.github.retrooper.packetevents.protocol.world.chunk.impl.v_1_18.Chunk_v1_18;
+import com.github.retrooper.packetevents.protocol.world.chunk.palette.PaletteType;
 import com.github.retrooper.packetevents.protocol.world.chunk.reader.ChunkReader;
 import com.github.retrooper.packetevents.protocol.world.chunk.storage.BaseStorage;
+import com.github.retrooper.packetevents.protocol.world.chunk.storage.BitStorage;
 import com.github.retrooper.packetevents.protocol.world.dimension.DimensionType;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import org.jetbrains.annotations.ApiStatus;
@@ -38,12 +40,19 @@ public class ChunkReader_v1_18 implements ChunkReader {
         int mojangPleaseFixThisZeroByteSuffixLength = 0;
         for (BaseChunk chunk : chunks) {
             BaseStorage chunkStorage = ((Chunk_v1_18) chunk).getChunkData().storage;
-            int chunkStorageLen = ByteBufHelper.getByteSize(chunkStorage != null ? chunkStorage.getData().length : 0);
+            int chunkStorageLen = ByteBufHelper.getByteSize(storageLength(chunkStorage, PaletteType.CHUNK));
             BaseStorage biomeStorage = ((Chunk_v1_18) chunk).getBiomeData().storage;
-            int biomeStorageLen = ByteBufHelper.getByteSize(biomeStorage != null ? biomeStorage.getData().length : 0);
+            int biomeStorageLen = ByteBufHelper.getByteSize(storageLength(biomeStorage, PaletteType.BIOME));
             mojangPleaseFixThisZeroByteSuffixLength += chunkStorageLen + biomeStorageLen;
         }
         return mojangPleaseFixThisZeroByteSuffixLength;
+    }
+
+    private static int storageLength(BaseStorage storage, PaletteType paletteType) {
+        if (storage == null) {
+            return 0;
+        }
+        return BitStorage.expectedLength(storage.getBitsPerEntry(), paletteType.getStorageSize());
     }
 
     @Override

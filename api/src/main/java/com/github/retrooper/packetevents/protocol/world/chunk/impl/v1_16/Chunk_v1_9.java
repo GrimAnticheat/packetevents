@@ -21,9 +21,7 @@ package com.github.retrooper.packetevents.protocol.world.chunk.impl.v1_16;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.stream.NetStreamInput;
-import com.github.retrooper.packetevents.protocol.stream.NetStreamInputWrapper;
 import com.github.retrooper.packetevents.protocol.stream.NetStreamOutput;
-import com.github.retrooper.packetevents.protocol.stream.NetStreamOutputWrapper;
 import com.github.retrooper.packetevents.protocol.world.chunk.BaseChunk;
 import com.github.retrooper.packetevents.protocol.world.chunk.NibbleArray3d;
 import com.github.retrooper.packetevents.protocol.world.chunk.palette.DataPalette;
@@ -84,13 +82,30 @@ public class Chunk_v1_9 implements BaseChunk {
     }
 
     public static Chunk_v1_9 read(PacketWrapper<?> wrapper, boolean hasBlockLight, boolean hasSkyLight) {
-        NetStreamInputWrapper legacyInput = new NetStreamInputWrapper(wrapper);
-        return new Chunk_v1_9(legacyInput, hasBlockLight, hasSkyLight, wrapper.getServerVersion());
+        ServerVersion version = wrapper.getServerVersion();
+        int blockCount = version.isNewerThanOrEquals(ServerVersion.V_1_14)
+                ? wrapper.readShort() : Integer.MAX_VALUE;
+        DataPalette dataPalette = PaletteType.CHUNK.read(wrapper);
+
+        NibbleArray3d blockLight = hasBlockLight ? new NibbleArray3d(wrapper, LIGHT_NIBBLES_SIZE) : null;
+        NibbleArray3d skyLight = hasSkyLight ? new NibbleArray3d(wrapper, LIGHT_NIBBLES_SIZE) : null;
+        return new Chunk_v1_9(blockCount, dataPalette, blockLight, skyLight);
     }
 
     public static void write(PacketWrapper<?> wrapper, Chunk_v1_9 chunk) {
-        NetStreamOutputWrapper legacyOutput = new NetStreamOutputWrapper(wrapper);
-        write(legacyOutput, chunk, wrapper.getServerVersion());
+        ServerVersion version = wrapper.getServerVersion();
+        if (version.isNewerThanOrEquals(ServerVersion.V_1_14)) {
+            wrapper.writeShort(chunk.blockCount);
+        }
+
+        PaletteType.write(wrapper, chunk.dataPalette);
+
+        if (chunk.blockLight != null) {
+            wrapper.writeBytes(chunk.blockLight.getData());
+        }
+        if (chunk.skyLight != null) {
+            wrapper.writeBytes(chunk.skyLight.getData());
+        }
     }
 
     /**

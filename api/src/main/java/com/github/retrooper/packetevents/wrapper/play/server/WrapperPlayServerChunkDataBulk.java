@@ -59,29 +59,22 @@ public class WrapperPlayServerChunkDataBulk extends PacketWrapper<WrapperPlaySer
     }
 
     private void read_1_8() {
-        boolean skylight = readBoolean();
+        boolean hasSkyLight = readBoolean();
         int columns = readVarInt();
         this.x = new int[columns];
         this.z = new int[columns];
         this.chunks = new BaseChunk[columns][];
         this.biomeData = new byte[columns][];
-        NetworkChunkData[] data = new NetworkChunkData[columns];
+        int[] masks = new int[columns];
         for (int column = 0; column < columns; column++) {
             this.x[column] = readInt();
             this.z[column] = readInt();
             int mask = readUnsignedShort();
-            int chunks = Integer.bitCount(mask);
-            int length = (chunks * ((4096 * 2) + 2048)) + (skylight ? chunks * 2048 : 0);
-            byte[] dat = new byte[length];
-            data[column] = new NetworkChunkData(mask, true, skylight, dat);
+            masks[column] = mask;
         }
-        //TODO Fix ChunkDataBulk for 1.8
         for (int column = 0; column < columns; column++) {
-            BitSet mask = BitSet.valueOf(new long[]{data[column].getMask()});
-            // pass wrapper through at the position where the data shold be located
-            BaseChunk[] chunkData = new ChunkReader_v1_8().read(this.user.getDimensionType(), mask,
-                    null, true, skylight, false,
-                    16, data[column].getData().length, this);
+            BitSet mask = BitSet.valueOf(new long[]{masks[column]});
+            BaseChunk[] chunkData = ChunkReader_v1_8.readPayload(mask, hasSkyLight, this);
             this.chunks[column] = chunkData;
             this.biomeData[column] = this.readBytes(16 * 16);
         }
@@ -91,10 +84,28 @@ public class WrapperPlayServerChunkDataBulk extends PacketWrapper<WrapperPlaySer
         // Read packet base data.
         short columns = readShort();
         int deflatedLength = readInt();
-        boolean skylight = readBoolean();
+        boolean hasSkyLight = readBoolean();
         byte[] deflatedBytes = readBytes(deflatedLength);
-        // Inflate chunk data.
-        byte[] inflated = new byte[196864 * columns];
+
+        this.x = new int[columns];
+        this.z = new int[columns];
+        this.chunks = new BaseChunk[columns][];
+        this.biomeData = new byte[columns][];
+        BitSet[] chunkMasks = new BitSet[columns];
+        BitSet[] extendedChunkMasks = new BitSet[columns];
+        int[] payloadLengths = new int[columns];
+        int inflatedLength = 0;
+
+        for (int count = 0; count < columns; count++) {
+            this.x[count] = readInt();
+            this.z[count] = readInt();
+            chunkMasks[count] = BitSet.valueOf(new long[]{readUnsignedShort()});
+            extendedChunkMasks[count] = BitSet.valueOf(new long[]{readUnsignedShort()});
+            payloadLengths[count] = ChunkReader_v1_7.getDataLength(chunkMasks[count], extendedChunkMasks[count], false, hasSkyLight);
+            inflatedLength += payloadLengths[count] + 256;
+        }
+
+        byte[] inflated = new byte[inflatedLength];
         Inflater inflater = new Inflater();
         inflater.setInput(deflatedBytes, 0, deflatedLength);
         try {
@@ -108,53 +119,21 @@ public class WrapperPlayServerChunkDataBulk extends PacketWrapper<WrapperPlaySer
 
         Object originalBuffer = this.buffer;
         Object inflatedBuf = UnpooledByteBufAllocationHelper.wrappedBuffer(inflated);
+        this.buffer = inflatedBuf;
 
-        this.x = new int[columns];
-        this.z = new int[columns];
-        this.chunks = new BaseChunk[columns][];
-        this.biomeData = new byte[columns][];
-        // Cycle through and read all columns.
-        for (int count = 0; count < columns; count++) {
-            // Read column-specific data.
-            int x = readInt();
-            int z = readInt();
-            BitSet chunkMask = BitSet.valueOf(new long[]{readUnsignedShort()});
-            BitSet extendedChunkMask = BitSet.valueOf(new long[]{readUnsignedShort()});
+        try {
+            for (int count = 0; count < columns; count++) {
+                BaseChunk[] chunkData = ChunkReader_v1_7.readPayload(chunkMasks[count], extendedChunkMasks[count],
+                        hasSkyLight, this);
+                byte[] biomeDataBytes = this.readBytes(16 * 16);
 
-            // Determine column data length.
-            int chunks = 0;
-            int extended = 0;
-            for (int ch = 0; ch < 16; ch++) {
-                chunks += chunkMask.get(ch) ? 1 : 0;
-                extended += extendedChunkMask.get(ch) ? 1 : 0;
+                this.chunks[count] = chunkData;
+                this.biomeData[count] = biomeDataBytes;
             }
-
-            int length = (8192 * chunks + 256) + (2048 * extended);
-            if (skylight) {
-                length += 2048 * chunks;
-            }
-
-            // temporarily replace backing buffer
-            this.buffer = inflatedBuf;
-
-            // read data into chunks and biome data from inflated buffer
-            // BitSet set, BitSet sevenExtendedMask, boolean fullChunk, boolean hasSkyLight, boolean checkForSky, int chunkSize, byte[] data, NetStreamInput dataIn
-            BaseChunk[] chunkData = new ChunkReader_v1_7().read(user.getDimensionType(), chunkMask,
-                    extendedChunkMask, true, skylight, false,
-                    16, length, this);
-            byte[] biomeDataBytes = this.readBytes(16 * 16); // let's hope the server knows the right data length
-
-            // switch back backing buffer
+        } finally {
             this.buffer = originalBuffer;
-
-            this.x[count] = x;
-            this.z[count] = z;
-            this.chunks[count] = chunkData;
-            this.biomeData[count] = biomeDataBytes;
+            ByteBufHelper.release(inflatedBuf);
         }
-
-        // release wrapped inflated buffer
-        ByteBufHelper.release(inflatedBuf);
     }
 
     @Override
@@ -176,10 +155,11 @@ public class WrapperPlayServerChunkDataBulk extends PacketWrapper<WrapperPlaySer
 
     private void write_1_8() {
         boolean skylight = false;
-        NetworkChunkData[] data = new NetworkChunkData[this.chunks.length];
+        NetworkChunkData[] dataInfo = new NetworkChunkData[this.chunks.length];
         for (int column = 0; column < this.chunks.length; column++) {
-            data[column] = ChunkReader_v1_8.chunksToData((Chunk_v1_8[]) this.chunks[column], this.biomeData[column]);
-            if (data[column].hasSkyLight()) {
+            Chunk_v1_8[] columnChunks = (Chunk_v1_8[]) this.chunks[column];
+            dataInfo[column] = ChunkReader_v1_8.prepareChunkData(columnChunks, this.biomeData[column]);
+            if (dataInfo[column].hasSkyLight()) {
                 skylight = true;
             }
         }
@@ -189,11 +169,11 @@ public class WrapperPlayServerChunkDataBulk extends PacketWrapper<WrapperPlaySer
         for (int column = 0; column < this.x.length; column++) {
             writeInt(this.x[column]);
             writeInt(this.z[column]);
-            writeShort(data[column].getMask());
+            writeShort(dataInfo[column].getMask());
         }
 
         for (int column = 0; column < this.x.length; column++) {
-            writeBytes(data[column].getData());
+            ChunkReader_v1_8.writePayload(this, (Chunk_v1_8[]) this.chunks[column], this.biomeData[column], dataInfo[column]);
         }
     }
 
@@ -201,31 +181,26 @@ public class WrapperPlayServerChunkDataBulk extends PacketWrapper<WrapperPlaySer
         // Prepare chunk data arrays.
         int[] chunkMask = new int[this.chunks.length];
         int[] extendedChunkMask = new int[this.chunks.length];
-        // Determine values to be written by cycling through columns.
-        int pos = 0;
-        byte[] bytes = new byte[0];
+        NetworkChunkData[] dataInfo = new NetworkChunkData[this.chunks.length];
         boolean skylight = false;
+        int length = 0;
 
         for (int count = 0; count < this.chunks.length; ++count) {
             BaseChunk[] column = this.chunks[count];
-            // Convert chunks into network data.
-            NetworkChunkData data = ChunkReader_v1_7.chunksToData((Chunk_v1_7[]) column, this.biomeData[count]);
-            if (bytes.length < pos + data.getData().length) {
-                byte[] newArray = new byte[pos + data.getData().length];
-                System.arraycopy(bytes, 0, newArray, 0, bytes.length);
-                bytes = newArray;
-            }
-
-            if (data.hasSkyLight()) {
+            dataInfo[count] = ChunkReader_v1_7.prepareChunkData((Chunk_v1_7[]) column, this.biomeData[count]);
+            if (dataInfo[count].hasSkyLight()) {
                 skylight = true;
             }
+            length += dataInfo[count].getDataLength();
+            chunkMask[count] = dataInfo[count].getMask();
+            extendedChunkMask[count] = dataInfo[count].getExtendedChunkMask();
+        }
 
-            // Copy column data into data array.
-            System.arraycopy(data.getData(), 0, bytes, pos, data.getData().length);
-            pos += data.getData().length;
-            // Set column-specific values.
-            chunkMask[count] = data.getMask();
-            extendedChunkMask[count] = data.getExtendedChunkMask();
+        byte[] bytes = new byte[length];
+        int pos = 0;
+        for (int count = 0; count < this.chunks.length; ++count) {
+            ChunkReader_v1_7.writePayload(bytes, pos, (Chunk_v1_7[]) this.chunks[count], this.biomeData[count], dataInfo[count]);
+            pos += dataInfo[count].getDataLength();
         }
 
         // Deflate chunk data.
@@ -244,9 +219,7 @@ public class WrapperPlayServerChunkDataBulk extends PacketWrapper<WrapperPlaySer
         writeShort(this.chunks.length);
         writeInt(deflatedLength);
         writeBoolean(skylight);
-        for (int i = 0; i < deflatedLength; i++) {
-            writeByte(deflatedData[i]);
-        }
+        ByteBufHelper.writeBytes(this.buffer, deflatedData, 0, deflatedLength);
 
         for (int count = 0; count < this.chunks.length; ++count) {
             writeInt(this.x[count]);

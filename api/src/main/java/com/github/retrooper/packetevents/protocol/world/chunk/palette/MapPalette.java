@@ -36,13 +36,12 @@ public class MapPalette implements Palette {
 
     private final int bits;
     private final int[] idToState;
-    private final Int2IntHashMap stateToId;
+    private Int2IntHashMap stateToId;
     private int nextId = 0;
 
     public MapPalette(int bitsPerEntry) {
         this.bits = bitsPerEntry;
         this.idToState = new int[1 << bitsPerEntry];
-        this.stateToId = new Int2IntHashMap(1 << bitsPerEntry);
     }
 
     @Deprecated
@@ -51,9 +50,7 @@ public class MapPalette implements Palette {
 
         int paletteLength = in.readVarInt();
         for (int i = 0; i < paletteLength; i++) {
-            int state = in.readVarInt();
-            this.idToState[i] = state;
-            this.stateToId.putIfAbsent(state, i);
+            this.idToState[i] = in.readVarInt();
         }
         this.nextId = paletteLength;
     }
@@ -63,9 +60,7 @@ public class MapPalette implements Palette {
 
         int paletteLength = wrapper.readVarInt();
         for (int i = 0; i < paletteLength; i++) {
-            int state = wrapper.readVarInt();
-            this.idToState[i] = state;
-            this.stateToId.putIfAbsent(state, i);
+            this.idToState[i] = wrapper.readVarInt();
         }
         this.nextId = paletteLength;
     }
@@ -77,11 +72,12 @@ public class MapPalette implements Palette {
 
     @Override
     public int stateToId(int state) {
-        int id = this.stateToId.get(state);
+        Int2IntHashMap stateToId = this.stateToId();
+        int id = stateToId.get(state);
         if (id == EMPTY_VALUE && this.size() < this.idToState.length) {
             id = this.nextId++;
             this.idToState[id] = state;
-            this.stateToId.put(state, id);
+            stateToId.put(state, id);
         }
         return id;
     }
@@ -98,5 +94,17 @@ public class MapPalette implements Palette {
     @Override
     public int getBits() {
         return this.bits;
+    }
+
+    private Int2IntHashMap stateToId() {
+        Int2IntHashMap stateToId = this.stateToId;
+        if (stateToId == null) {
+            stateToId = new Int2IntHashMap(1 << this.bits);
+            for (int i = 0; i < this.nextId; i++) {
+                stateToId.putIfAbsent(this.idToState[i], i);
+            }
+            this.stateToId = stateToId;
+        }
+        return stateToId;
     }
 }

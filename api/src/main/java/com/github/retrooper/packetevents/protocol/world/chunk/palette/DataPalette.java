@@ -20,9 +20,11 @@ package com.github.retrooper.packetevents.protocol.world.chunk.palette;
 
 import com.github.retrooper.packetevents.protocol.stream.NetStreamInput;
 import com.github.retrooper.packetevents.protocol.stream.NetStreamOutput;
+import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.world.chunk.storage.BaseStorage;
 import com.github.retrooper.packetevents.protocol.world.chunk.storage.BitStorage;
 import com.github.retrooper.packetevents.protocol.world.chunk.storage.LegacyFlexibleStorage;
+import com.github.retrooper.packetevents.protocol.world.chunk.storage.ZeroBitStorage;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 
 public class DataPalette {
@@ -105,6 +107,37 @@ public class DataPalette {
         return new DataPalette(palette, storage, paletteType);
     }
 
+    public static DataPalette read(
+            PacketWrapper<?> wrapper, PaletteType paletteType,
+            boolean allowSingletonPalette, boolean lengthPrefix,
+            boolean zeroStorage
+    ) {
+        int bitsPerEntry = wrapper.readByte();
+        Palette palette = readPalette(paletteType, bitsPerEntry, wrapper, allowSingletonPalette);
+        BaseStorage storage;
+        if (!(palette instanceof SingletonPalette)) {
+            int dataLength = lengthPrefix ? wrapper.readVarInt() : BitStorage.expectedLength(bitsPerEntry, paletteType.getStorageSize());
+            int expectedLength = BitStorage.expectedLength(bitsPerEntry, paletteType.getStorageSize());
+            if (dataLength != expectedLength) {
+                throw new IllegalArgumentException("Expected " + expectedLength + " longs but got " + dataLength + " longs");
+            }
+            if (zeroStorage && palette.size() == 1) {
+                ByteBufHelper.skipBytes(wrapper.buffer, dataLength << 3);
+                storage = new ZeroBitStorage(bitsPerEntry, paletteType.getStorageSize());
+            } else {
+                long[] data = wrapper.readLongArray(dataLength);
+                storage = new BitStorage(bitsPerEntry, paletteType.getStorageSize(), data);
+            }
+        } else {
+            if (lengthPrefix) {
+                ByteBufHelper.skipBytes(wrapper.buffer, wrapper.readVarInt() << 3);
+            }
+            storage = null;
+        }
+
+        return new DataPalette(palette, storage, paletteType);
+    }
+
     /**
      * @deprecated use {@link PaletteType#write(PacketWrapper, DataPalette)} instead
      */
@@ -144,6 +177,42 @@ public class DataPalette {
         out.writeLongs(data);
     }
 
+    public static void write(PacketWrapper<?> wrapper, DataPalette palette, boolean lengthPrefix) {
+        if (palette.palette instanceof SingletonPalette) {
+            wrapper.writeByte(0); // Bits per entry
+            wrapper.writeVarInt(palette.palette.idToState(0)); // data value
+            if (lengthPrefix) {
+                wrapper.writeVarInt(0); // Data length
+            }
+            return;
+        }
+
+        wrapper.writeByte(palette.storage.getBitsPerEntry());
+
+        if (!(palette.palette instanceof GlobalPalette)) {
+            int paletteLength = palette.palette.size();
+            wrapper.writeVarInt(paletteLength);
+            for (int i = 0; i < paletteLength; i++) {
+                wrapper.writeVarInt(palette.palette.idToState(i));
+            }
+        }
+
+        if (palette.storage instanceof ZeroBitStorage && !((ZeroBitStorage) palette.storage).isMaterialized()) {
+            int dataLength = BitStorage.expectedLength(palette.storage.getBitsPerEntry(), palette.paletteType.getStorageSize());
+            if (lengthPrefix) {
+                wrapper.writeVarInt(dataLength);
+            }
+            ByteBufHelper.writeZero(wrapper.buffer, dataLength << 3);
+            return;
+        }
+
+        long[] data = palette.storage.getData();
+        if (lengthPrefix) {
+            wrapper.writeVarInt(data.length);
+        }
+        ByteBufHelper.writeLongs(wrapper.buffer, data, 0, data.length);
+    }
+
     /**
      * @deprecated use {@link PaletteType#read(PacketWrapper)} instead
      */
@@ -152,6 +221,13 @@ public class DataPalette {
         int bitsPerEntry = Math.max(4, in.readByte() & 0xff);
         Palette palette = readPalette(PaletteType.CHUNK, bitsPerEntry, in, false);
         BaseStorage storage = new LegacyFlexibleStorage(bitsPerEntry, in.readLongs(in.readVarInt()));
+        return new DataPalette(palette, storage, PaletteType.CHUNK);
+    }
+
+    public static DataPalette readLegacy(PacketWrapper<?> wrapper) {
+        int bitsPerEntry = Math.max(4, wrapper.readByte() & 0xff);
+        Palette palette = readPalette(PaletteType.CHUNK, bitsPerEntry, wrapper, false);
+        BaseStorage storage = new LegacyFlexibleStorage(bitsPerEntry, wrapper.readLongArray());
         return new DataPalette(palette, storage, PaletteType.CHUNK);
     }
 
@@ -209,6 +285,25 @@ public class DataPalette {
             return new ListPalette(bits, in);
         } else if (bitsPerEntry <= paletteType.getMaxBitsPerEntryForMap()) {
             return new MapPalette(bitsPerEntry, in);
+        } else {
+            return GlobalPalette.INSTANCE;
+        }
+    }
+
+    private static Palette readPalette(
+            PaletteType paletteType,
+            int bitsPerEntry,
+            PacketWrapper<?> wrapper,
+            boolean allowSingletonPalette
+    ) {
+        if (bitsPerEntry == 0 && allowSingletonPalette) {
+            return new SingletonPalette(wrapper);
+        } else if (bitsPerEntry <= paletteType.getMaxBitsPerEntryForList()) {
+            // vanilla forces a blockstate-list-palette to always be the maximum size
+            int bits = paletteType.isForceMaxListPaletteSize() ? paletteType.getMaxBitsPerEntryForList() : bitsPerEntry;
+            return new ListPalette(bits, wrapper);
+        } else if (bitsPerEntry <= paletteType.getMaxBitsPerEntryForMap()) {
+            return new MapPalette(bitsPerEntry, wrapper);
         } else {
             return GlobalPalette.INSTANCE;
         }

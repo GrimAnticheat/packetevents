@@ -21,6 +21,7 @@ package io.github.retrooper.packetevents.netty.buffer;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufOperator;
 import io.netty.buffer.ByteBuf;
 
+import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
 public class ByteBufOperatorModernImpl implements ByteBufOperator {
@@ -80,6 +81,23 @@ public class ByteBufOperatorModernImpl implements ByteBufOperator {
     }
 
     @Override
+    public int readShortsLE(Object buffer, short[] destination, int destinationIndex, int length) {
+        ByteBuf byteBuf = (ByteBuf) buffer;
+        int readableShorts = Math.min(length, byteBuf.readableBytes() >>> 1);
+        int readerIndex = byteBuf.readerIndex();
+        if (readableShorts != 0 && byteBuf.nioBufferCount() == 1) {
+            byteBuf.nioBuffer(readerIndex, readableShorts << 1).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer()
+                    .get(destination, destinationIndex, readableShorts);
+        } else {
+            for (int i = 0; i < readableShorts; i++) {
+                destination[destinationIndex + i] = byteBuf.getShortLE(readerIndex + (i << 1));
+            }
+        }
+        byteBuf.readerIndex(readerIndex + (readableShorts << 1));
+        return readableShorts;
+    }
+
+    @Override
     public int readMedium(Object buffer) {
         return ((ByteBuf)buffer).readMedium();
     }
@@ -99,6 +117,22 @@ public class ByteBufOperatorModernImpl implements ByteBufOperator {
         return ((ByteBuf)buffer).readLong();
     }
 
+    @Override
+    public int readLongs(Object buffer, long[] destination, int destinationIndex, int length) {
+        ByteBuf byteBuf = (ByteBuf) buffer;
+        int readableLongs = Math.min(length, byteBuf.readableBytes() >>> 3);
+        int readerIndex = byteBuf.readerIndex();
+        if (readableLongs != 0 && byteBuf.nioBufferCount() == 1) {
+            byteBuf.nioBuffer(readerIndex, readableLongs << 3).asLongBuffer()
+                    .get(destination, destinationIndex, readableLongs);
+        } else {
+            for (int i = 0; i < readableLongs; i++) {
+                destination[destinationIndex + i] = byteBuf.getLong(readerIndex + (i << 3));
+            }
+        }
+        byteBuf.readerIndex(readerIndex + (readableLongs << 3));
+        return readableLongs;
+    }
 
     @Override
     public void writeByte(Object buffer, int value) {
@@ -116,6 +150,23 @@ public class ByteBufOperatorModernImpl implements ByteBufOperator {
     }
 
     @Override
+    public void writeShortsLE(Object buffer, short[] source, int sourceIndex, int length) {
+        ByteBuf byteBuf = (ByteBuf) buffer;
+        int bytes = length << 1;
+        byteBuf.ensureWritable(bytes);
+        int writerIndex = byteBuf.writerIndex();
+        if (length != 0 && byteBuf.nioBufferCount() == 1) {
+            byteBuf.nioBuffer(writerIndex, bytes).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer()
+                    .put(source, sourceIndex, length);
+        } else {
+            for (int i = 0; i < length; i++) {
+                byteBuf.setShortLE(writerIndex + (i << 1), source[sourceIndex + i]);
+            }
+        }
+        byteBuf.writerIndex(writerIndex + bytes);
+    }
+
+    @Override
     public void writeMedium(Object buffer, int value) {
         ((ByteBuf)buffer).writeMedium(value);
     }
@@ -128,6 +179,23 @@ public class ByteBufOperatorModernImpl implements ByteBufOperator {
     @Override
     public void writeLong(Object buffer, long value) {
         ((ByteBuf)buffer).writeLong(value);
+    }
+
+    @Override
+    public void writeLongs(Object buffer, long[] source, int sourceIndex, int length) {
+        ByteBuf byteBuf = (ByteBuf) buffer;
+        int bytes = length << 3;
+        byteBuf.ensureWritable(bytes);
+        int writerIndex = byteBuf.writerIndex();
+        if (length != 0 && byteBuf.nioBufferCount() == 1) {
+            byteBuf.nioBuffer(writerIndex, bytes).asLongBuffer()
+                    .put(source, sourceIndex, length);
+        } else {
+            for (int i = 0; i < length; i++) {
+                byteBuf.setLong(writerIndex + (i << 3), source[sourceIndex + i]);
+            }
+        }
+        byteBuf.writerIndex(writerIndex + bytes);
     }
 
     @Override
@@ -203,6 +271,11 @@ public class ByteBufOperatorModernImpl implements ByteBufOperator {
     @Override
     public Object writeBytes(Object buffer, byte[] bytes, int offset, int length) {
         return ((ByteBuf)buffer).writeBytes(bytes, offset, length);
+    }
+
+    @Override
+    public Object writeZero(Object buffer, int length) {
+        return ((ByteBuf) buffer).writeZero(length);
     }
 
     @Override
