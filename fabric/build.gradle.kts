@@ -1,5 +1,6 @@
 import me.modmuss50.mpp.ModPublishExtension
 import net.fabricmc.loom.task.RemapJarTask
+import net.fabricmc.loom.task.prod.ServerProductionRunTask
 
 // Aggregator: JiJ-nests fabric-intermediary + fabric-official + fabric-common into the
 // published packetevents-fabric jar. Fabric Loader gates each nested variant by its
@@ -55,6 +56,19 @@ loom {
 tasks {
     withType<JavaCompile> {
         options.release = 17
+    }
+
+    register<ServerProductionRunTask>("prodServer") {
+        // always run this task if asked to
+        outputs.upToDateWhen { false }
+
+        minecraftVersion = "26.2-rc-2"
+        loaderVersion = libs.versions.fabric.loader
+        runDir = project.layout.projectDirectory.dir("run").dir(minecraftVersion.get())
+
+        javaLauncher = project.javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(25)
+        }
     }
 
     remapJar {
