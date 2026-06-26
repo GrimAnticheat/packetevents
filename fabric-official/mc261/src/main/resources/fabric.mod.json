@@ -16,7 +16,7 @@
   ],
   "accessWidener": "packetevents.accesswidener",
   "depends": {
-    "minecraft": ">=26.1.2 <26.2",
+    "minecraft": ">=26.1.2 <26.3",
     "java": ">=25",
     "fabricloader": ">=0.19"
   }
