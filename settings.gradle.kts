@@ -28,21 +28,11 @@ plugins {
 rootProject.name = "packetevents"
 include("api")
 include("netty-common")
+
 // Platform modules
 include("spigot")
-include("bungeecord")
-include("velocity")
-include("sponge")
-include("fabric")
-include("fabric-common")
-include("fabric-intermediary")
-include(":fabric-intermediary:mc1140")
-include(":fabric-intermediary:mc1194")
-include(":fabric-intermediary:mc1202")
-include(":fabric-intermediary:mc1211")
-include(":fabric-intermediary:mc1216")
-include("fabric-official")
-include(":fabric-official:mc261")
+
+
 // Patch modules
 include(":patch:adventure-text-serializer-gson")
 include(":patch:adventure-text-serializer-legacy")

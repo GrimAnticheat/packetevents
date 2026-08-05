@@ -27,7 +27,7 @@ public class ByteBufInputStream extends InputStream implements DataInput {
     private final int startIndex;
     private final int endIndex;
     private final boolean releaseOnClose;
-    private final StringBuilder lineBuf;
+    private StringBuilder lineBuf;
     private boolean closed;
 
     public ByteBufInputStream(Object buffer) {
@@ -43,7 +43,6 @@ public class ByteBufInputStream extends InputStream implements DataInput {
     }
 
     public ByteBufInputStream(Object buffer, int maxLength, boolean releaseOnClose) {
-        this.lineBuf = new StringBuilder();
         if (buffer == null) {
             throw new NullPointerException("buffer");
         } else if (maxLength < 0) {
@@ -166,7 +165,12 @@ public class ByteBufInputStream extends InputStream implements DataInput {
     }
 
     public String readLine() throws IOException {
-        this.lineBuf.setLength(0);
+        StringBuilder lineBuf = this.lineBuf;
+        if (lineBuf == null) {
+            this.lineBuf = lineBuf = new StringBuilder();
+        } else {
+            lineBuf.setLength(0);
+        }
 
         while (ByteBufHelper.isReadable(buffer)) {
             int c = ByteBufHelper.readUnsignedByte(buffer);
@@ -177,13 +181,13 @@ public class ByteBufInputStream extends InputStream implements DataInput {
                         ByteBufHelper.skipBytes(buffer, 1);
                     }
                 case 10:
-                    return this.lineBuf.toString();
+                    return lineBuf.toString();
                 default:
-                    this.lineBuf.append((char) c);
+                    lineBuf.append((char) c);
             }
         }
 
-        return this.lineBuf.length() > 0 ? this.lineBuf.toString() : null;
+        return lineBuf.length() > 0 ? lineBuf.toString() : null;
     }
 
     public long readLong() throws IOException {

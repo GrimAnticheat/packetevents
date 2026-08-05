@@ -165,7 +165,7 @@ public class DefaultNBTSerializer extends NBTSerializer<DataInput, DataOutput> {
                         while ((valueType = readTagType(limiter, stream)) != NBTType.END) {
                             String name = readString(limiter, stream);
                             NBT tag = readTag(limiter, stream, valueType);
-                            if (!compound.getTags().containsKey(name)) {
+                            if (!compound.contains(name)) {
                                 limiter.increment(12 + OBJECT_HEADER_BYTES + Integer.BYTES + OBJECT_REF_BYTES + OBJECT_REF_BYTES + OBJECT_REF_BYTES);
                             }
                             compound.setTag(name, tag);
