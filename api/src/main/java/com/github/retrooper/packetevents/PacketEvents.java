@@ -18,6 +18,7 @@
 
 package com.github.retrooper.packetevents;
 
+import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import org.jetbrains.annotations.ApiStatus;
 
 public final class PacketEvents {
@@ -34,5 +35,6 @@ public final class PacketEvents {
 
     public static void setAPI(PacketEventsAPI<?> api) {
         API = api;
+        ByteBufHelper.clearOperatorCache();
     }
 }

@@ -258,7 +258,7 @@ public class WrappedBlockState {
     public static NBT encode(WrappedBlockState state, ClientVersion version) {
         String stateTypeStr = state.type.getMapped().getName().toString();
         WrappedBlockState defaultState;
-        if (state.getInternalData().isEmpty() || state.equals(defaultState = getDefaultState(version, state.type))) {
+        if (state.getInternalData().isEmpty() || state.equals(defaultState = getDefaultState(version, state.type, false))) {
             return new NBTString(stateTypeStr);
         }
 
@@ -558,7 +558,7 @@ public class WrappedBlockState {
     @Override
     public int hashCode() {
         // Don't hash the global ID, it is determined by the other data types
-        return Objects.hash(type, data);
+        return 31 * (31 + Objects.hashCode(type)) + Objects.hashCode(data);
     }
 
     public StateType getType() {

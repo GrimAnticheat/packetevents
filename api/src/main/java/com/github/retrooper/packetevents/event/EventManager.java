@@ -20,6 +20,7 @@ package com.github.retrooper.packetevents.event;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.exception.InvalidHandshakeException;
+import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -80,6 +81,15 @@ public class EventManager {
      * @param postCallListenerAction The action to be run after all the listeners have finished processing
      */
     public void callEvent(PacketEvent event, @Nullable Runnable postCallListenerAction, boolean preVia) {
+        Object protocolBuffer = null;
+        int initialReaderIndex = -1;
+        if (event instanceof ProtocolPacketEvent) {
+            protocolBuffer = ((ProtocolPacketEvent) event).getByteBuf();
+            if (protocolBuffer != null) {
+                initialReaderIndex = ByteBufHelper.readerIndex(protocolBuffer);
+            }
+        }
+
         for (PacketListenerCommon listener : listeners) {
             try {
                 if (listener.isPreVia() == preVia)
@@ -92,6 +102,9 @@ public class EventManager {
             }
             if (postCallListenerAction != null) {
                 postCallListenerAction.run();
+            }
+            if (protocolBuffer != null && initialReaderIndex != -1) {
+                ByteBufHelper.readerIndex(protocolBuffer, initialReaderIndex);
             }
         }
         // For performance reasons, we don't want to re-encode the packet if it's not needed.

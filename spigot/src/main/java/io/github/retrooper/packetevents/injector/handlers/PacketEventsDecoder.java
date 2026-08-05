@@ -20,7 +20,6 @@ package io.github.retrooper.packetevents.injector.handlers;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.exception.PacketProcessException;
-import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.ExceptionUtil;
@@ -65,11 +64,14 @@ public class PacketEventsDecoder extends MessageToMessageDecoder<ByteBuf> {
             }
 
             PacketEventsImplHelper.handleServerBoundPacket(ctx.channel(), user, player, input, !preViaVersion);
-            out.add(ByteBufHelper.retain(input));
+            out.add(input.retain());
         } catch (Throwable e) {
             // We must be sure all the exceptions caused by our handlers are PacketProcessExceptions
             // In the case we have thrown an exception that is not a PacketProcessException, let's wrap it in order to
             // allow exceptionCaught to handle it properly
+            if (e instanceof Error) {
+                throw (Error) e;
+            }
             if (ExceptionUtil.isException(e, PacketProcessException.class)) {
                 throw e;
             } else {
@@ -104,7 +106,7 @@ public class PacketEventsDecoder extends MessageToMessageDecoder<ByteBuf> {
                 String username = user != null && user.getProfile().getName() != null ? user.getProfile().getName() : player != null ? player.getName() : "null";
 
                 PacketEvents.getAPI().getLogManager().warn("An error occurred while processing a packet from "
-                        + user.getProfile().getName() +
+                        + username +
                         " (state: " + state +
                         ", clientVersion: " + clientVersion +
                         ", serverVersion: " + PacketEvents.getAPI().getServerManager().getVersion().getReleaseName() +
