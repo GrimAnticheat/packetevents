@@ -36,13 +36,8 @@ public class ItemLore {
         this.lines = lines;
     }
     public static ItemLore read(PacketWrapper<?> wrapper) {
-        if (PacketEvents.getAPI().getSettings().isResolveLoreAndName()) {
-            List<Component> lines = wrapper.readList(PacketWrapper::readComponent);
-            return new ItemLore(lines);
-        } else {
-            wrapper.readList(PacketWrapper::readComponent, 0);
-            return EMPTY;
-        }
+        List<Component> lines = wrapper.readList(PacketWrapper::readComponent);
+        return new ItemLore(lines);
     }
 
     public static void write(PacketWrapper<?> wrapper, ItemLore lore) {

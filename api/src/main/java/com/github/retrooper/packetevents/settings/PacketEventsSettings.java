@@ -41,10 +41,6 @@ public class PacketEventsSettings {
     private boolean kickOnPacketExceptionEnabled = true;
     private boolean kickIfTerminated = true;
     /*
-    * Sometimes we don't need to decode item's lore and name.
-     */
-    private boolean resolveLoreAndName;
-    /*
      * By default, in spigot module, we decode packets based on server version if ViaVersion is present,
      * setting this to true will force PacketEvents to use the client version translation in order to decoder packets
      * before they reach ViaVersion
@@ -188,18 +184,6 @@ public class PacketEventsSettings {
     }
 
     /**
-     * Should packetevents decode item's lore and name?
-     *
-     * @param resolveLoreAndName boolean
-     * @return Setting instance.
-     */
-    @ApiStatus.Internal
-    public PacketEventsSettings resolveLoreAndName(boolean resolveLoreAndName) {
-        this.resolveLoreAndName = resolveLoreAndName;
-        return this;
-    }
-
-    /**
      * Should the packet listeners be read only?
      *
      * @return Getter for {@link #defaultReencode}
@@ -303,12 +287,4 @@ public class PacketEventsSettings {
         return timestampMode;
     }
 
-    /**
-     * Get `resolveLoreAndName`
-     *
-     * @return `resolveLoreAndName`
-     */
-    public boolean isResolveLoreAndName() {
-        return resolveLoreAndName;
-    }
 }
