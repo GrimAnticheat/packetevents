@@ -1,5 +1,6 @@
 plugins {
-    packetevents.`publish-conventions`
+    packetevents.`publish-conventions`;
+    id("maven-publish")
 }
 
 // properties are all set as string, convert to boolean
@@ -64,4 +65,19 @@ allprojects {
             archiveVersion = rootProject.ext["artifactVersion"] as String
         }
     }
+    apply(plugin = "maven-publish")
+
+    publishing {
+        repositories {
+            maven {
+                name = "hezhong-repository"
+                url =
+                    uri("https://mvn.hezhongkj.top/${if (rootProject.ext["snapshot"] == true) "snapshots" else "releases"}")
+                credentials(PasswordCredentials::class)
+            }
+        }
+    }
 }
+
+
+

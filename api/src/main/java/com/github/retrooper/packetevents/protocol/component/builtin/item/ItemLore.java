@@ -40,6 +40,7 @@ public class ItemLore {
             List<Component> lines = wrapper.readList(PacketWrapper::readComponent);
             return new ItemLore(lines);
         } else {
+            wrapper.readList(PacketWrapper::readComponent, 0);
             return EMPTY;
         }
     }
