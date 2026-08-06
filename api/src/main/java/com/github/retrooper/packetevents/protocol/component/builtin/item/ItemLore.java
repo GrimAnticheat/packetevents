@@ -18,6 +18,7 @@
 
 package com.github.retrooper.packetevents.protocol.component.builtin.item;
 
+import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import net.kyori.adventure.text.Component;
 
@@ -34,10 +35,13 @@ public class ItemLore {
     public ItemLore(List<Component> lines) {
         this.lines = lines;
     }
-
     public static ItemLore read(PacketWrapper<?> wrapper) {
-        List<Component> lines = wrapper.readList(PacketWrapper::readComponent);
-        return new ItemLore(lines);
+        if (PacketEvents.getAPI().getSettings().isResolveLoreAndName()) {
+            List<Component> lines = wrapper.readList(PacketWrapper::readComponent);
+            return new ItemLore(lines);
+        } else {
+            return EMPTY;
+        }
     }
 
     public static void write(PacketWrapper<?> wrapper, ItemLore lore) {
