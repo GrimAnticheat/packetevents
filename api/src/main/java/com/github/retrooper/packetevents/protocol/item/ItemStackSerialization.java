@@ -128,16 +128,68 @@ public final class ItemStackSerialization {
     }
 
     /**
+     * Resolves the item id used by the pre-1.13 packet format for the given item type.
+     * <p>
+     * Items that were split up into separate types in 1.13 (colored variants, beds, dyes, ...)
+     * are stored in the 1.13 mappings as {@code base-id * 16 + data}, which allows resolving
+     * their pre-1.13 equivalent item id (e.g. {@code gray_stained_glass_pane} → the base
+     * {@code stained_glass_pane} id 160). If no legacy id can be resolved, -1 is returned.
+     *
+     * @param type    the item type
+     * @param version the target legacy version
+     * @return the legacy item id, or -1 if the type has no pre-1.13 representation
+     */
+    public static int getLegacyItemId(ItemType type, ClientVersion version) {
+        if (!type.isRegistered()) {
+            return -1;
+        }
+        int typeId = type.getId(version);
+        if (typeId <= 0) {
+            int modernId = type.getId(ClientVersion.V_1_13);
+            if (modernId > 0) {
+                typeId = modernId / 16;
+            }
+        }
+        return typeId;
+    }
+
+    /**
+     * Resolves the item data (damage/color) used by the pre-1.13 packet format for the given
+     * item type and stack.
+     * <p>
+     * If the stack doesn't carry explicit legacy data, the data is derived from the type's
+     * 1.13 combined id ({@code base-id * 16 + data}), so e.g. {@code gray_stained_glass_pane}
+     * resolves to the damage value 7.
+     *
+     * @param type              the item type
+     * @param currentLegacyData the stack's legacy data, or a negative value if unset
+     * @return the legacy item data, guaranteed to be >= 0
+     */
+    public static int getLegacyItemData(ItemType type, int currentLegacyData) {
+        if (currentLegacyData >= 0) {
+            return currentLegacyData;
+        }
+        if (type.isRegistered()) {
+            int modernId = type.getId(ClientVersion.V_1_13);
+            if (modernId > 0) {
+                return modernId % 16;
+            }
+        }
+        return Math.max(0, currentLegacyData);
+    }
+
+    /**
      * Removed with 1.20.5
      */
     private static void writeLegacy(PacketWrapper<?> wrapper, ItemStack stack) {
         if (wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_13_2)) {
-            int typeId = stack.isEmpty() ? -1 : stack.getType().getId(wrapper.getServerVersion().toClientVersion());
+            ClientVersion version = wrapper.getServerVersion().toClientVersion();
+            int typeId = stack.isEmpty() ? -1 : getLegacyItemId(stack.getType(), version);
             wrapper.writeShort(typeId);
             if (typeId != -1) {
                 wrapper.writeByte(stack.getAmount());
                 if (wrapper.getServerVersion().isOlderThan(ServerVersion.V_1_13)) {
-                    wrapper.writeShort(stack.getLegacyData());
+                    wrapper.writeShort(getLegacyItemData(stack.getType(), stack.getLegacyData()));
                 }
                 wrapper.writeNBT(stack.getNBT());
             }

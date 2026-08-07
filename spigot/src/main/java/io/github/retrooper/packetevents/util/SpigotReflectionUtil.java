@@ -23,6 +23,7 @@ import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.netty.buffer.UnpooledByteBufAllocationHelper;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
+import com.github.retrooper.packetevents.protocol.item.ItemStackSerialization;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleType;
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes;
@@ -185,7 +186,10 @@ public final class SpigotReflectionUtil {
         GET_MOB_EFFECT_LIST_ID_METHOD = Reflection.getMethod(MOB_EFFECT_LIST_CLASS, V_1_19_OR_HIGHER ? "g" : "getId", 0);
         GET_MOB_EFFECT_LIST_BY_ID_METHOD = Reflection.getMethod(MOB_EFFECT_LIST_CLASS, V_1_19_OR_HIGHER ? "a" : "fromId", 0);
         GET_ITEM_ID_METHOD = Reflection.getMethod(NMS_ITEM_CLASS, V_1_19_OR_HIGHER ? "g" : "getId", 0);
-        GET_ITEM_BY_ID_METHOD = Reflection.getMethod(NMS_ITEM_CLASS, NMS_ITEM_CLASS, 0);
+        GET_ITEM_BY_ID_METHOD = Reflection.getMethodExact(NMS_ITEM_CLASS, "getById", NMS_ITEM_CLASS, int.class);
+        if (GET_ITEM_BY_ID_METHOD == null) {
+            GET_ITEM_BY_ID_METHOD = Reflection.getMethod(NMS_ITEM_CLASS, NMS_ITEM_CLASS, 0);
+        }
         if (V_1_17_OR_HIGHER) {
             GET_LEVEL_ENTITY_GETTER_ITERABLE_METHOD = Reflection.getMethod(LEVEL_ENTITY_GETTER_CLASS, Iterable.class, 0);
             GET_ENTITY_BY_ID_LEVEL_ENTITY_GETTER_METHOD = Reflection.getMethod(LEVEL_ENTITY_GETTER_CLASS, ENTITY_ACCESS_CLASS, 0, int.class);
@@ -931,7 +935,9 @@ public final class SpigotReflectionUtil {
         if (in == null || in.isEmpty()) {
             return new ItemStack(Material.AIR);
         }
-        int typeId = in.getType().getId(VERSION.toClientVersion());
+        // Resolve the pre-1.13 item id, deriving the base id for 1.13+ colored/block variants
+        // (e.g. gray_stained_glass_pane -> stained_glass_pane id 160)
+        int typeId = ItemStackSerialization.getLegacyItemId(in.getType(), VERSION.toClientVersion());
         if (typeId < 0) {
             return new ItemStack(Material.AIR);
         }
@@ -941,7 +947,9 @@ public final class SpigotReflectionUtil {
         }
         try {
             if (ITEM_STACK_SET_DATA_METHOD != null) {
-                ITEM_STACK_SET_DATA_METHOD.invoke(nmsStack, Math.max(0, in.getLegacyData()));
+                // derive the color/damage value for 1.13+ variants (e.g. gray -> 7)
+                ITEM_STACK_SET_DATA_METHOD.invoke(nmsStack,
+                        ItemStackSerialization.getLegacyItemData(in.getType(), in.getLegacyData()));
             }
             if (in.getNBT() != null && ITEM_STACK_SET_TAG_METHOD != null) {
                 Object nmsNbt = toMinecraftNBT(in.getNBT());
