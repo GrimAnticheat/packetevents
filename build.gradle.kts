@@ -73,7 +73,11 @@ allprojects {
                 name = "hezhong-repository"
                 url =
                     uri("https://mvn.hezhongkj.top/${if (rootProject.ext["snapshot"] == true) "snapshots" else "releases"}")
-                credentials(PasswordCredentials::class)
+                credentials(PasswordCredentials::class) {
+                    username = findProperty("hezhongRepoUsername") as String? ?: ""
+                    password = findProperty("hezhongRepoPassword") as String? ?: ""
+                    println("username = '$username', password length = ${password?.length}") // 调试
+                }
             }
         }
     }
