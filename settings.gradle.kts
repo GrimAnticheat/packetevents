@@ -43,6 +43,7 @@ include(":fabric-intermediary:mc1211")
 include(":fabric-intermediary:mc1216")
 include("fabric-official")
 include(":fabric-official:mc261")
+include(":fabric-official:mc263")
 // Patch modules
 include(":patch:adventure-text-serializer-gson")
 include(":patch:adventure-text-serializer-legacy")

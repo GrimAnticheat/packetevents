@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "packetevents-fabric-mc263",
+  "version": "${version}",
+  "name": "${modName}",
+  "description": "Per-version chain participant for Minecraft 26.1+. Registers peMainChainLoad so fabric-common's PacketEventsMod can dispatch the chain.",
+  "license": "GPL-3.0",
+  "environment": "*",
+  "entrypoints": {
+    "peMainChainLoad": [
+      "io.github.retrooper.packetevents.mc263.Fabric263ChainLoadEntrypoint"
+    ]
+  },
+  "mixins": [
+    "packetevents.mixins.json"
+  ],
+  "accessWidener": "packetevents.accesswidener",
+  "depends": {
+    "minecraft": ">=26.3 <26.4",
+    "java": ">=25",
+    "fabricloader": ">=0.19"
+  }
+}

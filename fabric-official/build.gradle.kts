@@ -25,6 +25,7 @@ dependencies {
     api("com.github.Fallen-Breath.conditional-mixin:conditional-mixin-fabric:0.6.4")
 
     include(project(":fabric-official:mc261"))
+    include(project(":fabric-official:mc263"))
 
     minecraft("com.mojang:minecraft:$minecraft_version")
 }
