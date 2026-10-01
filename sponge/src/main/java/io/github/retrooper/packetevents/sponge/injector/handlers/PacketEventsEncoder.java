@@ -37,6 +37,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.MessageToMessageEncoder;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.Sponge;
 
@@ -44,11 +45,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.UUID;
 
+@ApiStatus.Internal
 public class PacketEventsEncoder extends MessageToMessageEncoder<ByteBuf> {
 
     public User user;
     public UUID player;
-    private boolean handledCompression;
+    public boolean handleCompression;
+    public boolean handledCompression;
     private ChannelPromise promise;
     private boolean preVia;
 
@@ -60,6 +63,7 @@ public class PacketEventsEncoder extends MessageToMessageEncoder<ByteBuf> {
     public PacketEventsEncoder(ChannelHandler encoder) {
         user = ((PacketEventsEncoder) encoder).user;
         player = ((PacketEventsEncoder) encoder).player;
+        handleCompression = ((PacketEventsEncoder) encoder).handleCompression;
         handledCompression = ((PacketEventsEncoder) encoder).handledCompression;
         promise = ((PacketEventsEncoder) encoder).promise;
         preVia = ((PacketEventsEncoder) encoder).preVia;
@@ -67,7 +71,7 @@ public class PacketEventsEncoder extends MessageToMessageEncoder<ByteBuf> {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBuf byteBuf, List<Object> list) throws Exception {
-        boolean needsRecompression = !handledCompression && handleCompression(ctx, byteBuf);
+        boolean needsRecompression = !handledCompression && handleCompression && handleCompression(ctx, byteBuf);
         handleClientBoundPacket(ctx.channel(), user, player, byteBuf, this.promise, preVia);
 
         // We still call preVia listeners if ViaVersion is not available
@@ -75,7 +79,7 @@ public class PacketEventsEncoder extends MessageToMessageEncoder<ByteBuf> {
             handleClientBoundPacket(ctx.channel(), user, player, byteBuf, this.promise, !preVia);
 
         if (needsRecompression) {
-            compress(ctx, byteBuf);
+            this.compress(ctx, byteBuf);
         }
 
         // So apparently, this is how ViaVersion hacks around bungeecord not supporting sending empty packets
@@ -162,8 +166,8 @@ public class PacketEventsEncoder extends MessageToMessageEncoder<ByteBuf> {
     }
 
     private boolean handleCompression(ChannelHandlerContext ctx, ByteBuf buffer) throws InvocationTargetException {
-        if (handledCompression) return false;
-        int compressIndex = ctx.pipeline().names().indexOf("compress");
+        List<String> handlerNames = ctx.pipeline().names();
+        int compressIndex = handlerNames.indexOf("compress");
         if (compressIndex == -1) return false;
         handledCompression = true;
         int peEncoderIndex = ctx.pipeline().names().indexOf((preVia ? "pre-" : "") + PacketEvents.ENCODER_NAME);

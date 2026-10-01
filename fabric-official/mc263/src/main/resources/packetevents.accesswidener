@@ -1,0 +1,8 @@
+accessWidener v2 official
+# Accessing the underlying netty channel via ServerPlayer.connection.connection.channel
+# requires widening two fields beyond their default visibility:
+#  - Connection.channel (private)
+#  - ServerCommonPacketListenerImpl.connection (protected, holds the Connection)
+accessible field net/minecraft/network/Connection channel Lio/netty/channel/Channel;
+accessible field net/minecraft/network/Connection receiving Lnet/minecraft/network/protocol/PacketFlow;
+accessible field net/minecraft/server/network/ServerCommonPacketListenerImpl connection Lnet/minecraft/network/Connection;
