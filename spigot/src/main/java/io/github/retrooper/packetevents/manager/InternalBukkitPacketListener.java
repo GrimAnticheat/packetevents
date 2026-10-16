@@ -38,14 +38,18 @@ public class InternalBukkitPacketListener extends com.github.retrooper.packeteve
         super(priority, preVia);
     }
 
-    private @Nullable PacketEventsEncoder getEncoder(ProtocolPacketEvent event) {
+    private @Nullable PacketEventsEncoder getEncoder(ProtocolPacketEvent event, boolean preVia) {
         SpigotChannelInjector injector = (SpigotChannelInjector) PacketEvents.getAPI().getInjector();
-        return injector.getEncoder((Channel) event.getUser().getChannel());
+        Channel channel = (Channel) event.getUser().getChannel();
+        if (!preVia) {
+            return injector.getEncoder(channel);
+        }
+        return (PacketEventsEncoder) channel.pipeline().get("pre-" + PacketEvents.ENCODER_NAME);
     }
 
     @Override
     protected void handlePlayEnter(ProtocolPacketEvent event) {
-        PacketEventsEncoder encoder = this.getEncoder(event);
+        PacketEventsEncoder encoder = this.getEncoder(event, false);
         if (encoder != null) {
             encoder.handledCompression = true; // stop handling compression
         }
@@ -55,8 +59,23 @@ public class InternalBukkitPacketListener extends com.github.retrooper.packeteve
     public void onPacketSend(PacketSendEvent event) {
         super.onPacketSend(event);
 
-        // process after generic internal listener has processed this packet — but only on the
-        // post-Via pass; otherwise we'd resolve the player twice per join.
+        // Compression is a transport transition for both PacketEvents encoders.
+        // Handle it in each pass before the pre-Via listener skips post-Via-only state.
+        if (event.getPacketType() == PacketType.Login.Server.SET_COMPRESSION) {
+            if (isPreVia() && !PacketEvents.getAPI().getSettings().isPreViaInjection()) {
+                return;
+            }
+            WrapperLoginServerSetCompression packet = new WrapperLoginServerSetCompression(event);
+            if (packet.getThreshold() > 0) {
+                PacketEventsEncoder encoder = this.getEncoder(event, isPreVia());
+                if (encoder != null) {
+                    encoder.handleCompression = true;
+                }
+            }
+            return;
+        }
+
+        // The remaining Bukkit bookkeeping belongs to the post-Via pass.
         if (isPreVia()) return;
 
         if (event.getPacketType() == PacketType.Login.Server.LOGIN_SUCCESS) {
@@ -65,14 +84,6 @@ public class InternalBukkitPacketListener extends com.github.retrooper.packeteve
         } else if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME) {
             // try to update player reference again
             this.tryUpdatePlayerReference(event, event.getUser(), event.getUser().getUUID());
-        } else if (event.getPacketType() == PacketType.Login.Server.SET_COMPRESSION) {
-            WrapperLoginServerSetCompression packet = new WrapperLoginServerSetCompression(event);
-            if (packet.getThreshold() > 0) {
-                PacketEventsEncoder encoder = this.getEncoder(event);
-                if (encoder != null) {
-                    encoder.handleCompression = true; // start handling compression relocation
-                }
-            }
         }
     }
 
