@@ -38,10 +38,10 @@ public class InternalBukkitPacketListener extends com.github.retrooper.packeteve
         super(priority, preVia);
     }
 
-    private @Nullable PacketEventsEncoder getEncoder(ProtocolPacketEvent event, boolean preVia) {
+    private @Nullable PacketEventsEncoder getEncoder(ProtocolPacketEvent event) {
         SpigotChannelInjector injector = (SpigotChannelInjector) PacketEvents.getAPI().getInjector();
         Channel channel = (Channel) event.getUser().getChannel();
-        if (!preVia) {
+        if (!isPreVia()) {
             return injector.getEncoder(channel);
         }
         return (PacketEventsEncoder) channel.pipeline().get("pre-" + PacketEvents.ENCODER_NAME);
@@ -49,7 +49,7 @@ public class InternalBukkitPacketListener extends com.github.retrooper.packeteve
 
     @Override
     protected void handlePlayEnter(ProtocolPacketEvent event) {
-        PacketEventsEncoder encoder = this.getEncoder(event, false);
+        PacketEventsEncoder encoder = this.getEncoder(event);
         if (encoder != null) {
             encoder.handledCompression = true; // stop handling compression
         }
@@ -59,19 +59,8 @@ public class InternalBukkitPacketListener extends com.github.retrooper.packeteve
     public void onPacketSend(PacketSendEvent event) {
         super.onPacketSend(event);
 
-        // Compression is a transport transition for both PacketEvents encoders.
-        // Handle it in each pass before the pre-Via listener skips post-Via-only state.
         if (event.getPacketType() == PacketType.Login.Server.SET_COMPRESSION) {
-            if (isPreVia() && !PacketEvents.getAPI().getSettings().isPreViaInjection()) {
-                return;
-            }
-            WrapperLoginServerSetCompression packet = new WrapperLoginServerSetCompression(event);
-            if (packet.getThreshold() > 0) {
-                PacketEventsEncoder encoder = this.getEncoder(event, isPreVia());
-                if (encoder != null) {
-                    encoder.handleCompression = true;
-                }
-            }
+            handleSetCompression(event);
             return;
         }
 
@@ -84,6 +73,22 @@ public class InternalBukkitPacketListener extends com.github.retrooper.packeteve
         } else if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME) {
             // try to update player reference again
             this.tryUpdatePlayerReference(event, event.getUser(), event.getUser().getUUID());
+        }
+    }
+
+    private void handleSetCompression(PacketSendEvent event) {
+        if (isPreVia() && !PacketEvents.getAPI().getSettings().isPreViaInjection()) {
+            return;
+        }
+
+        WrapperLoginServerSetCompression packet = new WrapperLoginServerSetCompression(event);
+        if (packet.getThreshold() <= 0) {
+            return;
+        }
+
+        PacketEventsEncoder encoder = this.getEncoder(event);
+        if (encoder != null) {
+            encoder.handleCompression = true;
         }
     }
 
