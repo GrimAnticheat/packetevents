@@ -32,7 +32,6 @@ import net.kyori.adventure.builder.AbstractBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 import net.kyori.adventure.text.serializer.json.JSONOptions;
-import net.kyori.adventure.util.Buildable;
 import net.kyori.adventure.util.PlatformAPI;
 import net.kyori.option.OptionState;
 import org.jetbrains.annotations.ApiStatus;
@@ -50,7 +49,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @since 4.0.0
  */
-public interface GsonComponentSerializer extends JSONComponentSerializer, Buildable<GsonComponentSerializer, GsonComponentSerializer.Builder> {
+public interface GsonComponentSerializer extends JSONComponentSerializer {
     /**
      * Gets a component serializer for gson serialization and deserialization.
      *
@@ -118,12 +117,15 @@ public interface GsonComponentSerializer extends JSONComponentSerializer, Builda
      */
     @NotNull JsonElement serializeToTree(final @NotNull Component component);
 
+    // Adventure 5 removed Buildable.Builder. Keep the serializer independent of that ABI.
+    @NotNull Builder toBuilder();
+
     /**
      * A builder for {@link GsonComponentSerializer}.
      *
      * @since 4.0.0
      */
-    interface Builder extends AbstractBuilder<GsonComponentSerializer>, Buildable.Builder<GsonComponentSerializer>, JSONComponentSerializer.Builder {
+    interface Builder extends AbstractBuilder<GsonComponentSerializer>, JSONComponentSerializer.Builder {
         @Override
         @NotNull Builder options(final @NotNull OptionState flags);
 

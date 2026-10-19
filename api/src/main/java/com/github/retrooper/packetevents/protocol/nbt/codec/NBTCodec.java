@@ -26,12 +26,12 @@ import com.github.retrooper.packetevents.protocol.nbt.*;
 import com.github.retrooper.packetevents.protocol.nbt.serializer.DefaultNBTSerializer;
 import com.github.retrooper.packetevents.protocol.util.NbtCodecs;
 import com.google.gson.*;
-import com.google.gson.internal.LazilyParsedNumber;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,11 +65,22 @@ public class NBTCodec {
                 else if (num instanceof Short) {
                     return new NBTShort(num.shortValue());
                 }
-                else if (num instanceof Integer || num instanceof LazilyParsedNumber) {
+                else if (num instanceof Integer) {
                     return new NBTInt(num.intValue());
                 }
                 else if (num instanceof Long) {
                     return new NBTLong(num.longValue());
+                }
+                else {
+                    // Parsed Gson numbers are lazy; intValue() silently truncates decimals and longs.
+                    BigDecimal decimal = new BigDecimal(num.toString());
+                    try {
+                        long value = decimal.longValueExact();
+                        return value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE
+                                ? new NBTInt((int) value) : new NBTLong(value);
+                    } catch (ArithmeticException ignored) {
+                        return new NBTDouble(decimal.doubleValue());
+                    }
                 }
             }
         }

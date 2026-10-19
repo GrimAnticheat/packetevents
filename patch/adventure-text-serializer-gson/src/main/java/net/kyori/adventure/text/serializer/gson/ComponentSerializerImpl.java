@@ -138,7 +138,7 @@ final class ComponentSerializerImpl extends TypeAdapter<Component> {
         // type specific
         String text = null;
         String translate = null;
-        String translateFallback = null;
+        com.google.gson.JsonElement fallback = null;
         List<? extends net.kyori.adventure.text.ComponentLike> translateWith = null; // packetevents patch
         String scoreName = null;
         String scoreObjective = null;
@@ -147,6 +147,7 @@ final class ComponentSerializerImpl extends TypeAdapter<Component> {
         String keybind = null;
         String nbt = null;
         boolean nbtInterpret = false;
+        boolean nbtPlain = false;
         BlockNBTComponent.Pos nbtBlock = null;
         String nbtEntity = null;
         Key nbtStorage = null;
@@ -164,7 +165,9 @@ final class ComponentSerializerImpl extends TypeAdapter<Component> {
             } else if (fieldName.equals(TRANSLATE)) {
                 translate = in.nextString();
             } else if (fieldName.equals(TRANSLATE_FALLBACK)) {
-                translateFallback = in.nextString();
+                fallback = this.gson.fromJson(in, com.google.gson.JsonElement.class);
+            } else if (fieldName.equals("plain")) {
+                nbtPlain = in.nextBoolean();
             } else if (fieldName.equals(TRANSLATE_WITH)) {
                 // packetevents patch start
                 if (BackwardCompatUtil.IS_4_15_0_OR_NEWER) {
@@ -286,7 +289,7 @@ final class ComponentSerializerImpl extends TypeAdapter<Component> {
                 }
             }
             if (BackwardCompatUtil.IS_4_13_0_OR_NEWER) {
-                i18nBuilder.fallback(translateFallback);
+                i18nBuilder.fallback(fallback == null ? null : fallback.getAsString());
             }
             // packetevents patch end
         } else if (scoreName != null && scoreObjective != null) {
@@ -325,7 +328,13 @@ final class ComponentSerializerImpl extends TypeAdapter<Component> {
         builder.style(this.gson.fromJson(style, SerializerFactory.STYLE_TYPE))
                 .append(extra);
         in.endObject();
-        return BackwardCompatUtil.build(builder); // packetevents patch
+        Component result = BackwardCompatUtil.build(builder);
+        if (result instanceof NBTComponent) {
+            result = Adventure5.plain(result, nbtPlain);
+        } else if (BackwardCompatUtil.IS_4_25_0_OR_NEWER && result instanceof ObjectComponent && fallback != null) {
+            result = Adventure5.fallback(result, this.gson.fromJson(fallback, Component.class));
+        }
+        return result; // packetevents patch
     }
 
     private static <C extends NBTComponent<C, B>, B extends NBTComponentBuilder<C, B>> B nbt(final B builder, final String nbt, final boolean interpret, final @Nullable Component separator) {
@@ -421,6 +430,9 @@ final class ComponentSerializerImpl extends TypeAdapter<Component> {
             out.value(nbt.nbtPath());
             out.name(NBT_INTERPRET);
             out.value(nbt.interpret());
+            if (Adventure5.plain(value)) {
+                out.name("plain").value(true);
+            }
             this.serializeSeparator(out, nbt.separator());
             if (value instanceof BlockNBTComponent) {
                 out.name(NBT_BLOCK);
@@ -435,6 +447,11 @@ final class ComponentSerializerImpl extends TypeAdapter<Component> {
                 throw notSureHowToSerialize(value);
             }
         } else if (BackwardCompatUtil.IS_4_25_0_OR_NEWER && value instanceof ObjectComponent) { // packetevents patch
+            final Component fallback = Adventure5.fallback(value);
+            if (fallback != null) {
+                out.name("fallback");
+                this.write(out, fallback);
+            }
             final ObjectComponent objectComponent = (ObjectComponent) value;
             final ObjectContents contents = objectComponent.contents();
             if (contents instanceof SpriteObjectContents) {

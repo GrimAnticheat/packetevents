@@ -17,12 +17,15 @@
  */
 package net.kyori.adventure.text.serializer.gson;
 
+import com.google.gson.JsonElement;
+import net.kyori.adventure.builder.AbstractBuilder;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.BuildableComponent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.DataComponentValue;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.object.ObjectContents;
@@ -31,7 +34,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -128,6 +135,40 @@ public final class BackwardCompatUtil {
         IS_4_26_0_OR_NEWER = is4_26_0OrNewer;
     }
 
+    // A caller may use a separately shaded copy of GsonDataComponentValue.
+    private static final ClassValue<MethodHandle> JSON_DATA = new ClassValue<MethodHandle>() {
+        @Override
+        protected MethodHandle computeValue(Class<?> type) {
+            Method getter = null;
+            for (Method method : type.getMethods()) {
+                if (!Modifier.isStatic(method.getModifiers()) && !method.isBridge()
+                        && method.getParameterCount() == 0 && method.getReturnType() == JsonElement.class) {
+                    if (getter != null) throw new IllegalStateException("Ambiguous JSON data component getter: " + type);
+                    getter = method;
+                }
+            }
+            if (getter == null) {
+                return MethodHandles.dropArguments(MethodHandles.constant(JsonElement.class, null), 0, DataComponentValue.class);
+            }
+            try {
+                getter.setAccessible(true);
+                return MethodHandles.lookup().unreflect(getter)
+                        .asType(MethodType.methodType(JsonElement.class, DataComponentValue.class));
+            } catch (IllegalAccessException exception) {
+                throw new IllegalStateException("Cannot access JSON data component getter", exception);
+            }
+        }
+    };
+
+    public static @Nullable JsonElement jsonDataComponentValue(DataComponentValue value) {
+        if (value instanceof GsonDataComponentValue) return ((GsonDataComponentValue) value).element();
+        try {
+            return (JsonElement) JSON_DATA.get(value.getClass()).invokeExact(value);
+        } catch (Throwable exception) {
+            throw new IllegalStateException("Cannot read JSON data component", exception);
+        }
+    }
+
     private BackwardCompatUtil() {
     }
 
@@ -170,22 +211,8 @@ public final class BackwardCompatUtil {
         return ((BuildableComponent<?, ?>) component).toBuilder();
     }
 
-    private static final Method COMPONENT_BUILDER_BUILD;
-
-    static {
-        try {
-            COMPONENT_BUILDER_BUILD = ComponentBuilder.class.getMethod("build");
-        } catch (ReflectiveOperationException exception) {
-            throw new RuntimeException(exception);
-        }
-    }
-
     public static Component build(ComponentBuilder<?, ?> builder) {
-        // signature changed with v5
-        try {
-            return (Component) COMPONENT_BUILDER_BUILD.invoke(builder);
-        } catch (ReflectiveOperationException exception) {
-            throw new RuntimeException(exception);
-        }
+        // AbstractBuilder's erased return type is stable across Adventure 4 and 5.
+        return (Component) ((AbstractBuilder<?>) builder).build();
     }
 }
