@@ -35,10 +35,13 @@ import org.jspecify.annotations.NullMarked;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.List;
 
 @NullMarked
@@ -59,10 +62,10 @@ public final class AdventureNbtUtil {
         TAG_STRING_IO = tagStringIo;
     }
 
-    // Resolve the invocation kind once: BinaryTagType is a class in v4 and an interface in v5.
-    private static final MethodHandle TAG_TYPE_GET_ID = tagMethod("id", byte.class);
-    private static final MethodHandle TAG_TYPE_READ = tagMethod("read", BinaryTag.class, DataInput.class);
-    private static final MethodHandle TAG_TYPE_WRITE = tagMethod("write", void.class, BinaryTag.class, DataOutput.class);
+    // Resolve by signature once, preserving support for renamed members and Adventure 4/5.
+    private static final MethodHandle TAG_TYPE_GET_ID = tagMethod(byte.class);
+    private static final MethodHandle TAG_TYPE_READ = tagMethod(BinaryTag.class, DataInput.class);
+    private static final MethodHandle TAG_TYPE_WRITE = tagMethod(void.class, BinaryTag.class, DataOutput.class);
 
     private static final BinaryTagType<?>[] NBT_TAG_TYPES = buildNbtTagTypes();
 
@@ -120,10 +123,24 @@ public final class AdventureNbtUtil {
         return nbtTagTypes;
     }
 
-    private static MethodHandle tagMethod(String name, Class<?> result, Class<?>... parameters) {
+    private static MethodHandle tagMethod(Class<?> result, Class<?>... parameters) {
         try {
-            return MethodHandles.publicLookup().findVirtual(BinaryTagType.class, name,
-                    MethodType.methodType(result, parameters));
+            Method match = null;
+            for (Method method : BinaryTagType.class.getMethods()) {
+                if (!Modifier.isStatic(method.getModifiers()) && method.getReturnType() == result
+                        && Arrays.equals(method.getParameterTypes(), parameters)) {
+                    if (match != null) {
+                        throw new NoSuchMethodException("Ambiguous binary tag operation: " + MethodType.methodType(result, parameters));
+                    }
+                    match = method;
+                }
+            }
+            if (match == null) {
+                throw new NoSuchMethodException("Missing binary tag operation: " + MethodType.methodType(result, parameters));
+            }
+            match.setAccessible(true);
+            return MethodHandles.lookup().unreflect(match).asType(
+                    MethodType.methodType(result, parameters).insertParameterTypes(0, BinaryTagType.class));
         } catch (ReflectiveOperationException exception) {
             throw new ExceptionInInitializerError(exception);
         }

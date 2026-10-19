@@ -1,6 +1,5 @@
 package com.github.retrooper.packetevents.test;
 
-import com.github.retrooper.packetevents.protocol.nbt.NBT;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.PacketEventsAPI;
 import com.github.retrooper.packetevents.injector.ChannelInjector;
@@ -8,17 +7,36 @@ import com.github.retrooper.packetevents.manager.player.PlayerManager;
 import com.github.retrooper.packetevents.manager.protocol.ProtocolManager;
 import com.github.retrooper.packetevents.manager.server.ServerManager;
 import com.github.retrooper.packetevents.netty.NettyManager;
-import io.github.retrooper.packetevents.impl.netty.NettyManagerImpl;
+import com.github.retrooper.packetevents.protocol.nbt.NBT;
+import com.github.retrooper.packetevents.test.nbt.NbtRenamingClassLoader;
 import com.github.retrooper.packetevents.util.adventure.AdventureNbtUtil;
+import io.github.retrooper.packetevents.impl.netty.NettyManagerImpl;
 import net.kyori.adventure.nbt.BinaryTag;
 import net.kyori.adventure.nbt.TagStringIO;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AdventureNbtBridgeTest {
+    @Test
+    void roundTripsAfterRelocation() throws Exception {
+        new NbtRenamingClassLoader(false).renamedClass("com.github.retrooper.packetevents.test.nbt.RelocatedNbtProbe")
+                .getMethod("run").invoke(null);
+    }
+
+    @Test
+    void roundTripsAfterClassFieldAndMethodRenaming() throws Exception {
+        NbtRenamingClassLoader loader = new NbtRenamingClassLoader(true);
+        Class<?> type = loader.renamedClass("net.kyori.adventure.nbt.BinaryTagType");
+        assertThrows(NoSuchMethodException.class, () -> type.getMethod("id"));
+        assertEquals(byte.class, type.getMethod("a").getReturnType());
+        loader.renamedClass("com.github.retrooper.packetevents.test.nbt.RelocatedNbtProbe")
+                .getMethod("run").invoke(null);
+    }
+
     @BeforeEach
     void setup() {
         PacketEvents.setAPI(new PacketEventsAPI<Object>() {

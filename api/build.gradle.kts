@@ -52,6 +52,7 @@ dependencies {
     testImplementation(project(":spigot"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.2")
+    testImplementation("org.ow2.asm:asm-commons:9.8")
 }
 
 mappingCompression {
