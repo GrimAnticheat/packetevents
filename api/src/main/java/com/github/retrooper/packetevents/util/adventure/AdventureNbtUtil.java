@@ -25,7 +25,6 @@ import com.github.retrooper.packetevents.netty.buffer.ByteBufOutputStream;
 import com.github.retrooper.packetevents.netty.buffer.UnpooledByteBufAllocationHelper;
 import com.github.retrooper.packetevents.protocol.nbt.NBT;
 import com.github.retrooper.packetevents.protocol.nbt.codec.NBTCodec;
-import com.github.retrooper.packetevents.util.reflection.Reflection;
 import net.kyori.adventure.nbt.BinaryTag;
 import net.kyori.adventure.nbt.BinaryTagType;
 import net.kyori.adventure.nbt.BinaryTagTypes;
@@ -37,7 +36,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.List;
 
 @NullMarked
@@ -58,10 +59,10 @@ public final class AdventureNbtUtil {
         TAG_STRING_IO = tagStringIo;
     }
 
-    // BinaryTagType is an interface since adventure v5, we need to access everything via Reflection to support both v4 and v5
-    private static final Method TAG_TYPE_GET_ID = Reflection.getMethodExact(BinaryTagType.class, "id", byte.class);
-    private static final Method TAG_TYPE_READ = Reflection.getMethodExact(BinaryTagType.class, "read", BinaryTag.class, DataInput.class);
-    private static final Method TAG_TYPE_WRITE = Reflection.getMethodExact(BinaryTagType.class, "write", void.class, BinaryTag.class, DataOutput.class);
+    // Resolve the invocation kind once: BinaryTagType is a class in v4 and an interface in v5.
+    private static final MethodHandle TAG_TYPE_GET_ID = tagMethod("id", byte.class);
+    private static final MethodHandle TAG_TYPE_READ = tagMethod("read", BinaryTag.class, DataInput.class);
+    private static final MethodHandle TAG_TYPE_WRITE = tagMethod("write", void.class, BinaryTag.class, DataOutput.class);
 
     private static final BinaryTagType<?>[] NBT_TAG_TYPES = buildNbtTagTypes();
 
@@ -70,7 +71,6 @@ public final class AdventureNbtUtil {
 
     @SuppressWarnings("unchecked")
     private static BinaryTagType<?>[] buildNbtTagTypes() {
-        BinaryTagTypes.BYTE.id(); // initialize types
 
         // v4 keeps TYPES on BinaryTagType; v5 moves it to a subclass reachable via BYTE.
         List<BinaryTagType<? extends BinaryTag>> types = null;
@@ -120,10 +120,19 @@ public final class AdventureNbtUtil {
         return nbtTagTypes;
     }
 
+    private static MethodHandle tagMethod(String name, Class<?> result, Class<?>... parameters) {
+        try {
+            return MethodHandles.publicLookup().findVirtual(BinaryTagType.class, name,
+                    MethodType.methodType(result, parameters));
+        } catch (ReflectiveOperationException exception) {
+            throw new ExceptionInInitializerError(exception);
+        }
+    }
+
     private static byte getTagId(BinaryTagType<?> tagType) {
         try {
-            return (byte) TAG_TYPE_GET_ID.invoke(tagType);
-        } catch (ReflectiveOperationException exception) {
+            return (byte) TAG_TYPE_GET_ID.invokeExact(tagType);
+        } catch (Throwable exception) {
             throw new RuntimeException(exception);
         }
     }
@@ -135,8 +144,8 @@ public final class AdventureNbtUtil {
         }
         BinaryTagType<?> tagType = NBT_TAG_TYPES[tagTypeId];
         try {
-            return (BinaryTag) TAG_TYPE_READ.invoke(tagType, new ByteBufInputStream(buf));
-        } catch (Exception exception) {
+            return (BinaryTag) TAG_TYPE_READ.invokeExact(tagType, (DataInput) new ByteBufInputStream(buf));
+        } catch (Throwable exception) {
             throw new RuntimeException("Error while reading adventure nbt tag from buf: " + buf, exception);
         }
     }
@@ -148,8 +157,8 @@ public final class AdventureNbtUtil {
         ByteBufHelper.writeByte(buf, tagId);
         if (tagId != END_TAG_ID) {
             try {
-                TAG_TYPE_WRITE.invoke(tagType, tag, new ByteBufOutputStream(buf));
-            } catch (Exception exception) {
+                TAG_TYPE_WRITE.invokeExact(tagType, tag, (DataOutput) new ByteBufOutputStream(buf));
+            } catch (Throwable exception) {
                 throw new RuntimeException("Error while writing adventure nbt tag to buf: " + tag, exception);
             }
         }

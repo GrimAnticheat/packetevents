@@ -122,3 +122,25 @@ publishing {
         }
     }
 }
+
+// Exercise the same compiled bridge against either side of Adventure's class/interface change.
+providers.gradleProperty("adventureTestVersion").orNull?.let { adventureTestVersion ->
+    configurations.named("testRuntimeClasspath") {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "net.kyori" && requested.name.startsWith("adventure-")
+                && !requested.name.startsWith("adventure-platform-")
+                && requested.name != "adventure-text-serializer-bungeecord"
+                && requested.name != "adventure-text-serializer-gson-legacy-impl") {
+                useVersion(adventureTestVersion)
+            }
+        }
+    }
+}
+
+// Do not let Spigot's bundled Adventure override the runtime version under test.
+tasks.register<Test>("adventureNbtBridgeTest") {
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath.filter { !it.name.startsWith("packetevents-spigot") }
+    useJUnitPlatform()
+    filter { includeTestsMatching("*AdventureNbtBridgeTest") }
+}
