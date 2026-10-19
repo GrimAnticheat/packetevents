@@ -72,6 +72,7 @@ import net.kyori.adventure.text.object.ObjectContents;
 import net.kyori.adventure.text.object.PlayerHeadObjectContents;
 import net.kyori.adventure.text.object.SpriteObjectContents;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.Adventure5;
 import net.kyori.adventure.text.serializer.gson.BackwardCompatUtil;
 import net.kyori.adventure.text.serializer.gson.GsonDataComponentValue;
 import org.jetbrains.annotations.Contract;
@@ -222,7 +223,7 @@ public class AdventureNBTSerializer implements ComponentSerializer<Component, Co
                     return args;
                 });
             } else {
-                translateWith = reader.readList("with", tag -> this.deserializeTranslationArgumentList(tag, wrapper));
+                translateWith = reader.read("with", tag -> this.deserializeTranslationArgumentList(NbtCodecs.GENERIC_LIST.decode(tag, wrapper), wrapper));
             }
         } else {
             translateWith = reader.readList("with", tag -> this.deserializeComponentList(tag, wrapper));
@@ -314,7 +315,13 @@ public class AdventureNBTSerializer implements ComponentSerializer<Component, Co
             builder.append(extra);
         }
 
-        return BackwardCompatUtil.build(builder);
+        Component result = BackwardCompatUtil.build(builder);
+        if (result instanceof NBTComponent) {
+            result = Adventure5.plain(result, Boolean.TRUE.equals(reader.readBoolean("plain", Function.identity())));
+        } else if (BackwardCompatUtil.IS_4_25_0_OR_NEWER && result instanceof ObjectComponent) {
+            result = Adventure5.fallback(result, reader.read("fallback", tag -> this.deserialize(tag, wrapper)));
+        }
+        return result;
     }
 
     @Deprecated
@@ -354,7 +361,7 @@ public class AdventureNBTSerializer implements ComponentSerializer<Component, Co
             if (BackwardCompatUtil.IS_4_15_0_OR_NEWER) {
                 List<TranslationArgument> args = ((TranslatableComponent) component).arguments();
                 if (!args.isEmpty()) {
-                    writer.writeList("with", NBTType.COMPOUND, this.serializeTranslationArgumentList(args, wrapper));
+                    writer.write("with", this.serializeTranslationArgumentList(args, wrapper));
                 }
             } else {
                 List<Component> args = ((TranslatableComponent) component).args();
@@ -394,6 +401,10 @@ public class AdventureNBTSerializer implements ComponentSerializer<Component, Co
                 writer.writeBoolean("interpret", true);
             }
 
+            if (Adventure5.plain(component)) {
+                writer.writeBoolean("plain", true);
+            }
+
             // separator
             Component separator = ((NBTComponent<?, ?>) component).separator();
             if (separator != null) writer.write("separator", this.serialize(separator, wrapper));
@@ -413,6 +424,9 @@ public class AdventureNBTSerializer implements ComponentSerializer<Component, Co
             }
         } else if (component instanceof ObjectComponent) {
             if (BackwardCompatUtil.IS_4_25_0_OR_NEWER && this.version.isNewerThanOrEquals(ClientVersion.V_1_21_9)) {
+                Component fallback = Adventure5.fallback(component);
+                if (fallback != null) writer.write("fallback", this.serialize(fallback, wrapper));
+
                 // object contents
                 ObjectContents objectContents = ((ObjectComponent) component).contents();
                 if (objectContents instanceof PlayerHeadObjectContents) {
@@ -722,12 +736,12 @@ public class AdventureNBTSerializer implements ComponentSerializer<Component, Co
                                     DataComponentValue.TagSerializable tagSerializable = (DataComponentValue.TagSerializable) entry.getValue();
                                     NBT tag = AdventureNbtUtil.fromString(tagSerializable.asBinaryTag().string());
                                     compsNbt.write(entry.getKey().toString(), tag);
-                                } else if (entry.getValue() instanceof GsonDataComponentValue) {
+                                } else {
                                     // there is no way to recover 100% of the actual information
                                     // without implementing JSON data serialization for every
                                     // available component
-                                    JsonElement element = ((GsonDataComponentValue) entry.getValue()).element();
-                                    compsNbt.write(entry.getKey().toString(), NBTCodec.jsonToNBT(element));
+                                    JsonElement element = BackwardCompatUtil.jsonDataComponentValue(entry.getValue());
+                                    if (element != null) compsNbt.write(entry.getKey().toString(), NBTCodec.jsonToNBT(element));
                                 }
                                 // else: unsupported entry component value, skip
                             }
@@ -819,12 +833,20 @@ public class AdventureNBTSerializer implements ComponentSerializer<Component, Co
         return arguments;
     }
 
-    private List<NBTCompound> serializeTranslationArgumentList(List<TranslationArgument> value, PacketWrapper<?> wrapper) {
-        List<NBTCompound> arguments = new ArrayList<>(value.size());
+    private NBT serializeTranslationArgumentList(List<TranslationArgument> value, PacketWrapper<?> wrapper) {
+        List<NBT> arguments = new ArrayList<>(value.size());
         for (TranslationArgument argument : value) {
-            arguments.add(this.serializeComponent(argument.asComponent(), wrapper));
+            Object content = argument.value();
+            if (this.version.isOlderThan(ClientVersion.V_1_21_5) || content instanceof Component) {
+                arguments.add(this.serializeComponent(argument.asComponent(), wrapper));
+            } else if (content instanceof Boolean) {
+                // NBT has no boolean type. A byte would render as "1" or "0".
+                arguments.add(new NBTString(content.toString()));
+            } else {
+                arguments.add(NBTCodec.jsonToNBT(new com.google.gson.JsonPrimitive((Number) content)));
+            }
         }
-        return arguments;
+        return NbtCodecs.GENERIC_LIST.encode(wrapper, arguments);
     }
     // -------------------------------------------------
 
