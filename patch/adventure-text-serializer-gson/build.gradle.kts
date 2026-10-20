@@ -26,7 +26,6 @@ tasks {
             exclude(dependency("net.kyori:examination-api:.*"))
             exclude(dependency("net.kyori:examination-string:.*"))
             exclude(dependency("com.google.code.gson:gson:.*"))
-            exclude("META-INF/services/**")
         }
     }
 }
