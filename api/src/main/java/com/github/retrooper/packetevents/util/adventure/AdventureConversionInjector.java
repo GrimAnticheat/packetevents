@@ -86,6 +86,9 @@ public final class AdventureConversionInjector {
             cache.put(NbtTagHolder.class, vals);
         } catch (ReflectiveOperationException exception) {
             throw new RuntimeException("Failed to inject into conversion cache", exception);
+        } catch (LinkageError ignored) {
+            // Adventure's optional converter provider may be absent or incompatible.
+            // Do not make PacketEvents preLaunch fail because this optional bridge cannot load.
         }
     }
 
@@ -100,6 +103,8 @@ public final class AdventureConversionInjector {
             cache.remove(NbtTagHolder.class);
         } catch (ReflectiveOperationException exception) {
             throw new RuntimeException("Failed to uninject from conversion cache", exception);
+        } catch (LinkageError ignored) {
+            // Injection was unavailable, so there is no cache entry to remove.
         }
     }
 }
