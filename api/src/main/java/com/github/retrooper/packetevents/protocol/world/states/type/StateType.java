@@ -46,6 +46,7 @@ public class StateType {
     private final boolean requiresCorrectTool;
     private final boolean exceedsCube;
     private final MaterialType materialType;
+    private int hash;
 
     @ApiStatus.Internal
     public StateType(
@@ -154,7 +155,20 @@ public class StateType {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(), blastResistance, hardness, isSolid, isBlocking, isAir, requiresCorrectTool, exceedsCube, materialType);
+        int hash = this.hash;
+        if (hash == 0) {
+            hash = 31 + Objects.hashCode(getName());
+            hash = 31 * hash + Float.hashCode(blastResistance);
+            hash = 31 * hash + Float.hashCode(hardness);
+            hash = 31 * hash + Boolean.hashCode(isSolid);
+            hash = 31 * hash + Boolean.hashCode(isBlocking);
+            hash = 31 * hash + Boolean.hashCode(isAir);
+            hash = 31 * hash + Boolean.hashCode(requiresCorrectTool);
+            hash = 31 * hash + Boolean.hashCode(exceedsCube);
+            hash = 31 * hash + Objects.hashCode(materialType);
+            this.hash = hash;
+        }
+        return hash;
     }
 
     public final class Mapped extends AbstractMappedEntity {
