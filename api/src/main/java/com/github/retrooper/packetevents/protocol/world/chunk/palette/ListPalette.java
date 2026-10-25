@@ -149,11 +149,7 @@ public class ListPalette implements Palette {
 
     @Override
     public int idToState(int id) {
-        if (id >= 0 && id < this.size()) {
-            return this.data[id];
-        } else {
-            return 0;
-        }
+        return this.data[id];
     }
 
     @Override
