@@ -36,8 +36,11 @@ import java.util.Arrays;
 public class ListPalette implements Palette {
 
     private final int bits;
+    private static final int INDEX_THRESHOLD = 32;
     private final int[] data;
     private int nextId;
+    private long[] stateIndex;
+    private int stateIndexMask;
 
     public ListPalette(int bitsPerEntry) {
         this.bits = bitsPerEntry;
@@ -84,19 +87,64 @@ public class ListPalette implements Palette {
 
     @Override
     public int stateToId(int state) {
-        int id = -1;
-        for (int i = 0; i < this.nextId; i++) { // Linear search for state
-            if (this.data[i] == state) {
-                id = i;
-                break;
+        int id = findIndexed(state);
+        if (id < 0) {
+            for (int i = 0; i < this.nextId; i++) {
+                if (this.data[i] == state) {
+                    id = i;
+                    break;
+                }
             }
         }
         if (id == -1 && this.size() < this.data.length) {
             id = this.nextId++;
             this.data[id] = state;
+            if (this.stateIndex != null) {
+                indexState(state, id);
+            } else if (this.nextId >= INDEX_THRESHOLD) {
+                buildStateIndex();
+            }
         }
 
         return id;
+    }
+
+    private int findIndexed(int state) {
+        long[] index = this.stateIndex;
+        if (index == null) return -1;
+        int slot = mix(state) & this.stateIndexMask;
+        while (true) {
+            long entry = index[slot];
+            if ((int) entry == 0) return -1;
+            if ((int) (entry >> 32) == state) return (int) entry - 1;
+            slot = (slot + 1) & this.stateIndexMask;
+        }
+    }
+
+    private void buildStateIndex() {
+        int capacity = 1;
+        while (capacity < this.nextId << 1) capacity <<= 1;
+        this.stateIndex = new long[capacity];
+        this.stateIndexMask = capacity - 1;
+        for (int id = 0; id < this.nextId; id++) indexState(this.data[id], id);
+    }
+
+    private void indexState(int state, int id) {
+        int slot = mix(state) & this.stateIndexMask;
+        while (true) {
+            long entry = this.stateIndex[slot];
+            if ((int) entry == 0) {
+                this.stateIndex[slot] = ((long) state << 32) | (id + 1L);
+                return;
+            }
+            if ((int) (entry >> 32) == state) return;
+            slot = (slot + 1) & this.stateIndexMask;
+        }
+    }
+
+    private static int mix(int value) {
+        value *= 0x9E3779B9;
+        return value ^ (value >>> 16);
     }
 
     @Override
