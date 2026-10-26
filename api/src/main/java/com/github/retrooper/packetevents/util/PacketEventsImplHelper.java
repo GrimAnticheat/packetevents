@@ -19,17 +19,21 @@
 package com.github.retrooper.packetevents.util;
 
 import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.event.PacketEvent;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.event.ProtocolPacketEvent;
 import com.github.retrooper.packetevents.event.UserDisconnectEvent;
+import com.github.retrooper.packetevents.exception.InvalidHandshakeException;
 import com.github.retrooper.packetevents.manager.protocol.ProtocolManager;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.PacketSide;
 import com.github.retrooper.packetevents.protocol.player.User;
+import dev.axionize.bolt.api.capture.PacketBufferWriteListener;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
+import java.util.logging.Level;
 
 public final class PacketEventsImplHelper {
 
@@ -37,7 +41,7 @@ public final class PacketEventsImplHelper {
     }
 
     public static @Nullable ProtocolPacketEvent handlePacket(
-            Object channel, User user, Object player, Object buffer,
+            Object channel, dev.axionize.bolt.api.player.PacketUser user, Object player, Object buffer,
             boolean autoProtocolTranslation, PacketSide side
     ) throws Exception {
         if (side == PacketSide.SERVER) {
@@ -47,36 +51,49 @@ public final class PacketEventsImplHelper {
         }
     }
 
+
     public static @Nullable PacketSendEvent handleClientBoundPacket(
-            Object channel, User user, Object player, Object buffer,
-            boolean autoProtocolTranslation
+            Object channel, dev.axionize.bolt.api.player.PacketUser user, Object player, Object buffer,
+        boolean autoProtocolTranslation
     ) throws Exception {
         if (!ByteBufHelper.isReadable(buffer)) {
+            PacketBufferWriteListener listener =
+                    user.getBoltDispatcher().takePendingBufferWriteListener(buffer);
+            if (listener != null) listener.complete(false, false);
             return null;
         }
 
         int preProcessIndex = ByteBufHelper.readerIndex(buffer);
-        PacketSendEvent packetSendEvent = EventCreationUtil.createSendEvent(channel, user, player, buffer, autoProtocolTranslation);
-        int processIndex = ByteBufHelper.readerIndex(buffer);
-        PacketEvents.getAPI().getEventManager().callEvent(packetSendEvent, () -> {
-            ByteBufHelper.readerIndex(buffer, processIndex);
-        }, !autoProtocolTranslation);
-        if (!packetSendEvent.isCancelled()) {
-            //Did they ever use a wrapper?
-            if (packetSendEvent.getLastUsedWrapper() != null) {
-                //Rewrite the buffer
-                ByteBufHelper.clear(buffer);
-                packetSendEvent.getLastUsedWrapper().writeVarInt(packetSendEvent.getPacketId());
-                packetSendEvent.getLastUsedWrapper().write();
-            } else {
-                //If no wrappers were used, just pass on the original buffer.
-                //Correct the reader index, basically what the next handler is expecting.
-                ByteBufHelper.readerIndex(buffer, preProcessIndex);
-            }
-        } else {
-            //Make the buffer unreadable for the next handlers
-            ByteBufHelper.clear(buffer);
+        PacketBufferWriteListener bufferWriteListener =
+                user.getBoltDispatcher().takePendingBufferWriteListener(buffer);
+        PacketSendEvent packetSendEvent;
+        try {
+            packetSendEvent = EventCreationUtil.createSendEvent(channel, user, player, buffer, autoProtocolTranslation); // TODO ASM-ify this and return null if no one cares about the event
+        } catch (Throwable failure) {
+            if (bufferWriteListener != null) bufferWriteListener.complete(false, false);
+            throw failure;
         }
+        packetSendEvent.setBufferWriteListener(bufferWriteListener);
+        int processIndex = ByteBufHelper.readerIndex(buffer);
+
+        packetSendEvent.setPostCallListenerAction(() -> {
+            ByteBufHelper.readerIndex(buffer, processIndex);
+        });
+
+        try {
+            if (autoProtocolTranslation) {
+                PacketEvents.getAPI().getEventManager().dispatchSendPost(packetSendEvent.getPacketType().getInternalId(), packetSendEvent, user.getBoltDispatcher());
+            } else {
+                PacketEvents.getAPI().getEventManager().dispatchSendPre(packetSendEvent.getPacketType().getInternalId(), packetSendEvent, user.getBoltDispatcher());
+            }
+        } catch (Exception t) {
+            // ignore handshake exceptions
+            if (t.getClass() != InvalidHandshakeException.class && (t.getCause() == null || t.getCause().getClass() != InvalidHandshakeException.class)) {
+                PacketEvents.getAPI().getLogger().log(Level.WARNING, "PacketEvents caught an unhandled exception while calling your listener.", t);
+            }
+        }
+
+        processBufferOutcome(buffer, packetSendEvent, preProcessIndex);
 
         if (packetSendEvent.hasPostTasks()) {
             for (Runnable task : packetSendEvent.getPostTasks()) {
@@ -87,42 +104,94 @@ public final class PacketEventsImplHelper {
         return packetSendEvent;
     }
 
+    public static @Nullable PacketSendEvent handleClientBoundPacketPre(
+            Object channel, dev.axionize.bolt.api.player.PacketUser user, Object player, Object buffer
+    ) throws Exception {
+        return handleClientBoundPacket(channel, user, player, buffer, false);
+    }
+
+    public static @Nullable PacketSendEvent handleClientBoundPacketPost(
+            Object channel, dev.axionize.bolt.api.player.PacketUser user, Object player, Object buffer
+    ) throws Exception {
+        return handleClientBoundPacket(channel, user, player, buffer, true);
+    }
+
     public static @Nullable PacketReceiveEvent handleServerBoundPacket(
-            Object channel, User user, Object player, Object buffer,
-            boolean autoProtocolTranslation
+            Object channel, dev.axionize.bolt.api.player.PacketUser user, Object player, Object buffer,
+        boolean autoProtocolTranslation
     ) throws Exception {
         if (!ByteBufHelper.isReadable(buffer)) {
+            PacketBufferWriteListener listener =
+                    user.getBoltDispatcher().takePendingBufferWriteListener(buffer);
+            if (listener != null) listener.complete(false, false);
             return null;
         }
 
         int preProcessIndex = ByteBufHelper.readerIndex(buffer);
-        PacketReceiveEvent packetReceiveEvent = EventCreationUtil.createReceiveEvent(channel, user, player, buffer, autoProtocolTranslation);
-        int processIndex = ByteBufHelper.readerIndex(buffer);
-        PacketEvents.getAPI().getEventManager().callEvent(packetReceiveEvent, () -> {
-            ByteBufHelper.readerIndex(buffer, processIndex);
-        }, !autoProtocolTranslation);
-        if (!packetReceiveEvent.isCancelled()) {
-            //Did they ever use a wrapper?
-            if (packetReceiveEvent.getLastUsedWrapper() != null) {
-                //Rewrite the buffer
-                ByteBufHelper.clear(buffer);
-                packetReceiveEvent.getLastUsedWrapper().writeVarInt(packetReceiveEvent.getPacketId());
-                packetReceiveEvent.getLastUsedWrapper().write();
-            } else {
-                //If no wrappers were used, just pass on the original buffer.
-                //Correct the reader index, basically what the next handler is expecting.
-                ByteBufHelper.readerIndex(buffer, preProcessIndex);
-            }
-        } else {
-            //Cancelling the packet, lets clear the buffer
-            ByteBufHelper.clear(buffer);
+        PacketBufferWriteListener bufferWriteListener =
+                user.getBoltDispatcher().takePendingBufferWriteListener(buffer);
+        PacketReceiveEvent packetReceiveEvent;
+        try {
+            packetReceiveEvent = EventCreationUtil.createReceiveEvent(channel, user, player, buffer, autoProtocolTranslation);
+        } catch (Throwable failure) {
+            if (bufferWriteListener != null) bufferWriteListener.complete(false, false);
+            throw failure;
         }
+        packetReceiveEvent.setBufferWriteListener(bufferWriteListener);
+        int processIndex = ByteBufHelper.readerIndex(buffer);
+
+        packetReceiveEvent.setPostCallListenerAction(() -> {
+            ByteBufHelper.readerIndex(buffer, processIndex);
+        });
+
+        try {
+            if (autoProtocolTranslation) {
+                PacketEvents.getAPI().getEventManager().dispatchReceivePost(packetReceiveEvent.getPacketType().getInternalId(), packetReceiveEvent, user.getBoltDispatcher());
+            } else {
+                PacketEvents.getAPI().getEventManager().dispatchReceivePre(packetReceiveEvent.getPacketType().getInternalId(), packetReceiveEvent, user.getBoltDispatcher());
+            }
+        } catch (Exception t) {
+            // ignore handshake exceptions
+            if (t.getClass() != InvalidHandshakeException.class && (t.getCause() == null || t.getCause().getClass() != InvalidHandshakeException.class)) {
+                PacketEvents.getAPI().getLogger().log(Level.WARNING, "PacketEvents caught an unhandled exception while calling your listener.", t);
+            }
+        }
+
+        processBufferOutcome(buffer, packetReceiveEvent, preProcessIndex);
+
         if (packetReceiveEvent.hasPostTasks()) {
             for (Runnable task : packetReceiveEvent.getPostTasks()) {
                 task.run();
             }
         }
         return packetReceiveEvent;
+    }
+
+    public static @Nullable PacketReceiveEvent handleServerBoundPacketPre(
+            Object channel, dev.axionize.bolt.api.player.PacketUser user, Object player, Object buffer) throws Exception {
+        return handleServerBoundPacket(channel, user, player, buffer, false);
+    }
+
+    public static @Nullable PacketReceiveEvent handleServerBoundPacketPost(
+            Object channel, dev.axionize.bolt.api.player.PacketUser user, Object player, Object buffer) throws Exception {
+        return handleServerBoundPacket(channel, user, player, buffer, true);
+    }
+
+    private static void processBufferOutcome(Object buffer, ProtocolPacketEvent event, int preProcessIndex) {
+        if (!event.isCancelled()) {
+            if (event.getLastUsedWrapper() != null) {
+                ByteBufHelper.clear(buffer);
+                event.getLastUsedWrapper().writeVarInt(event.getPacketId());
+                event.getLastUsedWrapper().write();
+            } else {
+                ByteBufHelper.readerIndex(buffer, preProcessIndex);
+            }
+        } else {
+            ByteBufHelper.clear(buffer);
+        }
+        if (event.getBufferWriteListener() != null) {
+            event.getBufferWriteListener().complete(event.isCancelled(), event.needsReEncode());
+        }
     }
 
     public static void handleDisconnection(Object channel, @Nullable UUID uuid) {
@@ -132,7 +201,8 @@ public final class PacketEventsImplHelper {
 
             if (user != null) {
                 UserDisconnectEvent disconnectEvent = new UserDisconnectEvent(user);
-                PacketEvents.getAPI().getEventManager().callEvent(disconnectEvent);
+                PacketEvents.getAPI().getEventManager().callUserDisconnect(disconnectEvent, null);
+                PacketEvents.getAPI().getEventManager().unregisterUser(user);
                 protocolManager.removeUser(user.getChannel());
             }
 

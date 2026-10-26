@@ -18,6 +18,10 @@
 
 package com.github.retrooper.packetevents.event;
 
+import dev.axionize.bolt.api.player.PacketUser;
+import dev.axionize.bolt.api.protocol.ConnectionState;
+import dev.axionize.bolt.api.types.Packet;
+import dev.axionize.bolt.api.capture.PacketBufferWriteListener;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.exception.InvalidDisconnectPacketSend;
 import com.github.retrooper.packetevents.exception.PacketProcessException;
@@ -25,13 +29,13 @@ import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.netty.buffer.UnpooledByteBufAllocationHelper;
 import com.github.retrooper.packetevents.netty.channel.ChannelHelper;
-import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.PacketSide;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import dev.axionize.bolt.api.types.PacketTypes;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NullMarked;
@@ -44,15 +48,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @NullMarked
-public abstract class ProtocolPacketEvent extends PacketEvent implements PlayerEvent, CancellableEvent, UserEvent {
+public abstract class ProtocolPacketEvent extends PacketEvent implements PlayerEvent, CancellableEvent, UserEvent, dev.axionize.bolt.api.types.event.PacketEvent {
 
     private final int packetID;
     private final PacketTypeCommon packetType;
     private ServerVersion serverVersion;
-
     private final Object channel;
     private final ConnectionState connectionState;
-    private final User user;
+    private final PacketUser user;
 
     private @UnknownNullability Object player;
     private Object byteBuf;
@@ -60,12 +63,13 @@ public abstract class ProtocolPacketEvent extends PacketEvent implements PlayerE
     private boolean cancel;
     private @Nullable PacketWrapper<?> lastUsedWrapper;
     private @Nullable List<Runnable> postTasks = null;
+    private @Nullable PacketBufferWriteListener bufferWriteListener;
 
     private boolean cloned;
     private boolean needsReEncode = PacketEvents.getAPI().getSettings().reEncodeByDefault();
 
     public ProtocolPacketEvent(
-            PacketSide packetSide, Object channel, User user,
+            PacketSide packetSide, Object channel, PacketUser user,
             @UnknownNullability Object player, Object byteBuf,
             boolean autoProtocolTranslation
     ) throws PacketProcessException {
@@ -73,11 +77,21 @@ public abstract class ProtocolPacketEvent extends PacketEvent implements PlayerE
         this.user = user;
         this.player = player;
 
-        boolean serverProtocolView = autoProtocolTranslation || user.getClientVersion() == null;
-        if (serverProtocolView) {
+        boolean isServerBound = packetSide == PacketSide.CLIENT;
+        if(autoProtocolTranslation || user.getClientVersion() == null) {
             this.serverVersion = PacketEvents.getAPI().getServerManager().getVersion();
+            this.connectionState = isServerBound ? user.getPostViaDecoderState() : user.getPostViaEncoderState();
         } else {
-            this.serverVersion = user.getClientVersion().toServerVersion();
+            // Live path: User#getClientVersion narrows to PE's enum which knows toServerVersion.
+            // Non-User PacketUser (synthetic in-process channel): fall back to the ambient server
+            // version — these channels feed bytes already in server-internal form, no translation
+            // needed.
+            if (user instanceof User) {
+                this.serverVersion = ((User) user).getClientVersion().toServerVersion();
+            } else {
+                this.serverVersion = PacketEvents.getAPI().getServerManager().getVersion();
+            }
+            this.connectionState = isServerBound ? user.getPreViaDecoderState() : user.getPreViaEncoderState();
         }
 
         this.byteBuf = byteBuf;
@@ -92,15 +106,17 @@ public abstract class ProtocolPacketEvent extends PacketEvent implements PlayerE
         }
 
         ClientVersion version = serverVersion.toClientVersion();
-        if (packetSide == PacketSide.CLIENT) {
-            this.connectionState = serverProtocolView ? user.getPostViaDecoderState() : user.getPreViaDecoderState();
+
+        PacketTypeCommon packetType;
+        if (isServerBound) {
+            packetType = PacketType.getClientSideById(this.connectionState, version, this.packetID);
         } else {
-            this.connectionState = serverProtocolView ? user.getPostViaEncoderState() : user.getPreViaEncoderState();
+            packetType = PacketType.getServerSideById(this.connectionState, version, this.packetID);
         }
-        PacketTypeCommon packetType = PacketType.getById(packetSide, this.connectionState, version, this.packetID);
+
         if (packetType == null) {
             // mojang messed up and keeps sending disconnect packets in the wrong protocol state
-            if (PacketType.getById(packetSide, ConnectionState.PLAY, version, packetID) == PacketType.Play.Server.DISCONNECT) {
+            if (PacketType.getById(packetSide, com.github.retrooper.packetevents.protocol.ConnectionState.PLAY, version, packetID) == PacketType.Play.Server.DISCONNECT) {
                 throw new InvalidDisconnectPacketSend();
             }
             throw new PacketProcessException("Failed to map the Packet ID " + packetID + " to a PacketType constant. Bound: " + packetSide.getOpposite() + ", Connection state: " + this.connectionState + ", Server version: " + serverVersion.getReleaseName());
@@ -110,7 +126,7 @@ public abstract class ProtocolPacketEvent extends PacketEvent implements PlayerE
 
     public ProtocolPacketEvent(
             int packetID, PacketTypeCommon packetType, ServerVersion serverVersion,
-            Object channel, User user,
+            Object channel, PacketUser user,
             @UnknownNullability Object player, Object byteBuf
     ) {
         this.channel = channel;
@@ -122,12 +138,25 @@ public abstract class ProtocolPacketEvent extends PacketEvent implements PlayerE
         this.packetType = packetType;
 
         this.connectionState = (packetType != null && packetType.getSide() == PacketSide.SERVER)
-                ? user.getEncoderState() : user.getDecoderState();
+                ? user.getPlayerEncoderState() : user.getPlayerDecoderState();
         this.cloned = true;
     }
 
     public void markForReEncode(boolean needsReEncode) {
+        if (needsReEncode && !this.needsReEncode && bufferWriteListener != null) {
+            bufferWriteListener.onPacketBufferWrite();
+        }
         this.needsReEncode = needsReEncode;
+    }
+
+    @Override
+    public void setBufferWriteListener(@Nullable PacketBufferWriteListener capture) {
+        this.bufferWriteListener = capture;
+    }
+
+    @Override
+    public @Nullable PacketBufferWriteListener getBufferWriteListener() {
+        return bufferWriteListener;
     }
 
     public boolean needsReEncode() {
@@ -155,7 +184,7 @@ public abstract class ProtocolPacketEvent extends PacketEvent implements PlayerE
 
     @Override
     public User getUser() {
-        return user;
+        return (User) user;
     }
 
     @Override
@@ -173,13 +202,13 @@ public abstract class ProtocolPacketEvent extends PacketEvent implements PlayerE
     /**
      * Gets the connection state this packet has been sent/received in.
      */
-    public ConnectionState getConnectionState() {
-        return connectionState;
+    public com.github.retrooper.packetevents.protocol.ConnectionState getConnectionState() {
+        return com.github.retrooper.packetevents.protocol.ConnectionState.getById(connectionState.ordinal());
     }
 
     @Deprecated
     public ClientVersion getClientVersion() {
-        return user.getClientVersion();
+        return user instanceof User ? ((User) user).getClientVersion() : null;
     }
 
     @Deprecated
@@ -237,6 +266,13 @@ public abstract class ProtocolPacketEvent extends PacketEvent implements PlayerE
         this.lastUsedWrapper = lastUsedWrapper;
     }
 
+    // Packet API Begin
+    // TODO (Packet Rewrite) (if-only-if) work with non PacketWrapper impls
+    public void setLastUsedWrapper(@Nullable Packet lastUsedWrapper) {
+        this.lastUsedWrapper = (PacketWrapper<?>) lastUsedWrapper;
+    }
+    // Packet API End
+
     public List<Runnable> getPostTasks() {
         if (postTasks == null) {
             postTasks = new ArrayList<>();
@@ -266,5 +302,10 @@ public abstract class ProtocolPacketEvent extends PacketEvent implements PlayerE
         ByteBufHelper.writeVarInt(buffer, getPacketId());
         ByteBufHelper.writeBytes(buffer, data);
         return buffer;
+    }
+
+    @Override
+    public ConnectionState getConnectionStatus() {
+        return connectionState;
     }
 }
