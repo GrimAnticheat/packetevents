@@ -19,6 +19,7 @@
 package com.github.retrooper.packetevents.test;
 
 import com.github.retrooper.packetevents.protocol.component.ComponentTypes;
+import com.github.retrooper.packetevents.protocol.component.PatchableComponentMap;
 import com.github.retrooper.packetevents.protocol.component.StaticComponentMap;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
@@ -31,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class ItemBaseComponentTest extends BaseDummyAPITest {
 
@@ -55,5 +57,13 @@ public class ItemBaseComponentTest extends BaseDummyAPITest {
         assertNull(airComponents1205.get(ComponentTypes.ITEM_NAME));
         assertEquals(Component.translatable("block.minecraft.air"),
                 airComponents1212.get(ComponentTypes.ITEM_NAME));
+    }
+
+    @Test
+    @DisplayName("Patchable maps retain immutable static bases")
+    public void testPatchableMapRetainsStaticBase() {
+        StaticComponentMap base = ItemTypes.STONE.getComponents(ClientVersion.V_1_20_5);
+        PatchableComponentMap patchable = new PatchableComponentMap(base);
+        assertSame(base.getDelegate(), patchable.getBase());
     }
 }
