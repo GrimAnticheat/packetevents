@@ -58,7 +58,7 @@ public class PacketEncoder extends ChannelOutboundHandlerAdapter {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (!(msg instanceof ByteBuf in)) {
+        if (!(msg instanceof ByteBuf in) || !in.isReadable()) {
             ctx.write(msg, promise);
             return;
         }
@@ -73,10 +73,11 @@ public class PacketEncoder extends ChannelOutboundHandlerAdapter {
 
         handlePacket(ctx, in, promise);
 
-        if (!ByteBufHelper.isReadable(in)) {
-            throw CancelPacketException.INSTANCE;
-        } else {
+        if (in.isReadable()) {
             ctx.write(in, promise);
+        } else {
+            in.release();
+            promise.setSuccess();
         }
     }
 
