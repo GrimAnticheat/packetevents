@@ -75,8 +75,10 @@ public class ServerConnectionInitializer {
             relocateHandlers(channel, user, false, false);
             if (PacketEvents.getAPI().getSettings().isPreViaInjection() && ViaVersionUtil.isAvailable()) relocateHandlers(channel, user, true, false);
 
-            channel.closeFuture().addListener((ChannelFutureListener) future -> PacketEventsImplHelper.handleDisconnection(user.getChannel(), user.getUUID()));
             PacketEvents.getAPI().getProtocolManager().setUser(channel, user);
+            // Register the user before the close listener: if the channel is already closed, the listener runs
+            // immediately and must find the user, or the entry stays in the user map forever.
+            channel.closeFuture().addListener((ChannelFutureListener) future -> PacketEventsImplHelper.handleDisconnection(user.getChannel(), user.getUUID()));
         }
     }
 
